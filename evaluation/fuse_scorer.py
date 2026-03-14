@@ -1,6 +1,7 @@
 import json
 import os
 from openai import OpenAI
+from dotenv import load_dotenv
 
 class FUSEScoringSystem:
     def __init__(self, api_key: str, model_name: str = "gpt-4o-mini"):
@@ -53,7 +54,6 @@ class FUSEScoringSystem:
             raw_content = response.choices[0].message.content
             scores = json.loads(raw_content)
             
-            # Calculate Total Deviation (TD)
             if scores:
                 total_score = sum(scores.values())
                 scores['Total_Deviation'] = round(total_score / len(scores), 2)
@@ -66,27 +66,41 @@ class FUSEScoringSystem:
 
 # === Demonstration Module ===
 if __name__ == "__main__":
-    # Ensure you set your API key in the environment variables before running
-    api_key = os.getenv("OPENAI_API_KEY", "your_api_key_here")
+    # Load environment variables from .env file
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
     
+    if not api_key:
+        print("Error: OPENAI_API_KEY not found. Please check your .env file.")
+        exit(1)
+        
     evaluator = FUSEScoringSystem(api_key=api_key)
     
-    # Test Case 1: Original News
-    source_text = "Scientists develop drought-resistant wheat, reducing water usage in agriculture."
+    # Dynamically resolve the path to the JSON test data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    json_path = os.path.join(current_dir, "..", "data", "test_cases.json")
     
-    # Test Case 2: Evolved Fake News (from FUSE framework examples)
-    altered_text = "Miracle wheat can grow in any environment! Scientists claim it will solve world hunger by next year, but some say it poses a severe risk to human health."
+    try:
+        with open(json_path, "r", encoding="utf-8") as file:
+            test_cases = json.load(file)
+    except FileNotFoundError:
+        print(f"Error: Could not locate test cases at {json_path}")
+        exit(1)
     
     print("--------------------------------------------------")
-    print("FUSE News Evolution Scoring System")
+    print("FUSE News Evolution Scoring System Demo")
     print("--------------------------------------------------\n")
     
-    print(f"Original News:\n{source_text}\n")
-    print(f"Evolved News:\n{altered_text}\n")
-    
-    print("Evaluating deviation metrics using LLM...\n")
-    
-    results = evaluator.evaluate_news(source_text, altered_text)
-    
-    print("Evaluation Results:")
-    print(json.dumps(results, indent=4))
+    # Iterate through each test case and evaluate
+    for case_name, data in test_cases.items():
+        print(f"[{case_name.upper()}]")
+        print(f"Topic: {data['topic']}")
+        print(f"Original News: {data['original']}")
+        print(f"Evolved News:  {data['evolved']}\n")
+        
+        print("Evaluating deviation metrics using LLM...")
+        results = evaluator.evaluate_news(data['original'], data['evolved'])
+        
+        print("Evaluation Results:")
+        print(json.dumps(results, indent=4))
+        print("\n" + "="*50 + "\n")

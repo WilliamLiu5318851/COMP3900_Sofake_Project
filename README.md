@@ -25,7 +25,7 @@ fake_news_project/
 └── evaluation/
     └── fuse_scorer.py    # Core scoring system and API integration
 
-Setup Instructions
+## Setup Instructions
 1. Clone the repository and navigate to the project directory
 Ensure you are in the root directory fake_news_project/ before proceeding.
 
