@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -104,3 +105,4 @@ if __name__ == "__main__":
         print("Evaluation Results:")
         print(json.dumps(results, indent=4))
         print("\n" + "="*50 + "\n")
+        time.sleep(3)
