@@ -26,6 +26,11 @@ class FUSEScoringSystem:
         5. Temporal Shift (TS): Does the news shift focus from the specific event mentioned in the original news to broader or unrelated timeframes, such as mentioning legal battles or long-term political issues?
         6. Perspective Deviation (PD): Does the article introduce subjective opinions or perspectives that deviate from the objective reporting in the original news? For instance, questioning the truth of the event or speculating on hidden motives.
 
+        [NEW CRITERIA ADDED]
+        7. Sensationalism Index (SI): Does the news use exaggerated, fear-mongering, or highly provocative language designed to trigger strong emotional reactions or clickbait compared to the factual original?
+        8. Source Attribution Alteration (SAA): Has the news removed credible sources present in the original, or invented vague/fake authorities (e.g., changing "Dr. Smith" to "anonymous experts claim")?
+        9. Political/Ideological Bias (PIB): Has the originally neutral event been twisted to attack, support, or frame a specific political ideology, party, or social group?
+
         Task: Please evaluate the following news based on each criterion and provide a score from 0 to 10, where 0 means the article is completely aligned with the original news, and 10 means it has fully deviated.
 
         Original News: {original_news}
