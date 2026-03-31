@@ -1,5 +1,4 @@
 services:
-  # 前端模块
   frontend:
     build: ./frontend
     ports:
@@ -9,13 +8,12 @@ services:
     networks:
       - sofake-network
 
-  # 后端模块
   backend:
     build: ./backend
     environment:
       - DATABASE_URL=sqlite:///./news.db
-      - AGENT_URL=http://agent:8001  # 预留 agent 接口
-      - FUSE_URL=http://fuse:8002   # 预留 fuse 接口
+      - AGENT_URL=http://agent:8001  # 预留 agent 
+      - FUSE_URL=http://fuse:8002   # 预留 fuse 
     ports:
       - "8000:8000"
     volumes:
@@ -23,7 +21,7 @@ services:
     networks:
       - sofake-network
 
-  # Agent 模块框架（占位）
+  # Agent 模块框架
   agent:
     image: python:3.12-slim
     container_name: sofake-agent
@@ -31,7 +29,7 @@ services:
     networks:
       - sofake-network
 
-  # Fuse 模块框架（占位）
+  # Fuse 模块框架
   fuse:
     image: python:3.12-slim
     container_name: sofake-fuse
