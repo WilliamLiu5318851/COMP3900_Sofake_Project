@@ -1,0 +1,44 @@
+services:
+  # 前端模块
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - sofake-network
+
+  # 后端模块
+  backend:
+    build: ./backend
+    environment:
+      - DATABASE_URL=sqlite:///./news.db
+      - AGENT_URL=http://agent:8001  # 预留 agent 接口
+      - FUSE_URL=http://fuse:8002   # 预留 fuse 接口
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/news.db:/app/news.db
+    networks:
+      - sofake-network
+
+  # Agent 模块框架（占位）
+  agent:
+    image: python:3.12-slim
+    container_name: sofake-agent
+    command: ["sh", "-c", "echo 'Agent module placeholder' && sleep infinity"]
+    networks:
+      - sofake-network
+
+  # Fuse 模块框架（占位）
+  fuse:
+    image: python:3.12-slim
+    container_name: sofake-fuse
+    command: ["sh", "-c", "echo 'Fuse module placeholder' && sleep infinity"]
+    networks:
+      - sofake-network
+
+networks:
+  sofake-network:
+    driver: bridge
