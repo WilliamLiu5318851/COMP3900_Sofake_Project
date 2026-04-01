@@ -12,28 +12,32 @@ services:
     build: ./backend
     environment:
       - DATABASE_URL=sqlite:///./news.db
-      - AGENT_URL=http://agent:8001  # 预留 agent 
-      - FUSE_URL=http://fuse:8002   # 预留 fuse 
+      - AGENT_URL=http://agent:8001
+      - FUSE_URL=http://fuse:8002
     ports:
-      - "8000:8000"
+      - "9000:8000"
     volumes:
       - ./backend/news.db:/app/news.db
     networks:
       - sofake-network
 
-  # Agent 模块框架
   agent:
-    image: python:3.12-slim
+    build: ./agent
     container_name: sofake-agent
-    command: ["sh", "-c", "echo 'Agent module placeholder' && sleep infinity"]
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    ports:
+      - "9001:8001"
     networks:
       - sofake-network
 
-  # Fuse 模块框架
   fuse:
-    image: python:3.12-slim
+    build: ./FUSE
     container_name: sofake-fuse
-    command: ["sh", "-c", "echo 'Fuse module placeholder' && sleep infinity"]
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    ports:
+      - "9002:8002"
     networks:
       - sofake-network
 

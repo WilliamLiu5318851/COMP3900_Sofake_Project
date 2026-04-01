@@ -1,2 +1,4 @@
-openai
+anthropic
 python-dotenv
+fastapi==0.115.13
+uvicorn==0.34.3

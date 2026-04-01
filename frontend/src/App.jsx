@@ -265,26 +265,66 @@ function SimulationConfig({ config, setConfig }) {
   );
 }
 
-function RunActions({ canRun, onRun }) {
+function RunActions({ canRun, loading, onRun }) {
   return (
     <section className="card">
       <h2 className="card__title">Run</h2>
-      <p className="hint">
-        This frontend is offline-first: hook <code>/simulate</code> and <code>/runs/:id</code> later.
-      </p>
       <div className="row">
-        <button className="btn" type="button" disabled={!canRun} onClick={onRun}>
-          Start Simulation
-        </button>
-        <button className="btn btn--ghost" type="button">
-          View Latest Run
+        <button className="btn" type="button" disabled={!canRun || loading} onClick={onRun}>
+          {loading ? "Running…" : "Start Simulation"}
         </button>
       </div>
-      {!canRun && (
+      {!canRun && !loading && (
         <div className="callout callout--warn">
           Add ground truth text first (and keep it within the character limit).
         </div>
       )}
+      {loading && (
+        <div className="callout">
+          Simulation in progress — this may take a minute depending on agent count and steps.
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SimulationResult({ result }) {
+  const { summary, posts } = result;
+  const textPosts = posts.filter((p) => p.text);
+
+  return (
+    <section className="card">
+      <h2 className="card__title">Simulation Results</h2>
+
+      <div className="grid grid--2" style={{ marginBottom: "1rem" }}>
+        <div><span className="label">Steps run</span><div>{summary.total_steps_run}</div></div>
+        <div><span className="label">Posts generated</span><div>{summary.total_posts_generated}</div></div>
+        <div><span className="label">Max generation</span><div>{summary.max_generation}</div></div>
+        <div>
+          <span className="label">Actions breakdown</span>
+          <div>
+            {Object.entries(summary.actions_breakdown).map(([action, count]) => (
+              <span key={action} style={{ marginRight: "0.75rem" }}>
+                {action}: {count}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="divider" />
+
+      <h3 className="subhead">Generated Posts ({textPosts.length})</h3>
+      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+        {textPosts.map((p, i) => (
+          <div key={i} style={{ padding: "0.5rem 0", borderBottom: "1px solid var(--border)" }}>
+            <div className="hint" style={{ marginBottom: "0.25rem" }}>
+              Step {p.step} · Agent {p.agent_id} · {p.action} · Generation {p.generation}
+            </div>
+            <div>{p.text}</div>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
@@ -308,14 +348,39 @@ export default function App() {
     steps: 60,
     roleMix: { spreader: 35, commentator: 35, verifier: 15, bystander: 15 },
   });
+  const [loading, setLoading] = useState(false);
+  const [simResult, setSimResult] = useState(null);
+  const [simError, setSimError] = useState(null);
 
   const withinLimit = groundTruth.length > 0 && groundTruth.length <= 6000;
 
-  function handleRun() {
-    // Replace this with a real API call later.
-    alert(
-      `Starting simulation...\n\nAgents: ${config.agentCount}\nTopology: ${config.topology}\nSteps: ${config.steps}\nSeed: ${config.seed}\n\n(Connect to backend later.)`
-    );
+  async function handleRun() {
+    setLoading(true);
+    setSimResult(null);
+    setSimError(null);
+    try {
+      const res = await fetch("/api/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ground_truth: groundTruth,
+          agent_count: config.agentCount,
+          steps: config.steps,
+          seed: config.seed,
+          role_mix: config.roleMix,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || "Simulation failed");
+      }
+      const data = await res.json();
+      setSimResult(data);
+    } catch (e) {
+      setSimError(e.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -330,7 +395,11 @@ export default function App() {
             <>
               <GroundTruthUploader value={groundTruth} onChange={setGroundTruth} />
               <SimulationConfig config={config} setConfig={setConfig} />
-              <RunActions canRun={withinLimit} onRun={handleRun} />
+              <RunActions canRun={withinLimit} loading={loading} onRun={handleRun} />
+              {simError && (
+                <div className="callout callout--warn">Error: {simError}</div>
+              )}
+              {simResult && <SimulationResult result={simResult} />}
             </>
           )}
 

@@ -1,5 +1,5 @@
 fastapi==0.115.13
 uvicorn==0.34.3
-sqlalchemy==2.0.41
 pydantic==2.12.5
-httpx==0.28.1
+groq
+networkx
