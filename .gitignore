@@ -1,0 +1,20 @@
+# Claude Code local settings
+.claude/
+
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+*.db
+
+# Node
+node_modules/
+dist/
+
+# Docker
+*.log
