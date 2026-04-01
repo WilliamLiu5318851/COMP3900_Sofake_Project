@@ -6,7 +6,7 @@ from groq import Groq
 
 
 import os
-client = Groq(api_key=os.getenv("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"))
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def llm_call(prompt: str) -> str:
     response = client.chat.completions.create(
