@@ -1,4 +1,6 @@
 from prompts import *
+from initial_memory import initialise_agent_memory
+
 
 # ── Trial Script ──────────────────────────────────────────────────────────────
 
@@ -33,6 +35,7 @@ have not yet issued any official guidance in response to the study.
         name="Alex",
         profile=HEXACOProfile.random(),
     )
+    initialise_agent_memory(agent, ground_truth)
     # Print agent profile
     print("=" * 60)
     print(f"Agent: {agent.name}")
@@ -52,6 +55,11 @@ have not yet issued any official guidance in response to the study.
     print(f"  controversy:      {seed_signals.controversy:.2f}")
     print(f"  fringe_score:     {seed_signals.fringe_score:.2f}")
     print(f"  threat_level:     {seed_signals.threat_level:.2f}")
+    print("=" * 60)
+
+    print("\nInitial memory:")
+    for m in agent.memory:
+        print(f"  - {m}")
     print("=" * 60)
 
     # Run agent
