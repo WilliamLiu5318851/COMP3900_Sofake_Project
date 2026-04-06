@@ -1,4 +1,4 @@
-from __future__ import annotations
+import os
 import random
 import json
 from dataclasses import asdict, dataclass, field
@@ -6,7 +6,6 @@ from urllib import response
 from groq import Groq
 
 
-import os
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def llm_call(prompt: str) -> str:
@@ -14,7 +13,7 @@ def llm_call(prompt: str) -> str:
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}]
     )
-    return response.choices[0].message.content.strip()
+    return response.choices[0].message.content # type: ignore
 # ── Data Models ───────────────────────────────────────────────────────────────
 
 @dataclass
@@ -66,6 +65,7 @@ class Post:
     text: str
     signals: PostSignals
     parent_id: str | None = None
+    engagement: int = 0
 
 
 @dataclass
@@ -74,11 +74,12 @@ class Agent:
     name: str
     profile: HEXACOProfile
     memory: list[str] = field(default_factory=list)
+    seen_post_ids: set[str] = field(default_factory=set)
 
 
 @dataclass
 class AgentAction:
-    agent_id: str
+    agent_id: int
     action: str
     text: str | None
     source_post_id: str
