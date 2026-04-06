@@ -12,22 +12,22 @@ Design choices:
   - Edges are undirected and unweighted
 """
 
-import random
 import math
+import random
+from dataclasses import dataclass
+
 import networkx as nx
-from dataclasses import dataclass, field
-from structs import *
-from  prompts import *
+
+from structs import Agent
 
 
 # ── Network Config ─────────────────────────────────────────────────────────────
 
 @dataclass
 class NetworkConfig:
-    intra_cluster_p: float = 0.6      # Edge probability within a cluster
-    inter_cluster_m: int = 2          # Edges each cluster hub forms to other hubs (BA-style)
-    agents_per_cluster: int = 10      # Controls how many clusters are created
-    p_weak: float = 0.02              # Probability of weak tie edges between clusters
+    intra_cluster_p: float = 0.6   # Edge probability within a cluster
+    inter_cluster_m: int = 2       # Edges each hub forms to existing hubs (BA-style)
+    agents_per_cluster: int = 10   # Target cluster size; controls cluster count
 
 
 # ── Cluster Assignment ─────────────────────────────────────────────────────────
@@ -37,100 +37,80 @@ def assign_clusters(agents: list[Agent], agents_per_cluster: int) -> dict[int, l
     Assign agents to clusters biased by extraversion.
 
     High-extraversion agents are more likely to end up in larger, more
-    connected clusters. Implemented by weighting cluster selection during
-    assignment: each cluster accretes agents proportionally to the mean
-    extraversion of its current members (rich-get-richer within clusters).
+    connected clusters. Each cluster accretes agents proportionally to the
+    mean extraversion of its current members (rich-get-richer within clusters).
 
-    Returns a dict mapping cluster_id -> list of Agent.
+    Returns a mapping of cluster_id -> list[Agent].
     """
     n_clusters = max(2, math.ceil(len(agents) / agents_per_cluster))
 
-    # Sort agents by extraversion descending so each cluster seeds with a
-    # high-extraversion anchor first
+    # Sort descending so high-extraversion agents anchor each cluster first.
     sorted_agents = sorted(agents, key=lambda a: a.profile.extraversion, reverse=True)
 
     clusters: dict[int, list[Agent]] = {i: [] for i in range(n_clusters)}
 
-    # Seed one anchor per cluster
-    for i in range(n_clusters):
-        if i < len(sorted_agents):
-            clusters[i].append(sorted_agents[i])
+    for i in range(min(n_clusters, len(sorted_agents))):
+        clusters[i].append(sorted_agents[i])
 
-    remaining = sorted_agents[n_clusters:]
-
-    for agent in remaining:
-        # Weight each cluster by its mean extraversion (or 0.5 if empty)
-        weights = []
-        for cid, members in clusters.items():
-            if members:
-                mean_ext = sum(m.profile.extraversion for m in members) / len(members)
-            else:
-                mean_ext = 0.5
-            weights.append(mean_ext)
-
+    for agent in sorted_agents[n_clusters:]:
+        weights = [
+            sum(m.profile.extraversion for m in members) / len(members) if members else 0.5
+            for members in clusters.values()
+        ]
         chosen = random.choices(list(clusters.keys()), weights=weights, k=1)[0]
         clusters[chosen].append(agent)
 
-    # Remove any empty clusters
-    clusters = {cid: members for cid, members in clusters.items() if members}
-
-    return clusters
+    return {cid: members for cid, members in clusters.items() if members}
 
 
 # ── Graph Construction ─────────────────────────────────────────────────────────
 
-def build_intra_cluster_edges(
-    G: nx.Graph,
-    cluster_members: list[Agent],
-    p: float,
-) -> None:
-    """
-    Add dense Erdős-Rényi edges within a single cluster.
-    Each pair of agents within the cluster is connected with probability p.
-    """
-    for i, a in enumerate(cluster_members):
-        for b in cluster_members[i + 1:]:
-            if random.random() < p:
-                G.add_edge(a.id, b.id)
+def _cluster_hub(members: list[Agent]) -> Agent:
+    """Return the highest-extraversion agent in a cluster — the hub."""
+    return max(members, key=lambda a: a.profile.extraversion)
 
 
-def get_cluster_hub(cluster_members: list[Agent]) -> Agent:
+def _build_intra_cluster_edges(G: nx.Graph, members: list[Agent], p: float) -> None:
     """
-    Return the agent with the highest extraversion in a cluster.
-    This agent acts as the cluster's hub and story seed point.
+    Wire a cluster's agents with Erdős–Rényi random edges.
+
+    Delegates edge sampling to nx.erdos_renyi_graph, relabels its integer
+    node indices to agent IDs, then merges the result into G.
     """
-    return max(cluster_members, key=lambda a: a.profile.extraversion)
+    node_ids = [a.id for a in members]
+    er = nx.erdos_renyi_graph(len(node_ids), p)
+    G.update(nx.relabel_nodes(er, dict(enumerate(node_ids))))
 
 
-def build_inter_cluster_edges(
+def _build_inter_cluster_edges(
     G: nx.Graph,
     clusters: dict[int, list[Agent]],
     m: int,
 ) -> None:
     """
-    Connect cluster hubs using preferential attachment (BA-style).
+    Connect cluster hubs with preferential attachment (Barabási–Albert style).
 
-    Each hub connects to m other hubs, with probability proportional to
-    their current degree (or 1 if degree is 0). This creates a scale-free
-    topology at the inter-cluster level.
+    Each hub preferentially attaches to already-connected hubs proportionally
+    to their current degree, producing a scale-free inter-cluster topology.
     """
-    hubs = [get_cluster_hub(members) for members in clusters.values()]
-
+    hubs = [_cluster_hub(members) for members in clusters.values()]
     if len(hubs) < 2:
         return
 
-    # Start with the first two hubs connected
-    connected = [hubs[0], hubs[1]]
+    # Bootstrap with the first two hubs connected.
+    connected = hubs[:2]
     G.add_edge(hubs[0].id, hubs[1].id)
 
     for hub in hubs[2:]:
-        # Preferential attachment weights by degree
-        weights = [max(G.degree(h.id), 1) for h in connected]
-        targets = random.choices(connected, weights=weights, k=min(m, len(connected)))
-        targets = list({t.id: t for t in targets}.values())  # deduplicate
-        for target in targets:
-            if not G.has_edge(hub.id, target.id):
-                G.add_edge(hub.id, target.id)
+        # G.degree[n] uses the DegreeView subscript — more idiomatic than G.degree(n).
+        weights = [max(G.degree[h.id], 1) for h in connected]
+        sampled = random.choices(connected, weights=weights, k=min(m, len(connected)))
+
+        # dict.fromkeys preserves order while deduplicating by agent ID.
+        for target in dict.fromkeys(t.id for t in sampled):
+            if not G.has_edge(hub.id, target):
+                G.add_edge(hub.id, target)
+
         connected.append(hub)
 
 
@@ -139,29 +119,43 @@ def build_inter_cluster_edges(
 @dataclass
 class SocialNetwork:
     graph: nx.Graph
-    clusters: dict[int, list[Agent]]       # cluster_id -> agents
-    hubs: dict[int, Agent]                 # cluster_id -> hub agent (story seed)
-    agent_cluster: dict[int, int]          # agent_id -> cluster_id
+    clusters: dict[int, list[Agent]]  # cluster_id -> agents
+    hubs: dict[int, Agent]            # cluster_id -> hub agent (story seed)
+    agent_cluster: dict[int, int]     # agent_id -> cluster_id (O(1) lookup cache)
 
     def neighbours(self, agent_id: int) -> list[int]:
-        """Return neighbour agent IDs for a given agent."""
+        """Return the IDs of all agents directly connected to agent_id."""
         return list(self.graph.neighbors(agent_id))
 
     def get_cluster_of(self, agent_id: int) -> int:
+        """Return the cluster ID that agent_id belongs to."""
         return self.agent_cluster[agent_id]
 
+    def cluster_subgraph(self, cluster_id: int) -> nx.Graph:
+        """
+        Return a read-only view of the subgraph induced by a single cluster.
+
+        The returned SubGraph reflects any subsequent changes to the parent
+        graph, consistent with how nx.Graph.subgraph behaves.
+        """
+        node_ids = [a.id for a in self.clusters[cluster_id]]
+        return self.graph.subgraph(node_ids)
+
     def summary(self) -> str:
-        n_nodes = self.graph.number_of_nodes()
-        n_edges = self.graph.number_of_edges()
-        n_clusters = len(self.clusters)
-        avg_degree = (2 * n_edges / n_nodes) if n_nodes else 0
+        G = self.graph
+        n = G.number_of_nodes()
+        avg_degree = sum(d for _, d in G.degree()) / n if n else 0.0
         hub_names = {cid: h.name for cid, h in self.hubs.items()}
         lines = [
-            f"Nodes:        {n_nodes}",
-            f"Edges:        {n_edges}",
-            f"Clusters:     {n_clusters}",
-            f"Avg degree:   {avg_degree:.2f}",
-            f"Cluster hubs: {hub_names}",
+            f"Nodes:          {n}",
+            f"Edges:          {G.number_of_edges()}",
+            f"Clusters:       {len(self.clusters)}",
+            f"Density:        {nx.density(G):.4f}",
+            f"Avg degree:     {avg_degree:.2f}",
+            f"Avg clustering: {nx.average_clustering(G):.4f}",
+            f"Connected:      {nx.is_connected(G)}",
+            f"Components:     {nx.number_connected_components(G)}",
+            f"Cluster hubs:   {hub_names}",
         ]
         return "\n".join(lines)
 
@@ -172,39 +166,38 @@ def build_network(agents: list[Agent], config: NetworkConfig | None = None) -> S
 
     Steps:
       1. Assign agents to clusters (extraversion-biased)
-      2. Add dense intra-cluster edges (Erdős-Rényi)
+      2. Add dense intra-cluster edges (Erdős–Rényi)
       3. Connect cluster hubs with scale-free inter-cluster edges (BA)
 
     Returns a SocialNetwork with the graph, cluster map, and hub index.
     """
-    if config is None:
-        config = NetworkConfig()
+    config = config or NetworkConfig()
+
+    clusters = assign_clusters(agents, config.agents_per_cluster)
+    hubs = {cid: _cluster_hub(members) for cid, members in clusters.items()}
+    agent_cluster = {
+        agent.id: cid for cid, members in clusters.items() for agent in members
+    }
+    hub_ids = {h.id for h in hubs.values()}
 
     G = nx.Graph()
+    G.add_nodes_from(
+        (
+            agent.id,
+            {
+                "name": agent.name,
+                "extraversion": agent.profile.extraversion,
+                "cluster_id": agent_cluster[agent.id],
+                "is_hub": agent.id in hub_ids,
+            },
+        )
+        for agent in agents
+    )
 
-    # Add all agents as nodes, storing profile metadata
-    for agent in agents:
-        G.add_node(agent.id, name=agent.name, extraversion=agent.profile.extraversion)
-
-    # Assign to clusters
-    clusters = assign_clusters(agents, config.agents_per_cluster)
-
-    # Intra-cluster edges
     for members in clusters.values():
-        build_intra_cluster_edges(G, members, config.intra_cluster_p)
+        _build_intra_cluster_edges(G, members, config.intra_cluster_p)
 
-    # Inter-cluster edges via hub preferential attachment
-    build_inter_cluster_edges(G, clusters, config.inter_cluster_m)
-    build_weak_tie_edges(G, clusters, config.p_weak)
-
-    # Index: agent_id -> cluster_id
-    agent_cluster: dict[int, int] = {}
-    for cid, members in clusters.items():
-        for agent in members:
-            agent_cluster[agent.id] = cid
-
-    # Index: cluster_id -> hub agent
-    hubs = {cid: get_cluster_hub(members) for cid, members in clusters.items()}
+    _build_inter_cluster_edges(G, clusters, config.inter_cluster_m)
 
     return SocialNetwork(
         graph=G,
@@ -213,39 +206,3 @@ def build_network(agents: list[Agent], config: NetworkConfig | None = None) -> S
         agent_cluster=agent_cluster,
     )
 
-def build_weak_tie_edges(
-    G: nx.Graph,
-    clusters: dict[int, list[Agent]],
-    p_weak: float,
-) -> None:
-    """
-    Add sparse random inter-cluster edges between non-hub agents.
-
-    Emulates Granovetter-style weak ties — occasional cross-cluster connections
-    that bypass the hub preferential attachment structure and create alternative
-    information pathways.
-
-    Edge probability per pair is:
-        p_weak * agent_a.extraversion * agent_b.extraversion
-
-    This means two agents each with extraversion=1.0 connect at the base rate,
-    while two introverts (extraversion≈0.1) connect ~100x less often. The result
-    is that extraverted non-hub agents become secondary cross-cluster bridges,
-    making the information topology richer without flooding the graph with edges.
-
-    Hub-to-hub edges already handled by build_inter_cluster_edges; this function
-    skips pairs where both agents are hubs to avoid double-connecting them.
-    """
-    hub_ids = {get_cluster_hub(members).id for members in clusters.values()}
-    cluster_ids = list(clusters.keys())
-
-    for i, cid_a in enumerate(cluster_ids):
-        for cid_b in cluster_ids[i + 1:]:
-            for agent_a in clusters[cid_a]:
-                for agent_b in clusters[cid_b]:
-                    # Skip hub-hub pairs — already handled
-                    if agent_a.id in hub_ids and agent_b.id in hub_ids:
-                        continue
-                    p = p_weak * agent_a.profile.extraversion * agent_b.profile.extraversion
-                    if random.random() < p:
-                        G.add_edge(agent_a.id, agent_b.id)

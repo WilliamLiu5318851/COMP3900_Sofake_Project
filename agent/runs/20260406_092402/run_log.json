@@ -1,0 +1,444 @@
+{
+  "run_id": "20260406_092402",
+  "timestamp": "2026-04-06T09:24:03.268674",
+  "config": {
+    "n_agents": 5,
+    "n_steps": 3,
+    "seed": 42,
+    "intra_cluster_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.6394,
+        "emotionality": 0.025,
+        "extraversion": 0.275,
+        "agreeableness": 0.2232,
+        "conscientiousness": 0.7365,
+        "openness": 0.6767
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.8922,
+        "emotionality": 0.0869,
+        "extraversion": 0.4219,
+        "agreeableness": 0.0298,
+        "conscientiousness": 0.2186,
+        "openness": 0.5054
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 1,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.0265,
+        "emotionality": 0.1988,
+        "extraversion": 0.6499,
+        "agreeableness": 0.5449,
+        "conscientiousness": 0.2204,
+        "openness": 0.5893
+      }
+    },
+    {
+      "id": 3,
+      "name": "Dana",
+      "cluster": 0,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.8094,
+        "emotionality": 0.0065,
+        "extraversion": 0.8058,
+        "agreeableness": 0.6981,
+        "conscientiousness": 0.3403,
+        "openness": 0.1555
+      }
+    },
+    {
+      "id": 4,
+      "name": "Eden",
+      "cluster": 0,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.9572,
+        "emotionality": 0.3366,
+        "extraversion": 0.0927,
+        "agreeableness": 0.0967,
+        "conscientiousness": 0.8475,
+        "openness": 0.6037
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 5,
+    "n_edges": 2,
+    "n_clusters": 2,
+    "avg_degree": 0.8,
+    "hubs": {
+      "0": "Dana",
+      "1": "Casey"
+    }
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that\nmicroplastics found in common bottled water brands may be interfering with\nhuman hormone regulation. The study, which tracked 3,000 participants over\n5 years, found a statistically significant correlation between bottled water\nconsumption and disrupted cortisol and thyroid levels. The lead researcher\nstated the findings are 'concerning but not yet conclusive'. Health authorities\nhave not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.6,
+      "controversy": 0.7,
+      "fringe_score": 0.4,
+      "threat_level": 0.5,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        1,
+        0,
+        3,
+        2,
+        4
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "\"Just came across a study that's got me thinking - researchers at a major US uni found a possible link between microplastics in bottled water and disrupted hormone levels. They tracked 3k participants over 5 yrs and found a strong correlation between bottled water consumption and changes to cortisol and thyroid levels. Nothing's been officially ruled out or recommended yet, but it's definitely food for thought.\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.6,
+            "fringe_score": 0.0,
+            "threat_level": 0.3,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "retweet",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "like",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 1
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        4,
+        2,
+        1,
+        3,
+        0
+      ],
+      "events": [
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "post_1",
+          "new_post_id": "post_2",
+          "new_post_text": "\"Bottled water linked to hormone disruption? The stats are in & they're alarming. 3k ppl tracked over 5 yrs show clear links to cortisol & thyroid issues. Time to ditch the plastic bottles & switch to glass ASAP. Not just a warning, a Wake-Up Call for the bottled water industry #microplastics #health\"",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.8,
+            "fringe_score": 0.1,
+            "threat_level": 0.9,
+            "generation": 2,
+            "source_post_id": "post_1"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "post_2",
+          "new_post_id": "post_3",
+          "new_post_text": "\"While I think this study is a crucial reminder of the potential issues with microplastics in bottled water, I'd love to see more nuance in the discussion. The researchers themselves say 'concerning but not yet conclusive', which is a far cry from a ringing call to switch to glass immediately. Let's dig deeper before jumping to conclusions #microplastics #health\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.8,
+            "fringe_score": 0.1,
+            "threat_level": 0.2,
+            "generation": 3,
+            "source_post_id": "post_2"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_4",
+          "new_post_text": "\"Agree the study raises interesting questions, but let's not jump to conclusions. The researchers themselves say it's 'concerning but not yet conclusive'. Worth noting that correlation doesn't equal causation here. Still waiting on more data to back up these claims before drawing bigger conclusions #microplastics #health\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.3,
+            "fringe_score": 0.2,
+            "threat_level": 0.1,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "new_post",
+          "source_post_id": "post_2",
+          "new_post_id": "post_5",
+          "new_post_text": "\"Folks, just saw a study out of a major US university. They tracked 3k participants for 5 yrs and found a potential link between bottled water consumption and disrupted hormone regulation, specifically cortisol and thyroid levels. While the lead researcher says the findings are concerningly interesting, they're quick to note that the study isn't conclusive just yet. Health authorities haven't weighed in. I'll keep an eye on this one and share any updates, but worth keeping in mind for now, at least. #hormonedisbalance #microplastics #bottledwater\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.3,
+            "fringe_score": 0.2,
+            "threat_level": 0.1,
+            "generation": 3,
+            "source_post_id": "post_2"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "quote_tweet",
+          "source_post_id": "post_4",
+          "new_post_id": "post_6",
+          "new_post_text": "\"Agreed on being cautious, but I do think it's worth acknowledging the scope of this study - 3,000 participants over 5 years. That's a significant sample size. Still, as the researcher said, not conclusive, but certainly something to keep an eye on for now. Fingers crossed for more clarity soon. #hormonedisbalance #microplastics #bottledwater\"",
+          "new_signals": {
+            "emotional_charge": 0.3,
+            "controversy": 0.2,
+            "fringe_score": 0.6,
+            "threat_level": 0.1,
+            "generation": 2,
+            "source_post_id": "post_4"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "quote_tweet",
+          "source_post_id": "post_3",
+          "new_post_id": "post_7",
+          "new_post_text": "\"Just had to clarify - the study itself doesn't necessarily advocate for switching to glass bottled water just yet! Let's keep the nuance in discussion, as the researchers themselves cautioned us. A balanced approach is always best #hormonedisbalance #microplastics #bottledwater\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.3,
+            "fringe_score": 0.0,
+            "threat_level": 0.1,
+            "generation": 4,
+            "source_post_id": "post_3"
+          }
+        }
+      ],
+      "new_posts_this_step": 6
+    },
+    {
+      "step": 3,
+      "agent_order": [
+        2,
+        3,
+        0,
+        4,
+        1
+      ],
+      "events": [
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "post_6",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_7",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "post_5",
+          "new_post_id": "post_8",
+          "new_post_text": "\"Just came across this bombshell study. Lead researcher already admitting: 'We're living on a ticking time bomb of hormone-disrupting plastics. Bottled water is slowly killing us.' Anyone still drinking from plastic bottles needs to WAKE UP & switch to glass ASAP. Our health is at stake! #bottledwater #healthrisk #microplastics\"",
+          "new_signals": {
+            "emotional_charge": 0.95,
+            "controversy": 0.35,
+            "fringe_score": 0.45,
+            "threat_level": 0.85,
+            "generation": 4,
+            "source_post_id": "post_5"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "quote_tweet",
+          "source_post_id": "post_8",
+          "new_post_id": "post_9",
+          "new_post_text": "\"Important to remember that as interesting as a single study can be, it's still early days. Lead researcher did indeed raise concerns, but as I've seen, they're being cautious in saying that's not yet conclusive. Let's keep the discussion grounded in facts & wait for more guidance from health authorities before making broad conclusions. #hormonedisbalance #microplastics #bottledwater\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.2,
+            "fringe_score": 0.1,
+            "threat_level": 0.0,
+            "generation": 5,
+            "source_post_id": "post_8"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "quote_tweet",
+          "source_post_id": "post_2",
+          "new_post_id": "post_10",
+          "new_post_text": "\"Let's take a step back & consider the researcher's own words: 'concerning but not yet conclusive'. We need to separate the signal from the noise & not jump to conclusions based on a single study. Health authorities should have the final say, not social media hype. #hormonedisbalance #microplastics\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.3,
+            "fringe_score": 0.0,
+            "threat_level": 0.1,
+            "generation": 3,
+            "source_post_id": "post_2"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "new_post",
+          "source_post_id": "post_3",
+          "new_post_id": "post_11",
+          "new_post_text": "\"I've been seeing a lot of chatter about a recent study on microplastics in bottled water. Key takeaway: it found a possible link between bottled water consumption and hormone regulation issues, specifically cortisol and thyroid levels. 3,000 participants over 5 years made for a decent sample size, but the lead researcher still stresses that the findings aren't conclusive. Let's take a deep breath, consider the facts, and wait for more guidance from health authorities before drawing conclusions.\"",
+          "new_signals": {
+            "emotional_charge": 0.2,
+            "controversy": 0.4,
+            "fringe_score": 0.0,
+            "threat_level": 0.0,
+            "generation": 4,
+            "source_post_id": "post_3"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "post_8",
+          "new_post_id": "post_12",
+          "new_post_text": "\"I wanted to address the recent study on microplastics in bottled water that's been getting a lot of attention. While the study does suggest a link between bottled water consumption and disrupted hormone levels, it's essential to note that the researchers themselves are cautious in their language - referring to their findings as 'concerning but not yet conclusive'. This correlation doesn't necessarily imply causation, and it's crucial to wait for further data before drawing more sweeping conclusions. Let's keep the discussion grounded in facts and avoid jumping to alarmist conclusions #microplastics #health\"",
+          "new_signals": {
+            "emotional_charge": 0.3,
+            "controversy": 0.3,
+            "fringe_score": 0.8,
+            "threat_level": 0.5,
+            "generation": 5,
+            "source_post_id": "post_8"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "post_11",
+          "new_post_id": "post_13",
+          "new_post_text": "\"Completely agree. A big part of why I'd love to see more research is that correlation doesn't necessarily equal causation. I don't want to dismiss the potential link, but caution & nuance are just as important as alarmism. Anyone else thinking we should dig deeper before making sweeping changes? #microplastics #health\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.0,
+            "fringe_score": 0.2,
+            "threat_level": 0.0,
+            "generation": 5,
+            "source_post_id": "post_11"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "post_10",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 6
+    }
+  ]
+}

@@ -187,9 +187,13 @@ def run_simulation(
     n_steps: int,
     seed: int | None,
     out_dir: str,
+    ground_truth: str = None, 
 ) -> None:
     if seed is not None:
         random.seed(seed)
+
+    if ground_truth is None:
+        ground_truth = GROUND_TRUTH   # falls back to the hardcoded one
 
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     out_path = os.path.join(out_dir, run_id)
@@ -210,7 +214,6 @@ def run_simulation(
         intra_cluster_p=0.55,
         inter_cluster_m=2,
         agents_per_cluster=8,
-        p_weak=0.02,
     )
     network = build_network(agents, config)
     hub_ids = {hub.id for hub in network.hubs.values()}
@@ -233,7 +236,6 @@ def run_simulation(
             "intra_cluster_p":    config.intra_cluster_p,
             "inter_cluster_m":    config.inter_cluster_m,
             "agents_per_cluster": config.agents_per_cluster,
-            "p_weak":             config.p_weak,
         },
         "agents":  [
             agent_dict(a, network.agent_cluster[a.id], a.id in hub_ids)
@@ -249,7 +251,7 @@ def run_simulation(
             "hubs": {str(cid): h.name for cid, h in network.hubs.items()},
         },
         "ground_truth": {
-            "text":    GROUND_TRUTH,
+            "text":    ground_truth,
             "signals": signals_dict(seed_post.signals),
         },
         "steps": [],
@@ -286,7 +288,7 @@ def run_simulation(
                 continue
 
             for post in feed:
-                action_result = agent_process_post(agent, post, GROUND_TRUTH)
+                action_result = agent_process_post(agent, post, ground_truth)
                 action = action_result.action
 
                 new_post = None
@@ -351,7 +353,8 @@ def run_simulation(
     print(f"  ✓  signal_drift.json  ({len(signal_drift)} lineage chains tracked)")
 
     print(f"{'═' * 60}\n")
-    return run_log
+
+    return run_log, signal_drift
 
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
