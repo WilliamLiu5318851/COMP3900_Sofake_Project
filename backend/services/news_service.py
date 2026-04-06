@@ -1,21 +1,15 @@
 import re
 from database.db import insert_news, get_all_news
-
-
-def is_valid_text(text: str):
-    return bool(re.search(r"[a-zA-Z0-9]", text))
-
+from services.news_validation import validate_news_content
 
 def create_news(content: str):
 
+    is_valid, message = validate_news_content(content)
+
+    if not is_valid:
+        raise ValueError(message)
+
     content = content.strip()
-
-    if not content:
-        raise ValueError("News content cannot be empty")
-
-    if not is_valid_text(content):
-        raise ValueError("News must contain meaningful text")
-
     news_id = insert_news(content)
 
     return {
