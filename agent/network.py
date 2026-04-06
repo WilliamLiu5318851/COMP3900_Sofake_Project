@@ -1,4 +1,3 @@
-from __future__ import annotations
 """
 network.py — Social network graph for the newsreel simulation.
 
@@ -17,7 +16,8 @@ import random
 import math
 import networkx as nx
 from dataclasses import dataclass, field
-from structs import Agent, HEXACOProfile
+from structs import *
+from  prompts import *
 
 
 # ── Network Config ─────────────────────────────────────────────────────────────
@@ -27,6 +27,7 @@ class NetworkConfig:
     intra_cluster_p: float = 0.6      # Edge probability within a cluster
     inter_cluster_m: int = 2          # Edges each cluster hub forms to other hubs (BA-style)
     agents_per_cluster: int = 10      # Controls how many clusters are created
+    p_weak: float = 0.02              # Probability of weak tie edges between clusters
 
 
 # ── Cluster Assignment ─────────────────────────────────────────────────────────
@@ -84,7 +85,7 @@ def build_intra_cluster_edges(
     p: float,
 ) -> None:
     """
-    Add dense Erdős–Rényi edges within a single cluster.
+    Add dense Erdős-Rényi edges within a single cluster.
     Each pair of agents within the cluster is connected with probability p.
     """
     for i, a in enumerate(cluster_members):
@@ -194,6 +195,7 @@ def build_network(agents: list[Agent], config: NetworkConfig | None = None) -> S
 
     # Inter-cluster edges via hub preferential attachment
     build_inter_cluster_edges(G, clusters, config.inter_cluster_m)
+    build_weak_tie_edges(G, clusters, config.p_weak)
 
     # Index: agent_id -> cluster_id
     agent_cluster: dict[int, int] = {}
@@ -210,3 +212,40 @@ def build_network(agents: list[Agent], config: NetworkConfig | None = None) -> S
         hubs=hubs,
         agent_cluster=agent_cluster,
     )
+
+def build_weak_tie_edges(
+    G: nx.Graph,
+    clusters: dict[int, list[Agent]],
+    p_weak: float,
+) -> None:
+    """
+    Add sparse random inter-cluster edges between non-hub agents.
+
+    Emulates Granovetter-style weak ties — occasional cross-cluster connections
+    that bypass the hub preferential attachment structure and create alternative
+    information pathways.
+
+    Edge probability per pair is:
+        p_weak * agent_a.extraversion * agent_b.extraversion
+
+    This means two agents each with extraversion=1.0 connect at the base rate,
+    while two introverts (extraversion≈0.1) connect ~100x less often. The result
+    is that extraverted non-hub agents become secondary cross-cluster bridges,
+    making the information topology richer without flooding the graph with edges.
+
+    Hub-to-hub edges already handled by build_inter_cluster_edges; this function
+    skips pairs where both agents are hubs to avoid double-connecting them.
+    """
+    hub_ids = {get_cluster_hub(members).id for members in clusters.values()}
+    cluster_ids = list(clusters.keys())
+
+    for i, cid_a in enumerate(cluster_ids):
+        for cid_b in cluster_ids[i + 1:]:
+            for agent_a in clusters[cid_a]:
+                for agent_b in clusters[cid_b]:
+                    # Skip hub-hub pairs — already handled
+                    if agent_a.id in hub_ids and agent_b.id in hub_ids:
+                        continue
+                    p = p_weak * agent_a.profile.extraversion * agent_b.profile.extraversion
+                    if random.random() < p:
+                        G.add_edge(agent_a.id, agent_b.id)

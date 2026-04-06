@@ -1,4 +1,3 @@
-from __future__ import annotations
 import random
 import json
 from dataclasses import asdict, dataclass, field
@@ -6,15 +5,20 @@ from urllib import response
 from groq import Groq
 
 
-import os
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+client = Groq(api_key="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")
+
+# --- 修改代码开始 ---
+# 优先从环境变量读取 GROQ_API_KEY，如果没有，再用硬编码的备用
+#groq_key = os.environ.get("GROQ_API_KEY", "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")
+#client = Groq(api_key=groq_key)
+# --- 修改代码结束 ---
 
 def llm_call(prompt: str) -> str:
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}]
     )
-    return response.choices[0].message.content.strip()
+    return response.choices[0].message.content # type: ignore
 # ── Data Models ───────────────────────────────────────────────────────────────
 
 @dataclass
@@ -66,6 +70,7 @@ class Post:
     text: str
     signals: PostSignals
     parent_id: str | None = None
+    engagement: int = 0
 
 
 @dataclass
@@ -74,11 +79,12 @@ class Agent:
     name: str
     profile: HEXACOProfile
     memory: list[str] = field(default_factory=list)
+    seen_post_ids: set[str] = field(default_factory=set)
 
 
 @dataclass
 class AgentAction:
-    agent_id: str
+    agent_id: int
     action: str
     text: str | None
     source_post_id: str
