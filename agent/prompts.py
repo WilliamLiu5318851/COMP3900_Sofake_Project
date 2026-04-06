@@ -1,7 +1,27 @@
 from __future__ import annotations
+import re
+import json
+import random
 from structs import *
 from groq import Groq
 
+
+def build_signal_classification_prompt(post_text: str) -> str:
+    return f"""Analyse the following social media post and return a JSON object with exactly these four fields, each a float between 0.0 and 1.0:
+
+- emotional_charge: how emotionally loaded or provocative the content is
+- controversy: how likely the content is to provoke disagreement or debate
+- fringe_score: how far the claim is from mainstream or established fact
+- threat_level: how alarming or fear-inducing the content is
+
+Return ONLY the raw JSON object. No explanation, no markdown, no extra text before or after.
+
+Example output:
+{{"emotional_charge": 0.7, "controversy": 0.5, "fringe_score": 0.3, "threat_level": 0.6}}
+
+Post:
+\"\"\"{post_text}\"\"\"
+"""
 
 
 def describe_trait(trait_name: str, score: float) -> str:
@@ -56,27 +76,19 @@ def describe_trait(trait_name: str, score: float) -> str:
             return text
     return levels[-1][1]
 
+
 # ── Signal Classification ─────────────────────────────────────────────────────
 
-def build_signal_classification_prompt(post_text: str) -> str:
-    return f"""Analyse the following social media post and return a JSON object with exactly these four fields, each a float between 0.0 and 1.0:
-
-- emotional_charge: how emotionally loaded or provocative the content is
-- controversy: how likely the content is to provoke disagreement or debate
-- fringe_score: how far the claim is from mainstream or established fact
-- threat_level: how alarming or fear-inducing the content is
-
-Return only valid JSON, no explanation, no markdown.
-
-Post:
-\"\"\"{post_text}\"\"\"
-"""
-
-def  classify_post_signals(post_text: str, generation: int, source_post_id: str) -> PostSignals: 
+def classify_post_signals(post_text: str, generation: int, source_post_id: str) -> PostSignals:
     prompt = build_signal_classification_prompt(post_text)
     raw = llm_call(prompt)
-    cleaned = raw.strip().replace("```json", "").replace("```", "").strip()
-    data = json.loads(cleaned)
+
+    # Extract just the first {...} block — handles trailing text and markdown fences
+    match = re.search(r'\{.*?\}', raw, re.DOTALL)
+    if not match:
+        raise ValueError(f"No JSON found in LLM response: {raw}")
+
+    data = json.loads(match.group())
 
     return PostSignals(
         emotional_charge=data["emotional_charge"],
@@ -87,6 +99,7 @@ def  classify_post_signals(post_text: str, generation: int, source_post_id: str)
         generation=generation,
     )
 
+
 def get_post_signals(action: str, new_text: str | None, parent_post: Post) -> PostSignals:
     if action in ("like", "retweet", "ignore", "report") or new_text is None:
         return parent_post.signals
@@ -95,6 +108,7 @@ def get_post_signals(action: str, new_text: str | None, parent_post: Post) -> Po
         generation=parent_post.signals.generation + 1,
         source_post_id=parent_post.id,
     )
+
 
 def build_system_prompt(agent: Agent, ground_truth: str, action: str) -> str:
     p = agent.profile
@@ -135,6 +149,7 @@ Rules:
 - Output only your post text, nothing else
 """
 
+
 # ── Response Generation ───────────────────────────────────────────────────────
 
 def generate_response(agent: Agent, post: Post, action: str, ground_truth: str) -> str:
@@ -144,6 +159,7 @@ def generate_response(agent: Agent, post: Post, action: str, ground_truth: str) 
     output = llm_call(system + "\n\n" + prompt)
     agent.memory.append(f"You posted: {output}")
     return output
+
 
 def agent_process_post(agent: Agent, post: Post, ground_truth: str) -> AgentAction:
     probs = compute_action_probabilities(agent.profile, post.signals)
@@ -159,6 +175,7 @@ def agent_process_post(agent: Agent, post: Post, ground_truth: str) -> AgentActi
         text=text,
         source_post_id=post.id,
     )
+
 
 def compute_action_probabilities(profile: HEXACOProfile, signals: PostSignals) -> dict[str, float]:
     p_engage = profile.extraversion
@@ -186,17 +203,17 @@ def compute_action_probabilities(profile: HEXACOProfile, signals: PostSignals) -
                    profile.emotionality * signals.threat_level * 0.2)
 
     weights = {
-        "like":       w_like,
-        "retweet":    w_retweet,
+        "like":        w_like,
+        "retweet":     w_retweet,
         "quote_tweet": w_quote,
-        "comment":    w_comment,
-        "new_post":   w_new_post,
-        "report":     w_report,
+        "comment":     w_comment,
+        "new_post":    w_new_post,
+        "report":      w_report,
     }
 
     total = sum(weights.values())
     normalised = {k: (v / total) * p_engage for k, v in weights.items()}
-    normalised["ignore"] = p_ignore/10
+    normalised["ignore"] = p_ignore / 10
     print(f"Computed action probabilities: {normalised}")
     return normalised
 
