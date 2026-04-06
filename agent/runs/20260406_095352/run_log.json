@@ -1,0 +1,444 @@
+{
+  "run_id": "20260406_095352",
+  "timestamp": "2026-04-06T09:53:52.995187",
+  "config": {
+    "n_agents": 5,
+    "n_steps": 3,
+    "seed": 42,
+    "intra_cluster_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.6394,
+        "emotionality": 0.025,
+        "extraversion": 0.275,
+        "agreeableness": 0.2232,
+        "conscientiousness": 0.7365,
+        "openness": 0.6767
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.8922,
+        "emotionality": 0.0869,
+        "extraversion": 0.4219,
+        "agreeableness": 0.0298,
+        "conscientiousness": 0.2186,
+        "openness": 0.5054
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 1,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.0265,
+        "emotionality": 0.1988,
+        "extraversion": 0.6499,
+        "agreeableness": 0.5449,
+        "conscientiousness": 0.2204,
+        "openness": 0.5893
+      }
+    },
+    {
+      "id": 3,
+      "name": "Dana",
+      "cluster": 0,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.8094,
+        "emotionality": 0.0065,
+        "extraversion": 0.8058,
+        "agreeableness": 0.6981,
+        "conscientiousness": 0.3403,
+        "openness": 0.1555
+      }
+    },
+    {
+      "id": 4,
+      "name": "Eden",
+      "cluster": 0,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.9572,
+        "emotionality": 0.3366,
+        "extraversion": 0.0927,
+        "agreeableness": 0.0967,
+        "conscientiousness": 0.8475,
+        "openness": 0.6037
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 5,
+    "n_edges": 2,
+    "n_clusters": 2,
+    "avg_degree": 0.8,
+    "hubs": {
+      "0": "Dana",
+      "1": "Casey"
+    }
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that\nmicroplastics found in common bottled water brands may be interfering with\nhuman hormone regulation. The study, which tracked 3,000 participants over\n5 years, found a statistically significant correlation between bottled water\nconsumption and disrupted cortisol and thyroid levels. The lead researcher\nstated the findings are 'concerning but not yet conclusive'. Health authorities\nhave not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.7,
+      "controversy": 0.4,
+      "fringe_score": 0.25,
+      "threat_level": 0.4,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        1,
+        0,
+        3,
+        2,
+        4
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "\"Bottled water debate brewing. A new study out of a US university has found a possible link between consumption of common bottled water brands and disruption of cortisol and thyroid hormone levels. The researchers tracked 3,000 participants for 5 years and observed a significant correlation between bottled water consumption and hormonal imbalances. More research, including replication and validation, is needed before jumping to conclusions. It's worth noting that health authorities have yet to comment on this finding, so I'm withholding judgment for now.\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.5,
+            "fringe_score": 0.3,
+            "threat_level": 0.2,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "retweet",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "like",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 1
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        4,
+        2,
+        1,
+        3,
+        0
+      ],
+      "events": [
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "post_1",
+          "new_post_id": "post_2",
+          "new_post_text": "\"A 'possible link' might be an understatement. 3,000 participants over 5 years show a 'significant correlation' between bottled water and hormone disruption. It's only a matter of time before our kids start growing third nipples and turning into frogs. Time to ditch the plastic bottles and go back to tap water, or risk facing the unknown consequences. #BottledWaterIsPoison\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.6,
+            "fringe_score": 0.8,
+            "threat_level": 0.9,
+            "generation": 2,
+            "source_post_id": "post_1"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "post_2",
+          "new_post_id": "post_3",
+          "new_post_text": "\"This post is a great example of how sensationalism can trump scientific rigor. A 'significant correlation' doesn't automatically imply causation, and the researchers themselves described their findings as 'concerning but not yet conclusive'. Let's not jump to conclusions based on limited data and hypotheticals. #ScienceBeforeHysteria\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.8,
+            "fringe_score": 0.1,
+            "threat_level": 0.3,
+            "generation": 3,
+            "source_post_id": "post_2"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_4",
+          "new_post_text": "\"Study suggests microplastics in bottled water may be linked to hormonal imbalances. However, key details are being glossed over - notably, the lack of a clear mechanism for how microplastics could cause such disruptions. Let's focus on rigor over speculation and see what more research reveals. #BottledWater #Science\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.6,
+            "fringe_score": 0.8,
+            "threat_level": 0.2,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "report",
+          "source_post_id": "post_4",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "quote_tweet",
+          "source_post_id": "post_2",
+          "new_post_id": "post_5",
+          "new_post_text": "\"'Correlation does not imply causation' is a vital phrase to remember when looking at this study. While the researchers found an interesting link, further investigation is needed to establish a clear cause-and-effect relationship. Let's wait for more concrete evidence before making drastic changes to our hydration habits. #TapWaterVsBottledWater #ScienceOverHysteria\"",
+          "new_signals": {
+            "emotional_charge": 0.5,
+            "controversy": 0.15,
+            "fringe_score": 0.0,
+            "threat_level": 0.0,
+            "generation": 3,
+            "source_post_id": "post_2"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "quote_tweet",
+          "source_post_id": "post_3",
+          "new_post_id": "post_6",
+          "new_post_text": "\"Spot on. It's refreshing to see people calling out sensationalism and encouraging a more measured approach to scientific findings. While the study is intriguing, let's keep perspective and not overreact to the results. More rigorous testing and evidence are needed. #ScienceOverSpeculation\"",
+          "new_signals": {
+            "emotional_charge": 0.7,
+            "controversy": 0.2,
+            "fringe_score": 0.0,
+            "threat_level": 0.0,
+            "generation": 4,
+            "source_post_id": "post_3"
+          }
+        }
+      ],
+      "new_posts_this_step": 5
+    },
+    {
+      "step": 3,
+      "agent_order": [
+        2,
+        3,
+        0,
+        4,
+        1
+      ],
+      "events": [
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "post_4",
+          "new_post_id": "post_7",
+          "new_post_text": "\"Just got schooled in 'science.' Meanwhile, real people are drinking toxic water and risking serious health issues. The fine print is irrelevant when the facts scream at us - hundreds of studies showing plastic's devastating impact. Stay woke, sheeple. #ScienceIsForTheElite #TapWaterRevolution\"",
+          "new_signals": {
+            "emotional_charge": 0.83,
+            "controversy": 0.88,
+            "fringe_score": 0.55,
+            "threat_level": 0.62,
+            "generation": 2,
+            "source_post_id": "post_4"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_6",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "post_3",
+          "new_post_id": "post_8",
+          "new_post_text": "\"Jump to conclusions? I think the scientists are being too cautious. The truth is, they're hiding behind their 'concerning but not yet conclusive' label. We all know the real takeaway - bottled water is poisoning our kids. Don't let the 'experts' fool you. #BottledWaterIsToxic #ScienceOnTheSideOfThePeople\"",
+          "new_signals": {
+            "emotional_charge": 0.93,
+            "controversy": 0.83,
+            "fringe_score": 0.73,
+            "threat_level": 0.73,
+            "generation": 4,
+            "source_post_id": "post_3"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "quote_tweet",
+          "source_post_id": "post_8",
+          "new_post_id": "post_9",
+          "new_post_text": "\"I strongly disagree. It's exactly this kind of speculation that undermines the scientific process. Let's not jump to unsubstantiated claims just because a study hints at something interesting. We need evidence-based conclusions, not sensationalism and unfounded assertions. #ScienceOverSpeculation #LetTheEvidenceSpeak\"",
+          "new_signals": {
+            "emotional_charge": 0.7,
+            "controversy": 0.8,
+            "fringe_score": 0.2,
+            "threat_level": 0.3,
+            "generation": 5,
+            "source_post_id": "post_8"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "quote_tweet",
+          "source_post_id": "post_7",
+          "new_post_id": "post_10",
+          "new_post_text": "\"Dismissing 'fine print' & cherry-picking studies doesn't help the conversation. Where's the concrete evidence to back claims of 'toxic water' and 'devastating impact'? Let's have a nuanced discussion, not emotional appeals. We need reliable sources, not sensationalism. Can we agree on that? #ScienceOverEmotion #FactCheckingMatters\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.7,
+            "fringe_score": 0.0,
+            "threat_level": 0.3,
+            "generation": 3,
+            "source_post_id": "post_7"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "new_post",
+          "source_post_id": "post_2",
+          "new_post_id": "post_11",
+          "new_post_text": "\"I've been seeing a lot of panic posts about a recent study linking bottled water consumption to hormonal imbalances. While the study found a correlation, it's essential to note that correlation does not imply causation. Researchers themselves described the findings as 'concerning but not conclusive.' Before we start sounding the alarm, let's wait for more robust evidence to come in. Let's not jump to unfounded conclusions and share unverified information. #StayInformed #ScienceAhead\"",
+          "new_signals": {
+            "emotional_charge": 0.5,
+            "controversy": 0.1,
+            "fringe_score": 0.4,
+            "threat_level": 0.3,
+            "generation": 3,
+            "source_post_id": "post_2"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "post_8",
+          "new_post_id": "post_12",
+          "new_post_text": "\"Some people are reading more into a recent study on bottled water than the researchers themselves are comfortable with. The study did find a correlation between bottled water consumption and hormonal imbalances in a group of 3,000 participants, but let's not forget the researchers emphasized the need for further investigation and even said the findings aren't conclusive yet. I'd like to see more concrete evidence before drawing any conclusions - after all, correlation doesn't imply causation.\"",
+          "new_signals": {
+            "emotional_charge": 0.5,
+            "controversy": 0.5,
+            "fringe_score": 0.3,
+            "threat_level": 0.1,
+            "generation": 5,
+            "source_post_id": "post_8"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "post_7",
+          "new_post_id": "post_13",
+          "new_post_text": "\"Conflation, not critical thinking. Hundreds of studies don't equal irrefutable evidence. This tweet oversimplifies complex science & cherry-picks to justify a pre-existing agenda, rather than engaging with nuance and ambiguity. The 'facts screaming' are just as often misinterpreted as misleading. #ScienceBeforeHysteria\"",
+          "new_signals": {
+            "emotional_charge": 0.87,
+            "controversy": 0.93,
+            "fringe_score": 0.02,
+            "threat_level": 0.0,
+            "generation": 3,
+            "source_post_id": "post_7"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "post_11",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 7
+    }
+  ]
+}
