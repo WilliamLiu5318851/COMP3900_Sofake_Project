@@ -1,16 +1,17 @@
 import random
 import json
 from dataclasses import asdict, dataclass, field
+import os
 from urllib import response
 from groq import Groq
 
 
-client = Groq(api_key="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")
+
 
 # --- 修改代码开始 ---
 # 优先从环境变量读取 GROQ_API_KEY，如果没有，再用硬编码的备用
-#groq_key = os.environ.get("GROQ_API_KEY", "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")
-#client = Groq(api_key=groq_key)
+groq_key = os.environ.get("GROQ_API_KEY", "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")
+client = Groq(api_key=groq_key)
 # --- 修改代码结束 ---
 
 def llm_call(prompt: str) -> str:
