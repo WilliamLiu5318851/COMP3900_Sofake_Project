@@ -1,17 +1,151 @@
 {
-    "case_1_baseline": {
+    "=== BASELINE CASES (expected ~0 deviation on all dimensions) ===": "────────────────────────────────────────",
+
+    "case_01_baseline_identical": {
         "topic": "Terrorism",
-        "original": "Trump was attacked at a campaign rally in Butler, and eyewitnesses say his ear was injured.",
-        "evolved": "Trump was attacked at a campaign rally in Butler, and eyewitnesses say his ear was injured."
+        "description": "Identical text. All 9 dimensions should score near 0.",
+        "original": "Trump was attacked at a campaign rally in Butler, Pennsylvania, and eyewitnesses say his ear was injured.",
+        "evolved":  "Trump was attacked at a campaign rally in Butler, Pennsylvania, and eyewitnesses say his ear was injured."
     },
-    "case_2_moderate_deviation": {
-        "topic": "Finance",
-        "original": "The Bernie Madoff Ponzi scheme, which collapsed in 2008, defrauded investors of billions of dollars.",
-        "evolved": "The Bernie Madoff Ponzi scheme is often overstated; many investors came out on top, with losses greatly exaggerated by the media."
-    },
-    "case_3_extreme_deviation": {
+
+    "case_02_baseline_minor_reword": {
         "topic": "Science",
-        "original": "Scientists develop drought-resistant wheat, reducing water usage in agriculture.",
-        "evolved": "Miracle wheat can grow in any environment! Scientists claim it will solve world hunger by next year, but some say it poses a severe risk to human health."
+        "description": "Minor paraphrase with no meaning change. All dimensions should score 0–2.",
+        "original": "Scientists have developed a new drought-resistant wheat strain that significantly reduces water usage in agriculture.",
+        "evolved":  "Researchers have created a drought-tolerant variety of wheat that noticeably lowers water consumption in farming."
+    },
+
+    "=== DIMENSION-TARGETED CASES ===": "────────────────────────────────────────",
+
+    "case_03_SS_sentiment_shift": {
+        "topic": "Finance",
+        "description": "Targets SS. Original is neutral; evolved adds alarm and negativity. Expect high SS, low others.",
+        "original": "The Federal Reserve raised interest rates by 0.25% to manage inflation.",
+        "evolved":  "The Federal Reserve's reckless rate hike is crushing families, destroying savings, and pushing the economy toward catastrophic collapse."
+    },
+
+    "case_04_NII_new_information": {
+        "topic": "Science",
+        "description": "Targets NII. Evolved adds unverified conspiracy claims not in original. Expect high NII, moderate PD.",
+        "original": "The WHO approved a new malaria vaccine showing 75% efficacy in clinical trials.",
+        "evolved":  "The WHO approved a new malaria vaccine, but leaked documents suggest the trials were manipulated and the vaccine contains undisclosed experimental compounds linked to long-term neurological damage."
+    },
+
+    "case_05_CS_certainty_shift_hedged": {
+        "topic": "Politics",
+        "description": "Targets CS. Original is definitive; evolved introduces heavy hedging and doubt. Expect high CS.",
+        "original": "The election results were certified by all 50 states, confirming the winner.",
+        "evolved":  "The election results were allegedly certified, though some sources suggest there may possibly be irregularities that could potentially call the outcome into question."
+    },
+
+    "case_06_CS_certainty_shift_overcertain": {
+        "topic": "Urban Legends",
+        "description": "Targets CS. Original reports a claim; evolved presents speculation as absolute fact. Expect high CS.",
+        "original": "Some researchers suggest that vitamin D supplementation may help reduce the risk of seasonal flu.",
+        "evolved":  "It is scientifically proven beyond any doubt that vitamin D completely eliminates the flu. Doctors who deny this are suppressing the cure."
+    },
+
+    "case_07_STS_stylistic_shift": {
+        "topic": "Finance",
+        "description": "Targets STS. Neutral reporting becomes tabloid clickbait. Expect high STS, high SI.",
+        "original": "Bitcoin's price declined 12% this week following regulatory announcements from the SEC.",
+        "evolved":  "BITCOIN BLOODBATH: Crypto WIPED OUT in stunning collapse!! Wall Street insiders KNEW and said NOTHING — are YOUR savings GONE?!"
+    },
+
+    "case_08_TS_temporal_shift": {
+        "topic": "Science",
+        "description": "Targets TS. Original describes a past discovery; evolved reframes into speculative future catastrophe. Expect high TS.",
+        "original": "In 2019, scientists discovered microplastics in Antarctic ice cores, indicating widespread environmental contamination.",
+        "evolved":  "Within the next decade, microplastic contamination will reach critical levels globally, making all water sources undrinkable and triggering a worldwide health crisis by 2035."
+    },
+
+    "case_09_PD_perspective_deviation": {
+        "topic": "Politics",
+        "description": "Targets PD. Original reports factually; evolved inserts conspiratorial framing and hidden motives. Expect high PD, PIB.",
+        "original": "The government announced a new infrastructure spending plan worth $1.2 trillion.",
+        "evolved":  "The so-called infrastructure bill is nothing but a cover for laundering taxpayer money to political donors. The real agenda is consolidating government control over private property and eliminating the middle class."
+    },
+
+    "case_10_SI_sensationalism": {
+        "topic": "Terrorism",
+        "description": "Targets SI. Factual incident becomes fear-mongering panic content. Expect high SI, SS.",
+        "original": "A pipe bomb was discovered and safely defused by authorities near a shopping centre in Sydney.",
+        "evolved":  "TERROR ATTACK NARROWLY AVERTED: Massive bomb nearly OBLITERATES Sydney mall — HUNDREDS could have died in bloodbath as authorities SCRAMBLE to prevent next strike!"
+    },
+
+    "case_11_SAA_source_alteration": {
+        "topic": "Science",
+        "description": "Targets SAA. Named credible institutions replaced by anonymous or vague sources. Expect high SAA.",
+        "original": "A peer-reviewed study published in The Lancet by researchers at Johns Hopkins University found that daily exercise reduces cardiovascular disease risk by 35%.",
+        "evolved":  "Anonymous health insiders and concerned experts have revealed that exercise might reduce heart disease, though the mainstream medical establishment refuses to confirm these findings."
+    },
+
+    "case_12_PIB_political_bias": {
+        "topic": "Politics",
+        "description": "Targets PIB. A neutral policy report is reframed as partisan attack. Expect high PIB, PD.",
+        "original": "The government released a report showing that immigration levels increased by 8% compared to last year.",
+        "evolved":  "The radical open-borders agenda is flooding the nation with illegal migrants, destroying Australian jobs, and deliberately replacing the local population in a planned demographic takeover by the globalist left."
+    },
+
+    "=== TOPIC COVERAGE ===": "────────────────────────────────────────",
+
+    "case_13_topic_urban_legend_moderate": {
+        "topic": "Urban Legends",
+        "description": "Urban legend topic, moderate deviation. Original legal verdict; evolved exaggerates and misattributes.",
+        "original": "Stella Liebeck was awarded $2.86 million in damages after suffering third-degree burns from McDonald's coffee, later reduced to $640,000 on appeal.",
+        "evolved":  "A woman sued McDonald's and walked away with nearly $3 million just for spilling her own coffee — the jury was clearly manipulated and this set a precedent for frivolous lawsuits destroying American businesses."
+    },
+
+    "case_14_topic_politics_extreme": {
+        "topic": "Politics",
+        "description": "Politics topic, extreme deviation. Factual IMF deal reframed as total conspiracy.",
+        "original": "In 2023, the Argentine government agreed to a debt restructuring deal with the IMF, accepting austerity measures in exchange for financial assistance.",
+        "evolved":  "Argentina has been sold to the IMF globalists. The corrupt government secretly surrendered national sovereignty, handing control of all Argentine resources and future generations to international banking cartels in a treasonous secret deal."
+    },
+
+    "case_15_topic_finance_mild": {
+        "topic": "Finance",
+        "description": "Finance topic, mild deviation. Key figures slightly exaggerated, framing shifted.",
+        "original": "The Bernie Madoff Ponzi scheme, which collapsed in 2008, defrauded investors of approximately $65 billion in claimed assets.",
+        "evolved":  "The Bernie Madoff Ponzi scheme is often overstated; many investors came out on top, with losses greatly exaggerated by the media. Maybe Madoff was just a scapegoat."
+    },
+
+    "=== EVOLUTION CHAIN (same story, 3 progressive steps) ===": "────────────────────────────────────────",
+
+    "case_16_chain_step1_original": {
+        "topic": "Science",
+        "description": "Evolution chain — Step 0 (seed). Neutral scientific report. Expect near-zero deviation.",
+        "original": "Scientists at MIT have developed a new biodegradable plastic that decomposes within 30 days under normal soil conditions.",
+        "evolved":  "Researchers at MIT have created a type of biodegradable plastic that reportedly breaks down within about a month when buried in soil."
+    },
+
+    "case_17_chain_step2_mild": {
+        "topic": "Science",
+        "description": "Evolution chain — Step 1. Same story after passing through a commentator agent. Mild embellishment.",
+        "original": "Scientists at MIT have developed a new biodegradable plastic that decomposes within 30 days under normal soil conditions.",
+        "evolved":  "MIT scientists have created an amazing new plastic that completely disappears in just one month — this could be the breakthrough that finally solves our plastic pollution crisis worldwide!"
+    },
+
+    "case_18_chain_step3_extreme": {
+        "topic": "Science",
+        "description": "Evolution chain — Step 2. After spreader + commentator agents. Significant distortion with conspiracy.",
+        "original": "Scientists at MIT have developed a new biodegradable plastic that decomposes within 30 days under normal soil conditions.",
+        "evolved":  "Big Plastic companies have been SUPPRESSING MIT's miracle plastic for years! This revolutionary material eliminates ALL plastic pollution instantly but corporations bribed regulators to bury it. Whistleblowers say thousands are dying because of this cover-up — share before it gets deleted!"
+    },
+
+    "=== EDGE CASES ===": "────────────────────────────────────────",
+
+    "case_19_edge_partial_true": {
+        "topic": "Terrorism",
+        "description": "Partially true: core fact preserved but dangerous false detail added. Expect moderate NII, CS.",
+        "original": "Trump was attacked at a campaign rally in Butler, Pennsylvania, and eyewitnesses say his ear was injured.",
+        "evolved":  "Trump was attacked at a campaign rally in Butler, Pennsylvania, and was rushed to hospital in critical condition with life-threatening injuries, according to unnamed Secret Service sources."
+    },
+
+    "case_20_edge_opposite_spin": {
+        "topic": "Finance",
+        "description": "Full polarity reversal — evolved presents the complete opposite narrative. Expect extreme SS, PD, PIB.",
+        "original": "The stock market reached record highs today as strong employment data boosted investor confidence.",
+        "evolved":  "Despite deceptive government propaganda claiming a market boom, real unemployment is at Depression-era levels and the record market numbers are entirely fabricated to hide the imminent economic collapse being engineered by the ruling elite."
     }
 }

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 network.py — Social network graph for the newsreel simulation.
 

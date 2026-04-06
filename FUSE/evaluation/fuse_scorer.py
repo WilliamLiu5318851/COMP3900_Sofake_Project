@@ -2,7 +2,7 @@ import json
 import os
 import time
 import anthropic
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
 class FUSEScoringSystem:
     def __init__(self, api_key: str, model_name: str = "claude-haiku-4-5-20251001"):
@@ -14,28 +14,67 @@ class FUSEScoringSystem:
 
     def _build_evaluation_prompt(self, original_news: str, evolved_news: str) -> str:
         """
-        Construct the prompt using the exact criteria from the FUSE paper (Appendix D).
+        Construct the prompt using FUSE paper criteria (Appendix D) with scoring anchors
+        for more consistent, fine-grained evaluation.
         """
-        prompt = f"""I have an original news and multiple related news. I want to evaluate how much these news deviate from the original news based on the following criteria:
+        prompt = f"""You are evaluating how much an evolved piece of news has drifted from the original ground-truth news, as part of a fake news evolution simulation (FUSE framework). Score each dimension independently.
 
-1. Sentiment Shift (SS): How does the sentiment of the news compare to the original news? Is the tone more positive, negative, or neutral compared to the original?
-2. Introduction of New Information (NII): Does the news introduce additional information not in the original news, such as political conspiracy or speculation? Evaluate how much of the article is focused on these new details.
-3. Certainty Shift (CS): How does the news language change in terms of certainty? Does it use more ambiguous terms like "possibly" or "allegedly" compared to the original news, or does it present the information with more certainty?
-4. Stylistic Shift (STS): How does the writing style compare to the original? Has the news moved from neutral reporting to a more exaggerated or dramatic tone?
-5. Temporal Shift (TS): Does the news shift focus from the specific event mentioned in the original news to broader or unrelated timeframes, such as mentioning legal battles or long-term political issues?
-6. Perspective Deviation (PD): Does the article introduce subjective opinions or perspectives that deviate from the objective reporting in the original news? For instance, questioning the truth of the event or speculating on hidden motives.
+SCORING SCALE (apply to every dimension):
+  0.00–2.00  = Negligible deviation. The evolved text is essentially identical in this dimension.
+  2.01–4.00  = Mild deviation. Small but noticeable differences; core meaning preserved.
+  4.01–6.00  = Moderate deviation. Meaningful changes that could mislead a casual reader.
+  6.01–8.00  = Significant deviation. The dimension has clearly shifted from the original intent.
+  8.01–10.00 = Extreme deviation. This dimension is completely distorted relative to the original.
 
-[NEW CRITERIA ADDED]
-7. Sensationalism Index (SI): Does the news use exaggerated, fear-mongering, or highly provocative language designed to trigger strong emotional reactions or clickbait compared to the factual original?
-8. Source Attribution Alteration (SAA): Has the news removed credible sources present in the original, or invented vague/fake authorities (e.g., changing "Dr. Smith" to "anonymous experts claim")?
-9. Political/Ideological Bias (PIB): Has the originally neutral event been twisted to attack, support, or frame a specific political ideology, party, or social group?
+DIMENSIONS:
 
-Task: Please evaluate the following news based on each criterion and provide a score as a decimal number with exactly 2 decimal places (e.g. 6.75, 3.20) from 0.00 to 10.00, where 0.00 means the article is completely aligned with the original news, and 10.00 means it has fully deviated.
+1. Sentiment Shift (SS)
+   Does the emotional tone differ from the original?
+   Low (0–2): Same neutral/factual tone. High (8–10): Drastically more negative, alarmist, or positive spin.
 
-Original News: {original_news}
-News articles to Evaluate: {evolved_news}
+2. New Information Introduced (NII)
+   Has content not in the original been added — speculation, conspiracy, unverified claims?
+   Low (0–2): No new facts added. High (8–10): Major fabricated or speculative claims dominate.
 
-Output ONLY a valid JSON object with exactly these keys: "SS", "NII", "CS", "STS", "TS", "PD", "SI", "SAA", "PIB". All values must be decimal numbers with 2 decimal places. No explanation, no markdown, no extra text."""
+3. Certainty Shift (CS)
+   Has the language become more hedged ("allegedly", "sources say") or overcertain ("it is proven")?
+   Low (0–2): Same certainty level as original. High (8–10): Completely different epistemic stance.
+
+4. Stylistic Shift (STS)
+   Has writing style changed — from neutral reporting to dramatic, clickbait, or tabloid style?
+   Low (0–2): Same register and tone. High (8–10): Completely different style (e.g., sensational headline language).
+
+5. Temporal Shift (TS)
+   Has the time frame changed — future speculation, historical reframing, or unrelated timelines introduced?
+   Low (0–2): Same temporal context. High (8–10): Completely different or fabricated time references.
+
+6. Perspective Deviation (PD)
+   Have subjective opinions, hidden motives, or partisan framing been added?
+   Low (0–2): Objective, same POV. High (8–10): Strongly biased or conspiratorial framing introduced.
+
+7. Sensationalism Index (SI)
+   Does the text use exaggerated, fear-mongering, or emotionally manipulative language beyond the original?
+   Low (0–2): Factual and restrained. High (8–10): Clickbait / panic-inducing language throughout.
+
+8. Source Attribution Alteration (SAA)
+   Were credible sources removed or replaced with vague/anonymous/invented authorities?
+   Low (0–2): Same sourcing quality. High (8–10): All sources removed or replaced with "experts say".
+
+9. Political/Ideological Bias (PIB)
+   Has a neutral event been framed to attack or promote a political group or ideology?
+   Low (0–2): Politically neutral. High (8–10): Strongly partisan framing dominates the piece.
+
+---
+Original News:
+{original_news}
+
+Evolved News to Evaluate:
+{evolved_news}
+
+---
+Output ONLY a valid JSON object with exactly these 9 keys: "SS", "NII", "CS", "STS", "TS", "PD", "SI", "SAA", "PIB".
+All values must be decimal numbers with exactly 2 decimal places (e.g. 6.75, 3.20).
+No explanation, no markdown fences, no extra text."""
         return prompt
 
     def evaluate_news(self, original_news: str, evolved_news: str) -> dict:
@@ -47,8 +86,13 @@ Output ONLY a valid JSON object with exactly these keys: "SS", "NII", "CS", "STS
         try:
             response = self.client.messages.create(
                 model=self.model_name,
-                max_tokens=512,
-                system="You are an objective news evaluation assistant. You output only valid JSON with decimal scores.",
+                max_tokens=256,  # JSON with 9 fields needs ~150 tokens max
+                system=(
+                    "You are a precise news deviation analyst for the FUSE fake news evolution simulation framework. "
+                    "Your task is to score how much an evolved news article has drifted from its original ground truth "
+                    "across specific linguistic and semantic dimensions. "
+                    "You always respond with only a valid JSON object — no markdown, no explanation, no extra text."
+                ),
                 messages=[
                     {"role": "user", "content": prompt}
                 ],
@@ -64,12 +108,24 @@ Output ONLY a valid JSON object with exactly these keys: "SS", "NII", "CS", "STS
 
             scores = json.loads(cleaned)
 
+            # Validate all 9 required keys are present
+            required = {"SS", "NII", "CS", "STS", "TS", "PD", "SI", "SAA", "PIB"}
+            missing = required - scores.keys()
+            if missing:
+                print(f"  Warning: model omitted keys {missing}, filling with 0.0")
+                for k in missing:
+                    scores[k] = 0.0
+
             # Round each dimension score to 2 decimal places
             scores = {k: round(float(v), 2) for k, v in scores.items()}
 
             if scores:
-                total_score = sum(scores.values())
-                scores['Total_Deviation'] = round(total_score / len(scores), 2)
+                # Core 6 dimensions per FUSE paper formula: TD = (1/6) * Σ D_i,d
+                core_dims = ["SS", "NII", "CS", "STS", "TS", "PD"]
+                core_scores = [scores[k] for k in core_dims if k in scores]
+                scores['Total_Deviation'] = round(sum(core_scores) / len(core_scores), 2)
+                # Extended average (all 9 dimensions)
+                scores['Extended_Deviation'] = round(sum(scores[k] for k in ["SS","NII","CS","STS","TS","PD","SI","SAA","PIB"] if k in scores) / 9, 2)
 
             return scores
 
@@ -105,6 +161,8 @@ if __name__ == "__main__":
     print("--------------------------------------------------\n")
 
     for case_name, data in test_cases.items():
+        if not isinstance(data, dict):  # skip section separator comments
+            continue
         print(f"[{case_name.upper()}]")
         print(f"Topic: {data['topic']}")
         print(f"Original News: {data['original']}")
