@@ -201,34 +201,25 @@ function RunActions({ canRun, loading, onRun }) {
   );
 }
 
-// ── Updated SimulationResult with charts ──────────────────────────────────────
+// ── Shared data helpers ───────────────────────────────────────────────────────
 
-function SimulationResult({ result }) {
-  const { run_log, signal_drift } = result;
+function useRunData(run_log) {
+  if (!run_log) return null;
+  const allEvents = run_log.steps.flatMap((s) => s.events);
+  const newPosts = allEvents.filter((e) => e.new_signals);
 
-  // Posts per step
   const stepData = run_log.steps.map((s) => ({
     name: `Step ${s.step}`,
     posts: s.new_posts_this_step,
   }));
 
-  // Actions breakdown
   const actionCounts = {};
-  run_log.steps.flatMap((s) => s.events).forEach((e) => {
-    actionCounts[e.action] = (actionCounts[e.action] || 0) + 1;
-  });
+  allEvents.forEach((e) => { actionCounts[e.action] = (actionCounts[e.action] || 0) + 1; });
   const actionData = Object.entries(actionCounts).map(([action, count]) => ({ action, count }));
 
-  // Signal drift by generation
-  const newPosts = run_log.steps.flatMap((s) => s.events.filter((e) => e.new_signals));
   const genMap = {};
   const gt = run_log.ground_truth.signals;
-  genMap[0] = {
-    ec: [gt.emotional_charge],
-    ct: [gt.controversy],
-    fr: [gt.fringe_score],
-    tl: [gt.threat_level],
-  };
+  genMap[0] = { ec: [gt.emotional_charge], ct: [gt.controversy], fr: [gt.fringe_score], tl: [gt.threat_level] };
   newPosts.forEach((e) => {
     const g = e.new_signals.generation;
     if (!genMap[g]) genMap[g] = { ec: [], ct: [], fr: [], tl: [] };
@@ -249,95 +240,162 @@ function SimulationResult({ result }) {
       "Threat level": +avg(genMap[g].tl).toFixed(2),
     }));
 
-  const textPosts = newPosts.filter((e) => e.new_post_text);
+  const maxGen = Math.max(...newPosts.map((e) => e.new_signals.generation), 0);
 
+  return { stepData, actionData, driftData, newPosts, maxGen, actionCounts };
+}
+
+function NoResultsYet() {
+  return (
+    <div className="callout">
+      No simulation run yet — go to New Simulation to run one first.
+    </div>
+  );
+}
+
+// ── Graph View — signal drift line chart ─────────────────────────────────────
+
+function GraphView({ simResult }) {
+  const d = useRunData(simResult?.run_log);
   return (
     <section className="card">
-      <h2 className="card__title">Simulation Results</h2>
+      <h2 className="card__title">Graph View</h2>
+      {!d ? <NoResultsYet /> : (
+        <>
+          <p className="hint" style={{ marginBottom: "1rem" }}>
+            Signal drift across generations — how emotional charge, controversy, fringe score, and
+            threat level evolve as the story propagates further from the ground truth.
+          </p>
+          <h3 className="subhead">Signal drift across generations</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={d.driftData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
+              <XAxis dataKey="gen" tick={{ fontSize: 12 }} />
+              <YAxis domain={[0, 1]} tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Legend />
+              <Line dataKey="Emotional charge" stroke="#BA7517" dot strokeWidth={2} />
+              <Line dataKey="Controversy" stroke="#7F77DD" dot strokeWidth={2} />
+              <Line dataKey="Fringe score" stroke="#D85A30" dot strokeWidth={2} />
+              <Line dataKey="Threat level" stroke="#E24B4A" dot strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </>
+      )}
+    </section>
+  );
+}
 
-      {/* Summary metrics */}
-      <div className="grid grid--2" style={{ marginBottom: "1rem" }}>
-        <div><span className="label">Total posts generated</span><div>{textPosts.length}</div></div>
-        <div><span className="label">Steps run</span><div>{run_log.steps.length}</div></div>
-        <div><span className="label">Agents</span><div>{run_log.agents.length}</div></div>
-        <div>
-          <span className="label">Max generation</span>
-          <div>{Math.max(...newPosts.map((e) => e.new_signals.generation), 0)}</div>
-        </div>
-      </div>
+// ── Overview Dashboard — metrics + bar charts ─────────────────────────────────
 
-      <div className="divider" />
+function OverviewDashboard({ simResult }) {
+  const d = useRunData(simResult?.run_log);
+  const run_log = simResult?.run_log;
+  return (
+    <>
+      <section className="card">
+        <h2 className="card__title">Overview Dashboard</h2>
+        {!d ? <NoResultsYet /> : (
+          <>
+            {/* Summary metrics */}
+            <div className="grid grid--2" style={{ marginBottom: "1rem" }}>
+              <div><span className="label">Total posts generated</span><div>{d.newPosts.length}</div></div>
+              <div><span className="label">Steps run</span><div>{run_log.steps.length}</div></div>
+              <div><span className="label">Agents</span><div>{run_log.agents.length}</div></div>
+              <div><span className="label">Max generation</span><div>{d.maxGen}</div></div>
+            </div>
 
-      {/* Posts per step chart */}
-      <h3 className="subhead">Posts generated per step</h3>
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={stepData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
-          <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-          <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-          <Tooltip />
-          <Bar dataKey="posts" fill="#1D9E75" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+            <div className="divider" />
 
-      <div className="divider" />
+            {/* Posts per step */}
+            <h3 className="subhead">Posts generated per step</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={d.stepData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Bar dataKey="posts" fill="#1D9E75" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
 
-      {/* Actions breakdown chart */}
-      <h3 className="subhead">Actions breakdown</h3>
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={actionData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
-          <XAxis dataKey="action" tick={{ fontSize: 12 }} />
-          <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-          <Tooltip />
-          <Bar dataKey="count" fill="#7F77DD" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+            <div className="divider" />
 
-      <div className="divider" />
-
-      {/* Signal drift chart */}
-      <h3 className="subhead">Signal drift across generations</h3>
-      <ResponsiveContainer width="100%" height={260}>
-        <LineChart data={driftData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
-          <XAxis dataKey="gen" tick={{ fontSize: 12 }} />
-          <YAxis domain={[0, 1]} tick={{ fontSize: 12 }} />
-          <Tooltip />
-          <Legend />
-          <Line dataKey="Emotional charge" stroke="#BA7517" dot strokeWidth={2} />
-          <Line dataKey="Controversy" stroke="#7F77DD" dot strokeWidth={2} />
-          <Line dataKey="Fringe score" stroke="#D85A30" dot strokeWidth={2} />
-          <Line dataKey="Threat level" stroke="#E24B4A" dot strokeWidth={2} />
-        </LineChart>
-      </ResponsiveContainer>
-
-      <div className="divider" />
-
-      {/* Post timeline */}
-      <h3 className="subhead">Post timeline ({textPosts.length})</h3>
-      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-        {run_log.steps.flatMap((s) =>
-          s.events
-            .filter((e) => e.new_post_text)
-            .map((e) => (
-              <div
-                key={e.new_post_id}
-                style={{ padding: "0.5rem 0", borderBottom: "1px solid var(--border)" }}
-              >
-                <div className="hint" style={{ marginBottom: "0.25rem" }}>
-                  Step {s.step} · {e.agent_name} · {e.action} · Gen {e.new_signals.generation}
-                  {" · "}
-                  EC {e.new_signals.emotional_charge.toFixed(2)}
-                  {" · "}
-                  CT {e.new_signals.controversy.toFixed(2)}
-                  {" · "}
-                  FR {e.new_signals.fringe_score.toFixed(2)}
-                  {" · "}
-                  TL {e.new_signals.threat_level.toFixed(2)}
-                </div>
-                <div>{e.new_post_text}</div>
-              </div>
-            ))
+            {/* Actions breakdown */}
+            <h3 className="subhead">Actions breakdown</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={d.actionData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
+                <XAxis dataKey="action" tick={{ fontSize: 12 }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#7F77DD" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </>
         )}
-      </div>
+      </section>
+    </>
+  );
+}
+
+// ── Saved Runs — full post timeline ──────────────────────────────────────────
+
+function SavedRuns({ savedRuns }) {
+  return (
+    <section className="card">
+      <h2 className="card__title">Saved Runs</h2>
+      {savedRuns.length === 0 ? (
+        <NoResultsYet />
+      ) : (
+        savedRuns.map((result, idx) => {
+          const { run_log } = result;
+          const textPosts = run_log.steps.flatMap((s) =>
+            s.events.filter((e) => e.new_post_text)
+          );
+          return (
+            <div key={run_log.run_id} style={{ marginBottom: idx < savedRuns.length - 1 ? "2rem" : 0 }}>
+              <div className="card__header" style={{ marginBottom: "0.75rem" }}>
+                <h3 className="subhead" style={{ margin: 0 }}>
+                  Run {savedRuns.length - idx}: {run_log.run_id}
+                </h3>
+                <div className="hint">
+                  {run_log.agents.length} agents · {run_log.steps.length} steps · seed {run_log.config.seed}
+                </div>
+              </div>
+
+              <div className="grid grid--2" style={{ marginBottom: "0.75rem" }}>
+                <div><span className="label">Posts generated</span><div>{textPosts.length}</div></div>
+                <div>
+                  <span className="label">Max generation</span>
+                  <div>{Math.max(...run_log.steps.flatMap(s => s.events.filter(e => e.new_signals).map(e => e.new_signals.generation)), 0)}</div>
+                </div>
+              </div>
+
+              <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+                {run_log.steps.flatMap((s) =>
+                  s.events
+                    .filter((e) => e.new_post_text)
+                    .map((e) => (
+                      <div
+                        key={e.new_post_id}
+                        style={{ padding: "0.5rem 0", borderBottom: "1px solid var(--border)" }}
+                      >
+                        <div className="hint" style={{ marginBottom: "0.25rem" }}>
+                          Step {s.step} · {e.agent_name} · {e.action} · Gen {e.new_signals.generation}
+                          {" · "}EC {e.new_signals.emotional_charge.toFixed(2)}
+                          {" · "}CT {e.new_signals.controversy.toFixed(2)}
+                          {" · "}FR {e.new_signals.fringe_score.toFixed(2)}
+                          {" · "}TL {e.new_signals.threat_level.toFixed(2)}
+                        </div>
+                        <div>{e.new_post_text}</div>
+                      </div>
+                    ))
+                )}
+              </div>
+
+              {idx < savedRuns.length - 1 && <div className="divider" style={{ marginTop: "1.5rem" }} />}
+            </div>
+          );
+        })
+      )}
     </section>
   );
 }
@@ -367,6 +425,7 @@ export default function App() {
   });
   const [loading, setLoading] = useState(false);
   const [simResult, setSimResult] = useState(null);
+  const [savedRuns, setSavedRuns] = useState([]);  // accumulates every completed run
   const [simError, setSimError] = useState(null);
 
   const withinLimit = groundTruth.length > 0 && groundTruth.length <= 6000;
@@ -392,7 +451,8 @@ export default function App() {
         throw new Error(err.detail || "Simulation failed");
       }
       const data = await res.json();
-      setSimResult(data);       // data = { run_log, signal_drift }
+      setSimResult(data);
+      setSavedRuns((prev) => [data, ...prev]);  // newest first
     } catch (e) {
       setSimError(e.message);
     } finally {
@@ -406,44 +466,40 @@ export default function App() {
       <main className="main">
         <Header title="SoFake — Fake News Evolution Simulator" />
         <div className="content">
+
           {page === "new" && (
             <>
               <GroundTruthUploader value={groundTruth} onChange={setGroundTruth} />
               <SimulationConfig config={config} setConfig={setConfig} />
               <RunActions canRun={withinLimit} loading={loading} onRun={handleRun} />
               {simError && <div className="callout callout--warn">Error: {simError}</div>}
-              {simResult && <SimulationResult result={simResult} />}
+              {simResult && (
+                <div className="callout">
+                  Simulation complete — view results in Graph View, Overview Dashboard, and Saved Runs.
+                </div>
+              )}
             </>
           )}
-          {page === "graph" && (
-            <PlaceholderPage title="Graph View">
-              Hook this to your run results and render an interactive network graph (nodes = agents,
-              edges = interactions). Add node-click details + step selection.
-            </PlaceholderPage>
-          )}
-          {page === "dashboard" && (
-            <PlaceholderPage title="Overview Dashboard">
-              Add drift-over-time chart, top distortion events, role contributions, and
-              per-dimension score breakdowns.
-            </PlaceholderPage>
-          )}
-          {page === "runs" && (
-            <PlaceholderPage title="Saved Runs">
-              List prior runs (Run ID, seed, topology, steps, date), with load/delete/export actions.
-            </PlaceholderPage>
-          )}
+
+          {page === "graph" && <GraphView simResult={simResult} />}
+
+          {page === "dashboard" && <OverviewDashboard simResult={simResult} />}
+
+          {page === "runs" && <SavedRuns savedRuns={savedRuns} />}
+
           {page === "settings" && (
             <PlaceholderPage title="Settings">
-              Store defaults (max chars, step limit, role presets, scoring weights). Add "Reset to
-              defaults".
+              Store defaults (max chars, step limit, role presets, scoring weights). Add "Reset to defaults".
             </PlaceholderPage>
           )}
+
           {page === "about" && (
             <PlaceholderPage title="About SoFake">
               Explain: no live detection, no scraping. It's a simulation tool to study how truth
               drifts through agent interactions.
             </PlaceholderPage>
           )}
+
         </div>
       </main>
     </div>
