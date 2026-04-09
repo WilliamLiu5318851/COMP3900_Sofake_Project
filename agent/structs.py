@@ -11,12 +11,11 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def llm_call(prompt: str) -> str:
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
 # ── Data Models ───────────────────────────────────────────────────────────────
-
 @dataclass
 class HEXACOProfile:
     honesty_humility: float
@@ -66,6 +65,7 @@ class Post:
     text: str
     signals: PostSignals
     parent_id: str | None = None
+    engagement: int = 0
 
 
 @dataclass
@@ -74,11 +74,12 @@ class Agent:
     name: str
     profile: HEXACOProfile
     memory: list[str] = field(default_factory=list)
+    seen_post_ids: set[str] = field(default_factory=set)
 
 
 @dataclass
 class AgentAction:
-    agent_id: str
+    agent_id: int
     action: str
     text: str | None
     source_post_id: str
