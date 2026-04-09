@@ -164,7 +164,9 @@ def generate_response(agent: Agent, post: Post, action: str, ground_truth: str) 
 def agent_process_post(agent: Agent, post: Post, ground_truth: str) -> AgentAction:
     probs = compute_action_probabilities(agent.profile, post.signals)
     action = sample_action(probs)
-
+    if action not in ("report, ignore"):
+        post.engagement += 1
+        
     text = None
     if action in ("quote_tweet", "comment", "new_post"):
         text = generate_response(agent, post, action, ground_truth)
@@ -213,7 +215,7 @@ def compute_action_probabilities(profile: HEXACOProfile, signals: PostSignals) -
 
     total = sum(weights.values())
     normalised = {k: (v / total) * p_engage for k, v in weights.items()}
-    normalised["ignore"] = p_ignore / 10
+    normalised["ignore"] = p_ignore / 5
     print(f"Computed action probabilities: {normalised}")
     return normalised
 
