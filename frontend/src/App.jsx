@@ -57,7 +57,6 @@ function Header({ title }) {
   return (
     <header className="header">
       <div className="header__left">
-        <LogoMark />
         <div>
           <h1 className="header__title">{title}</h1>
           <p className="header__subtitle">
@@ -104,7 +103,10 @@ function GroundTruthUploader({ value, onChange }) {
           <button
             className="btn btn--ghost"
             type="button"
-            onClick={() => onChange("Ground truth: The city council approved a $12M budget for park upgrades on March 3, 2026. The plan includes new lighting, paths, and playground repairs across three parks. Construction starts in June 2026.")}
+            onClick={() =>
+              onChange(`Scientists at a major US university have published a study suggesting that microplastics found in common bottled water brands may be interfering with human hormone regulation. The study, which tracked 3,000 participants over 5 years, found a statistically significant correlation between bottled water
+            consumption and disrupted cortisol and thyroid levels. The lead researcher stated the findings are 'concerning but not yet conclusive'. Health authorities have not yet issued any official guidance in response to the study.`)
+            }
           >
             Load Example
           </button>
