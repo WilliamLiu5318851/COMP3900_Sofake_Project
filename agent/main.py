@@ -34,7 +34,7 @@ def healthcheck():
     return {"status": "healthy"}
 
 
-@app.post("/api/simulate", response_model=SimulateResponse)
+@app.post("/api/simulate")
 def simulate(req: SimulateRequest):
     try:
         run_log, signal_drift = run_simulation(

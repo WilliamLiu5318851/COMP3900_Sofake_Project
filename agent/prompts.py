@@ -162,6 +162,7 @@ def generate_response(agent: Agent, post: Post, action: str, ground_truth: str) 
 
 
 def agent_process_post(agent: Agent, post: Post, ground_truth: str) -> AgentAction:
+    agent.seen_post_ids.add(post.id)
     probs = compute_action_probabilities(agent.profile, post.signals)
     action = sample_action(probs)
     if action not in ("report, ignore"):
