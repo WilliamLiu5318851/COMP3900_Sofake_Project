@@ -16,5 +16,4 @@ dist/
 # Docker
 *.log
 
-.claude
 .env
