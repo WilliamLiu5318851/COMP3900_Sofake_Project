@@ -8,6 +8,7 @@ from database.db import init_db
 from services.news_service import create_news, list_news
 
 AGENT_URL = os.getenv("AGENT_URL", "http://agent:8001")
+FUSE_URL = os.getenv("FUSE_URL", "http://fuse:8002")
 
 app = FastAPI()
 
@@ -77,7 +78,47 @@ def simulate(req: SimulateRequest):
                 json=req.model_dump(),
             )
             response.raise_for_status()
-            return response.json()
+            sim_result = response.json()
+
+        # Extract evolved posts from run_log
+        run_log = sim_result.get("run_log", {})
+        evolved_posts = []
+        for step in run_log.get("steps", []):
+            for event in step.get("events", []):
+                text = event.get("new_post_text")
+                if text:
+                    evolved_posts.append({
+                        "post_id": event.get("new_post_id"),
+                        "author": event.get("agent_name"),
+                        "action": event.get("action"),
+                        "step": step.get("step"),
+                        "text": text,
+                    })
+
+        # Sample up to 20 posts evenly to limit FUSE API calls
+        MAX_FUSE_EVALS = 20
+        if len(evolved_posts) > MAX_FUSE_EVALS:
+            step_size = len(evolved_posts) // MAX_FUSE_EVALS
+            sampled = evolved_posts[::step_size][:MAX_FUSE_EVALS]
+        else:
+            sampled = evolved_posts
+
+        # Call FUSE to score each sampled post against the ground truth
+        fuse_evaluations = []
+        with httpx.Client(timeout=60.0) as client:
+            for post in sampled:
+                try:
+                    fuse_resp = client.post(
+                        f"{FUSE_URL}/api/evaluate",
+                        json={"original": req.ground_truth, "evolved": post["text"]},
+                    )
+                    if fuse_resp.status_code == 200:
+                        fuse_evaluations.append({**post, "fuse_scores": fuse_resp.json()})
+                except Exception:
+                    pass
+
+        return {**sim_result, "fuse_evaluations": fuse_evaluations}
+
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Agent service timed out")
     except httpx.HTTPStatusError as e:
