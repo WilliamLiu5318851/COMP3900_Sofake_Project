@@ -287,6 +287,58 @@ function GraphView({ simResult }) {
   );
 }
 
+// ── FUSE Results ──────────────────────────────────────────────────────────────
+
+const FUSE_DIMS = ["SS", "NII", "CS", "STS", "TS", "PD", "SI", "SAA", "PIB"];
+const FUSE_LABELS = {
+  SS: "Sentiment Shift", NII: "New Info", CS: "Certainty Shift",
+  STS: "Stylistic Shift", TS: "Temporal Shift", PD: "Perspective Dev.",
+  SI: "Sensationalism", SAA: "Source Alteration", PIB: "Political Bias",
+};
+
+function FuseResults({ fuseEvaluations }) {
+  const [selected, setSelected] = useState(0);
+  if (!fuseEvaluations || fuseEvaluations.length === 0) {
+    return <div className="hint">No FUSE evaluations available.</div>;
+  }
+  const item = fuseEvaluations[selected];
+  const scores = item.fuse_scores;
+  const barData = FUSE_DIMS.map((k) => ({ dim: FUSE_LABELS[k], score: scores[k] ?? 0 }));
+  return (
+    <>
+      <div className="row" style={{ marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.4rem" }}>
+        {fuseEvaluations.map((e, i) => (
+          <button
+            key={e.post_id}
+            className={`btn btn--ghost${i === selected ? " is-active" : ""}`}
+            style={{ fontSize: "0.75rem", padding: "0.2rem 0.6rem" }}
+            onClick={() => setSelected(i)}
+            type="button"
+          >
+            Step {e.step} · {e.author}
+          </button>
+        ))}
+      </div>
+      <div className="hint" style={{ marginBottom: "0.5rem" }}>
+        <strong>{item.author}</strong> · {item.action} · Step {item.step}
+        {" · "}Total Deviation: <strong>{scores.Total_Deviation}</strong>
+        {" · "}Extended: <strong>{scores.Extended_Deviation}</strong>
+      </div>
+      <div className="hint" style={{ marginBottom: "0.75rem", fontStyle: "italic" }}>
+        "{item.text}"
+      </div>
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={barData} margin={{ top: 4, right: 8, bottom: 40, left: 0 }}>
+          <XAxis dataKey="dim" tick={{ fontSize: 11 }} angle={-30} textAnchor="end" interval={0} />
+          <YAxis domain={[0, 10]} tick={{ fontSize: 12 }} />
+          <Tooltip />
+          <Bar dataKey="score" fill="#D85A30" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </>
+  );
+}
+
 // ── Overview Dashboard — metrics + bar charts ─────────────────────────────────
 
 function OverviewDashboard({ simResult }) {
@@ -331,6 +383,12 @@ function OverviewDashboard({ simResult }) {
                 <Bar dataKey="count" fill="#7F77DD" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+
+            <div className="divider" />
+
+            {/* FUSE deviation scores */}
+            <h3 className="subhead">FUSE Deviation Scores</h3>
+            <FuseResults fuseEvaluations={simResult?.fuse_evaluations} />
           </>
         )}
       </section>
