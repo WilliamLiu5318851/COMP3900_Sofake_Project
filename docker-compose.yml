@@ -15,7 +15,7 @@ services:
       - AGENT_URL=http://agent:8001
       - FUSE_URL=http://fuse:8002
     ports:
-      - "8000:8000"
+      - "9000:8000"
     volumes:
       - ./backend/news.db:/app/news.db
     networks:
@@ -28,7 +28,7 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY}
       - DB_PATH==/app/news.db
     ports:
-      - "8001:8001"
+      - "9001:8001"
     volumes:
       - ./agent/runs:/app/runs 
       - ./backend/news.db:/app/news.db
@@ -41,7 +41,7 @@ services:
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     ports:
-      - "8002:8002"
+      - "9002:8002"
     networks:
       - sofake-network
 
