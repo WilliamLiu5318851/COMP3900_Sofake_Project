@@ -1,208 +1,332 @@
 """
 network.py — Social network graph for the newsreel simulation.
 
-Topology: Hybrid
-  - Intra-cluster: dense Erdős–Rényi subgraphs
-  - Inter-cluster: scale-free preferential attachment (Barabási–Albert style)
+Topology: Directed hybrid
+  - Hubs: top-N agents by extraversion globally (N ≈ total / agents_per_cluster)
+  - Agent → hub following: each agent follows hubs with probability proportional
+    to cosine similarity of their HEXACO profiles
+  - Hub → agent follow-back: each hub follows back the top-K followers ranked by
+    extraversion, where K = ceil(0.1 * |top-extraversion decile of that hub's
+    followers|). Hubs are selective — they only follow a fraction of high-
+    extraversion followers back.
+  - Hub ↔ hub edges: mutual (both directions added), scale-free BA-style
+  - Weak ties: directed, extraversion-weighted, skipping hub-hub pairs
 
-Design choices:
-  - Number of clusters scales with agent count (~1 per 10 agents)
-  - Cluster membership is biased by agent extraversion (extraverts attract more)
-  - Each cluster has one hub agent (highest extraversion) who seeds the ground truth
-  - Edges are undirected and unweighted
+Graph type: nx.DiGraph
+  - Edge A → B means "A follows B" (A sees B's posts)
+  - Feed visibility: 2-hop successor walk (you see posts from people you follow,
+    and from people they follow)
+
+SocialNetwork fields:
+  - clusters:      hub_id -> list[Agent] who follow that hub (for logging/viz)
+  - hubs:          hub_id -> Agent  (hub_id == agent.id for global hubs)
+  - agent_cluster: agent_id -> hub_id of their most-similar hub (primary hub)
 """
 
 import math
 import random
-from dataclasses import dataclass
-
 import networkx as nx
-
+from dataclasses import dataclass, field
 from structs import Agent
+from prompts import *
 
 
 # ── Network Config ─────────────────────────────────────────────────────────────
 
 @dataclass
 class NetworkConfig:
-    intra_cluster_p: float = 0.6   # Edge probability within a cluster
-    inter_cluster_m: int = 2       # Edges each hub forms to existing hubs (BA-style)
-    agents_per_cluster: int = 10   # Target cluster size; controls cluster count
+    agents_per_cluster: int = 10   # Controls how many hubs are elected
+    inter_cluster_m: int   = 2     # BA-style edges per hub to other hubs
+    p_weak: float          = 0.02  # Base probability of weak tie edges
+    intra_cluster_p: float    = 0.5   # Probability of agent following their primary hub
 
 
-# ── Cluster Assignment ─────────────────────────────────────────────────────────
+# ── HEXACO Cosine Similarity ───────────────────────────────────────────────────
 
-def assign_clusters(agents: list[Agent], agents_per_cluster: int) -> dict[int, list[Agent]]:
+def _profile_vec(agent: Agent) -> list[float]:
+    p = agent.profile
+    return [
+        p.honesty_humility,
+        p.emotionality,
+        p.extraversion,
+        p.agreeableness,
+        p.conscientiousness,
+        p.openness,
+    ]
+
+
+def cosine_similarity(a: Agent, b: Agent) -> float:
     """
-    Assign agents to clusters biased by extraversion.
-
-    High-extraversion agents are more likely to end up in larger, more
-    connected clusters. Each cluster accretes agents proportionally to the
-    mean extraversion of its current members (rich-get-richer within clusters).
-
-    Returns a mapping of cluster_id -> list[Agent].
+    Cosine similarity between two agents' HEXACO profiles.
+    Returns a value in [0, 1] (profiles are non-negative, so dot ≥ 0).
+    A score of 1.0 = identical trait vector; 0.0 = orthogonal.
     """
-    n_clusters = max(2, math.ceil(len(agents) / agents_per_cluster))
-
-    # Sort descending so high-extraversion agents anchor each cluster first.
-    sorted_agents = sorted(agents, key=lambda a: a.profile.extraversion, reverse=True)
-
-    clusters: dict[int, list[Agent]] = {i: [] for i in range(n_clusters)}
-
-    for i in range(min(n_clusters, len(sorted_agents))):
-        clusters[i].append(sorted_agents[i])
-
-    for agent in sorted_agents[n_clusters:]:
-        weights = [
-            sum(m.profile.extraversion for m in members) / len(members) if members else 0.5
-            for members in clusters.values()
-        ]
-        chosen = random.choices(list(clusters.keys()), weights=weights, k=1)[0]
-        clusters[chosen].append(agent)
-
-    return {cid: members for cid, members in clusters.items() if members}
+    va = _profile_vec(a)
+    vb = _profile_vec(b)
+    dot  = sum(x * y for x, y in zip(va, vb))
+    norm_a = math.sqrt(sum(x * x for x in va))
+    norm_b = math.sqrt(sum(x * x for x in vb))
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return dot / (norm_a * norm_b)
 
 
-# ── Graph Construction ─────────────────────────────────────────────────────────
+# ── Hub Election ───────────────────────────────────────────────────────────────
 
-def _cluster_hub(members: list[Agent]) -> Agent:
-    """Return the highest-extraversion agent in a cluster — the hub."""
-    return max(members, key=lambda a: a.profile.extraversion)
-
-
-def _build_intra_cluster_edges(G: nx.Graph, members: list[Agent], p: float) -> None:
+def elect_hubs(agents: list[Agent], agents_per_cluster: int) -> list[Agent]:
     """
-    Wire a cluster's agents with Erdős–Rényi random edges.
+    Elect the top-N agents by extraversion as global hubs.
+    N = ceil(total_agents / agents_per_cluster), minimum 2.
 
-    Delegates edge sampling to nx.erdos_renyi_graph, relabels its integer
-    node indices to agent IDs, then merges the result into G.
+    These agents are the broadcast anchors of the network — they seed the
+    ground truth and gain followers based on profile similarity.
     """
-    node_ids = [a.id for a in members]
-    er = nx.erdos_renyi_graph(len(node_ids), p)
-    G.update(nx.relabel_nodes(er, dict(enumerate(node_ids))))
+    n_hubs = max(2, math.ceil(len(agents) / agents_per_cluster))
+    sorted_by_ext = sorted(agents, key=lambda a: a.profile.extraversion, reverse=True)
+    return sorted_by_ext[:n_hubs]
 
 
-def _build_inter_cluster_edges(
-    G: nx.Graph,
-    clusters: dict[int, list[Agent]],
+# ── Agent → Hub Following ──────────────────────────────────────────────────────
+
+def build_agent_hub_edges(
+    G: nx.DiGraph,
+    agents: list[Agent],
+    hubs: list[Agent],
+) -> dict[int, list[Agent]]:
+    """
+    Each non-hub agent independently decides which hubs to follow.
+
+    For each hub, an agent's follow probability is proportional to their
+    cosine similarity to that hub (softmax-style over the hub set):
+
+        P(agent follows hub_i) = sim(agent, hub_i) / sum(sim(agent, hub_j))
+
+    Each hub is sampled independently using that probability, so an agent
+    can follow zero, one, or all hubs. This creates overlapping soft
+    communities rather than hard cluster assignments.
+
+    Returns hub_id -> list[Agent] mapping (agents who follow that hub).
+    """
+    hub_ids = {h.id for h in hubs}
+    hub_followers: dict[int, list[Agent]] = {h.id: [] for h in hubs}
+
+    for agent in agents:
+        if agent.id in hub_ids:
+            continue  # hubs don't follow themselves via this mechanism
+
+        sims = [cosine_similarity(agent, hub) for hub in hubs]
+        total_sim = sum(sims)
+
+        for hub, sim in zip(hubs, sims):
+            # Normalised probability: how much does this agent match this hub?
+            p_follow = (sim / total_sim) if total_sim > 0 else (1.0 / len(hubs))
+            if random.random() < p_follow:
+                G.add_edge(agent.id, hub.id)   # agent follows hub
+                hub_followers[hub.id].append(agent)
+
+    return hub_followers
+
+
+# ── Hub → Agent Follow-back ────────────────────────────────────────────────────
+
+def build_hub_followback_edges(
+    G: nx.DiGraph,
+    hub: Agent,
+    followers: list[Agent],
+) -> None:
+    """
+    Each hub follows back a selective subset of its followers.
+
+    The follow-back quota K is based on the top extraversion decile of the
+    hub's follower pool:
+
+        top_decile  = ceil(0.1 * len(followers))  agents with highest extraversion
+        K           = ceil(0.1 * top_decile)
+
+    The hub then follows back the top-K of those high-extraversion followers.
+    This means hubs preferentially amplify the most extraverted agents who
+    are already in their audience — a rich-get-richer dynamic on follow-back.
+
+    If the follower pool is empty, no edges are added.
+    """
+    if not followers:
+        return
+
+    # Rank followers by extraversion descending
+    ranked = sorted(followers, key=lambda a: a.profile.extraversion, reverse=True)
+
+    top_decile_count = max(1, math.ceil(0.1 * len(ranked)))
+    k = max(1, math.ceil(0.1 * top_decile_count))
+
+    for followee in ranked[:k]:
+        G.add_edge(hub.id, followee.id)   # hub follows back
+
+
+# ── Hub ↔ Hub Edges (mutual BA-style) ─────────────────────────────────────────
+
+def build_inter_hub_edges(
+    G: nx.DiGraph,
+    hubs: list[Agent],
     m: int,
 ) -> None:
     """
-    Connect cluster hubs with preferential attachment (Barabási–Albert style).
+    Connect hubs to each other using preferential attachment (BA-style).
+    Edges are mutual (both A→B and B→A), since hubs are presumed to follow
+    each other. Degree used for attachment weight is total degree (in + out).
 
-    Each hub preferentially attaches to already-connected hubs proportionally
-    to their current degree, producing a scale-free inter-cluster topology.
+    Starting pair is seeded, then each subsequent hub attaches to m existing
+    hubs weighted by their current degree.
     """
-    hubs = [_cluster_hub(members) for members in clusters.values()]
     if len(hubs) < 2:
         return
 
-    # Bootstrap with the first two hubs connected.
-    connected = hubs[:2]
-    G.add_edge(hubs[0].id, hubs[1].id)
+    def add_mutual(a: Agent, b: Agent) -> None:
+        if not G.has_edge(a.id, b.id):
+            G.add_edge(a.id, b.id)
+        if not G.has_edge(b.id, a.id):
+            G.add_edge(b.id, a.id)
+
+    connected = [hubs[0], hubs[1]]
+    add_mutual(hubs[0], hubs[1])
 
     for hub in hubs[2:]:
-        # G.degree[n] uses the DegreeView subscript — more idiomatic than G.degree(n).
-        weights = [max(G.degree[h.id], 1) for h in connected]
-        sampled = random.choices(connected, weights=weights, k=min(m, len(connected)))
-
-        # dict.fromkeys preserves order while deduplicating by agent ID.
-        for target in dict.fromkeys(t.id for t in sampled):
-            if not G.has_edge(hub.id, target):
-                G.add_edge(hub.id, target)
-
+        weights = [max(G.degree(h.id), 1) for h in connected]
+        targets = random.choices(connected, weights=weights, k=min(m, len(connected)))
+        targets = list({t.id: t for t in targets}.values())
+        for target in targets:
+            add_mutual(hub, target)
         connected.append(hub)
+
+
+# ── Weak Tie Edges (directed, extraversion-weighted) ──────────────────────────
+
+def build_weak_tie_edges(
+    G: nx.DiGraph,
+    hub_followers: dict[int, list[Agent]],
+    hub_ids: set[int],
+    p_weak: float,
+) -> None:
+    """
+    Add sparse directed weak ties between agents in different hub communities.
+
+    For each cross-community agent pair (A from community i, B from community j),
+    two independent Bernoulli trials determine whether A→B and B→A exist:
+
+        P(A follows B) = p_weak * A.extraversion * B.extraversion
+
+    Hub-hub pairs are skipped (already handled by inter-hub edges).
+    Agents who share a community (follow the same hub) are also skipped to
+    avoid redundant within-community edges.
+
+    This emulates Granovetter weak ties — occasional cross-community bridges
+    driven by individual extraversion rather than structural position.
+    """
+    community_ids = list(hub_followers.keys())
+
+    for i, hub_a in enumerate(community_ids):
+        for hub_b in community_ids[i + 1:]:
+            for agent_a in hub_followers[hub_a]:
+                for agent_b in hub_followers[hub_b]:
+                    if agent_a.id in hub_ids and agent_b.id in hub_ids:
+                        continue
+
+                    p_ab = p_weak * agent_a.profile.extraversion * agent_b.profile.extraversion
+                    p_ba = p_weak * agent_b.profile.extraversion * agent_a.profile.extraversion
+
+                    if random.random() < p_ab:
+                        G.add_edge(agent_a.id, agent_b.id)
+                    if random.random() < p_ba:
+                        G.add_edge(agent_b.id, agent_a.id)
 
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
 @dataclass
 class SocialNetwork:
-    graph: nx.Graph
-    clusters: dict[int, list[Agent]]  # cluster_id -> agents
-    hubs: dict[int, Agent]            # cluster_id -> hub agent (story seed)
-    agent_cluster: dict[int, int]     # agent_id -> cluster_id (O(1) lookup cache)
+    graph: nx.DiGraph
+    clusters: dict[int, list[Agent]]   # hub_id -> agents who follow that hub
+    hubs: dict[int, Agent]             # hub_id -> Agent (hub_id == agent.id)
+    agent_cluster: dict[int, int]      # agent_id -> primary hub_id (most similar)
 
-    def neighbours(self, agent_id: int) -> list[int]:
-        """Return the IDs of all agents directly connected to agent_id."""
-        return list(self.graph.neighbors(agent_id))
+    def successors(self, agent_id: int) -> list[int]:
+        """Agents that agent_id follows (successor nodes in DiGraph)."""
+        return list(self.graph.successors(agent_id))
+
+    def predecessors(self, agent_id: int) -> list[int]:
+        """Agents that follow agent_id (predecessor nodes in DiGraph)."""
+        return list(self.graph.predecessors(agent_id))
 
     def get_cluster_of(self, agent_id: int) -> int:
-        """Return the cluster ID that agent_id belongs to."""
         return self.agent_cluster[agent_id]
 
-    def cluster_subgraph(self, cluster_id: int) -> nx.Graph:
-        """
-        Return a read-only view of the subgraph induced by a single cluster.
-
-        The returned SubGraph reflects any subsequent changes to the parent
-        graph, consistent with how nx.Graph.subgraph behaves.
-        """
-        node_ids = [a.id for a in self.clusters[cluster_id]]
-        return self.graph.subgraph(node_ids)
-
     def summary(self) -> str:
-        G = self.graph
-        n = G.number_of_nodes()
-        avg_degree = sum(d for _, d in G.degree()) / n if n else 0.0
-        hub_names = {cid: h.name for cid, h in self.hubs.items()}
+        n_nodes   = self.graph.number_of_nodes()
+        n_edges   = self.graph.number_of_edges()
+        n_hubs    = len(self.hubs)
+        avg_out   = (n_edges / n_nodes) if n_nodes else 0
+        hub_names = {hid: h.name for hid, h in self.hubs.items()}
         lines = [
-            f"Nodes:          {n}",
-            f"Edges:          {G.number_of_edges()}",
-            f"Clusters:       {len(self.clusters)}",
-            f"Density:        {nx.density(G):.4f}",
-            f"Avg degree:     {avg_degree:.2f}",
-            f"Avg clustering: {nx.average_clustering(G):.4f}",
-            f"Connected:      {nx.is_connected(G)}",
-            f"Components:     {nx.number_connected_components(G)}",
-            f"Cluster hubs:   {hub_names}",
+            f"Nodes:        {n_nodes}",
+            f"Directed edges: {n_edges}",
+            f"Hubs:         {n_hubs}",
+            f"Avg out-degree: {avg_out:.2f}",
+            f"Hubs:         {hub_names}",
         ]
         return "\n".join(lines)
 
 
 def build_network(agents: list[Agent], config: NetworkConfig | None = None) -> SocialNetwork:
     """
-    Build the hybrid social network from a list of agents.
+    Build the directed hybrid social network from a list of agents.
 
     Steps:
-      1. Assign agents to clusters (extraversion-biased)
-      2. Add dense intra-cluster edges (Erdős–Rényi)
-      3. Connect cluster hubs with scale-free inter-cluster edges (BA)
+      1. Elect hubs globally by extraversion
+      2. Each non-hub agent follows hubs with probability ∝ cosine similarity
+      3. Each hub follows back its top-K high-extraversion followers
+      4. Connect hubs mutually using BA-style preferential attachment
+      5. Add sparse directed weak ties between cross-community agents
 
-    Returns a SocialNetwork with the graph, cluster map, and hub index.
+    Returns a SocialNetwork (DiGraph) with hub index, community map, and
+    primary-hub assignment per agent.
     """
-    config = config or NetworkConfig()
+    if config is None:
+        config = NetworkConfig()
 
-    clusters = assign_clusters(agents, config.agents_per_cluster)
-    hubs = {cid: _cluster_hub(members) for cid, members in clusters.items()}
-    agent_cluster = {
-        agent.id: cid for cid, members in clusters.items() for agent in members
-    }
-    hub_ids = {h.id for h in hubs.values()}
+    G = nx.DiGraph()
 
-    G = nx.Graph()
-    G.add_nodes_from(
-        (
-            agent.id,
-            {
-                "name": agent.name,
-                "extraversion": agent.profile.extraversion,
-                "cluster_id": agent_cluster[agent.id],
-                "is_hub": agent.id in hub_ids,
-            },
-        )
-        for agent in agents
-    )
+    for agent in agents:
+        G.add_node(agent.id, name=agent.name, extraversion=agent.profile.extraversion)
 
-    for members in clusters.values():
-        _build_intra_cluster_edges(G, members, config.intra_cluster_p)
+    # 1. Elect hubs
+    hubs = elect_hubs(agents, config.agents_per_cluster)
+    hub_ids = {h.id for h in hubs}
+    hub_map = {h.id: h for h in hubs}
 
-    _build_inter_cluster_edges(G, clusters, config.inter_cluster_m)
+    # 2. Agent → hub following (cosine similarity weighted)
+    hub_followers = build_agent_hub_edges(G, agents, hubs)
+
+    # 3. Hub → agent follow-back (selective, top-extraversion followers)
+    for hub in hubs:
+        build_hub_followback_edges(G, hub, hub_followers[hub.id])
+
+    # 4. Hub ↔ hub mutual edges (BA preferential attachment)
+    build_inter_hub_edges(G, hubs, config.inter_cluster_m)
+
+    # 5. Directed weak ties between cross-community agents
+    build_weak_tie_edges(G, hub_followers, hub_ids, config.p_weak)
+
+    # Primary hub: most similar hub for each agent (for logging/viz)
+    agent_cluster: dict[int, int] = {}
+    for agent in agents:
+        if agent.id in hub_ids:
+            agent_cluster[agent.id] = agent.id  # hubs are their own primary
+        else:
+            best_hub = max(hubs, key=lambda h: cosine_similarity(agent, h))
+            agent_cluster[agent.id] = best_hub.id
 
     return SocialNetwork(
         graph=G,
-        clusters=clusters,
-        hubs=hubs,
+        clusters=hub_followers,
+        hubs=hub_map,
         agent_cluster=agent_cluster,
     )
-
