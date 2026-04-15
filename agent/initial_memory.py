@@ -5,7 +5,7 @@ from prompts import describe_trait
 
 # ── Prompt Construction ───────────────────────────────────────────────────────────────
 
-def build_initial_memory_prompt(agent: Agent, ground_truth: str) -> str:
+def build_initial_memory_prompt(agent: Agent, visible_context: str) -> str:
     p = agent.profile
 
     personality_block = "\n".join([
@@ -24,8 +24,8 @@ You are simulating the initial memory of a social media user.
 ## Agent personality
 {personality_block}
 
-## Original news
-{ground_truth}
+## What this cagent currently sees
+{visible_context}
 
 ## Task
 Generate 3 short memory statements describing what this agent is most likely to take away after first reading this story.
@@ -37,23 +37,24 @@ These three memories should cover:
 Rules:
 - Each memory must be exactly one sentence
 - Keep them natural
-- Do not just copy the original news directly
+- Do not just copy the visible_context directly
 - Each memory should sound like an internal takeaway, not a public post
 - Must reflect the agent's personality
 - Return only valid JSON as a list of strings
+- Must return only Valid JSON
 - Avoid starting with "I just saw" or "I think"
 
 Example format:
 [
-"1. Memory one.",
-"2. Memory two.",
-"3. Memory three."
+"Memory one.",
+"Memory two.",
+"Memory three."
 ]
 """.strip()
 
 
-def generate_initial_memory(agent: Agent, ground_truth: str) -> list[str]:
-    prompt = build_initial_memory_prompt(agent, ground_truth)
+def generate_initial_memory(agent: Agent, visible_context: str) -> list[str]:
+    prompt = build_initial_memory_prompt(agent, visible_context)
     raw = llm_call(prompt)
     cleaned = raw.strip().replace("```json", "").replace("```","").strip()
                                                          
@@ -73,5 +74,5 @@ def generate_initial_memory(agent: Agent, ground_truth: str) -> list[str]:
 
     return memory
 
-def initialise_agent_memory(agent: Agent, ground_truth: str) -> None:
-    agent.memory = generate_initial_memory(agent, ground_truth)
+def initialise_agent_memory(agent: Agent, visible_context: str) -> None:
+    agent.memory = generate_initial_memory(agent, visible_context)

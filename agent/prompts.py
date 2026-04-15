@@ -165,7 +165,7 @@ def agent_process_post(agent: Agent, post: Post, ground_truth: str) -> AgentActi
     agent.seen_post_ids.add(post.id)
     probs = compute_action_probabilities(agent.profile, post.signals)
     action = sample_action(probs)
-    if action not in ("report, ignore"):
+    if action not in ("report", "ignore"):
         post.engagement += 1
         
     text = None

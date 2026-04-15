@@ -32,6 +32,7 @@ import json
 import random
 import argparse
 import uuid
+import sqlite3
 from datetime import datetime
 from dataclasses import asdict
 
@@ -41,6 +42,7 @@ from structs import Agent, HEXACOProfile, Post, PostSignals
 from network import build_network, NetworkConfig
 from feed import PostRegistry, build_feed
 from prompts import agent_process_post, get_post_signals, classify_post_signals
+from initial_memory import initialise_agent_memory
 
 
 # ── Ground Truth ───────────────────────────────────────────────────────────────
@@ -77,14 +79,14 @@ def make_agents(n: int) -> list[Agent]:
     ]
 
 
-def seed_ground_truth(network, registry: PostRegistry) -> Post:
+def seed_ground_truth(network, registry: PostRegistry, ground_truth: str) -> Post:
     """
     Classify the ground truth story and seed it into every cluster hub's
     post history so it appears in their neighbours' feeds from step 1.
     """
     print("  Classifying ground truth signals…")
     signals = classify_post_signals(
-        post_text=GROUND_TRUTH,
+        post_text=ground_truth,
         generation=0,
         source_post_id="ground_truth",
     )
@@ -92,7 +94,7 @@ def seed_ground_truth(network, registry: PostRegistry) -> Post:
     seed_post = Post(
         id="ground_truth",
         author_id="system",
-        text=GROUND_TRUTH,
+        text=ground_truth,
         signals=signals,
         parent_id=None,
     )
@@ -138,6 +140,54 @@ def agent_dict(agent: Agent, cluster_id: int, is_hub: bool) -> dict:
             "openness":          round(p.openness, 4),
         },
     }
+
+# write run_log and signal_drift directly into simulation_runs table
+def save_run_to_database(
+    db_path: str,
+    news_id: int,
+    agent_count: int,
+    topology: str,
+    seed: int | None,
+    steps: int,
+    role_mix:dict,
+    run_log: dict,
+    signal_drift: dict,
+):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    result_payload = {
+        "run_log" : run_log,
+        "signal_drift": signal_drift,
+    }
+
+    cursor.execute("""
+        INSERT INTO simulation_runs
+        (news_id, agent_count, topology, seed, steps, role_mix, result_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        news_id,
+        agent_count,
+        topology,
+        seed if seed is not None else -1,
+        steps,
+        json.dumps(role_mix),
+        json.dumps(result_payload),
+    ))
+
+    # return this newly saved simulation run id
+    conn.commit()
+    run_db_id = cursor.lastrowid
+    conn.close()
+    return run_db_id
+
+def summarise_visible_posts(feed: list[Post], max_posts: int = 3) -> str:
+    if not feed:
+        return "This agent does not see any posts now"
+    
+    lines = []
+    for i, post in enumerate(feed[:max_posts], start=1):
+        lines.append(f"{i}. {post.text}")
+    return "\n".join(lines)
 
 
 # ── Console Formatting ─────────────────────────────────────────────────────────
@@ -188,12 +238,25 @@ def run_simulation(
     seed: int | None,
     out_dir: str,
     ground_truth: str = None, 
+    news_id: int | None = None,
+    db_path: str |None = None,
+    save_to_db: bool = False,
+    topology: str = "random",
+    role_mix: dict | None = None,
 ) -> None:
     if seed is not None:
         random.seed(seed)
 
     if ground_truth is None:
         ground_truth = GROUND_TRUTH   # falls back to the hardcoded one
+
+    if role_mix is None:
+        role_mix = {
+            "spreader" : 35,
+            "commentator": 35,
+            "verifier": 15,
+            "bystander": 15
+        }
 
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     out_path = os.path.join(out_dir, run_id)
@@ -223,7 +286,13 @@ def run_simulation(
     registry = PostRegistry()
 
     print("Seeding ground truth…")
-    seed_post = seed_ground_truth(network, registry)
+    seed_post = seed_ground_truth(network, registry, ground_truth)
+
+    print("Generating initial memories...")
+    for agent in agents:
+        initial_feed = build_feed(agent, network, registry)
+        visible_context = summarise_visible_posts(initial_feed)
+        initialise_agent_memory(agent, visible_context)
 
     # ── Run log structure ──────────────────────────────────────────────────────
     run_log = {
@@ -352,9 +421,29 @@ def run_simulation(
         json.dump(signal_drift, f, indent=2)
     print(f"  ✓  signal_drift.json  ({len(signal_drift)} lineage chains tracked)")
 
+    db_run_id = None
+    if save_to_db:
+        if news_id is None:
+            raise ValueError("news_id is required when save_to_db=True")
+        if db_path is None:
+            raise ValueError("db_path is required when save_to_db=True")
+        
+        db_run_id = save_run_to_database(
+            db_path=db_path,
+            news_id=news_id,
+            agent_count=n_agents,
+            topology=topology,
+            seed=seed,
+            steps=n_steps,
+            role_mix=role_mix,
+            run_log=run_log,
+            signal_drift=signal_drift,
+        )
+
+        print(f"  ✓  database write  (simulation_runs.id={db_run_id})")
     print(f"{'═' * 60}\n")
 
-    return run_log, signal_drift
+    return run_log, signal_drift, db_run_id
 
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
