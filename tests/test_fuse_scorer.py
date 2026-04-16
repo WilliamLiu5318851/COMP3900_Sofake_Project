@@ -4,7 +4,7 @@ test_fuse_scorer.py
 Tests for FUSE/evaluation/fuse_scorer.py.
 
 Changes from the original teammate version:
-  - API: OpenAI → Anthropic (client.messages.create / response.content[0].text)
+  - API: switched to the current LLM SDK (client.messages.create / response.content[0].text)
   - Dimensions: 6 → 9  (added SI, SAA, PIB)
   - Output: Total_Deviation (avg of 6 core) + Extended_Deviation (avg of all 9)
   - Missing-key guard: model omissions are filled with 0.0
@@ -21,11 +21,11 @@ EXTENDED_DIMS = CORE_DIMS + ["SI", "SAA", "PIB"]
 @pytest.fixture
 def evaluator():
     """Initialise with a dummy key — API calls are always mocked in these tests."""
-    return FUSEScoringSystem(api_key="sk-ant-mock-key-for-testing")
+    return FUSEScoringSystem(api_key="mock-key-for-testing")
 
 
 def _make_mock_response(scores_dict: dict) -> MagicMock:
-    """Helper: build a fake Anthropic response whose .content[0].text is the JSON."""
+    """Helper: build a fake LLM response whose .content[0].text is the JSON."""
     mock_resp = MagicMock()
     mock_resp.content = [MagicMock(text=json.dumps(scores_dict))]
     return mock_resp
