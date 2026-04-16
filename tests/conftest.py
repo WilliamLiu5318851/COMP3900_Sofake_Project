@@ -10,7 +10,7 @@ import os
 # at import time (e.g. Groq in structs.py) don't raise at collection time.
 # Actual API calls are always mocked in the test suite.
 os.environ.setdefault("GROQ_API_KEY", "dummy-groq-key-for-tests")
-os.environ.setdefault("ANTHROPIC_API_KEY", "dummy-anthropic-key-for-tests")
+os.environ.setdefault("ANTHROPIC_API_KEY", "dummy-key-for-tests")
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

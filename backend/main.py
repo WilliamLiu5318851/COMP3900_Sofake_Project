@@ -82,17 +82,23 @@ def simulate(req: SimulateRequest):
 
         # Extract evolved posts from run_log
         run_log = sim_result.get("run_log", {})
+
+        # Build a lookup of post_id -> text (includes ground_truth)
+        post_texts: dict = {"ground_truth": req.ground_truth}
         evolved_posts = []
         for step in run_log.get("steps", []):
             for event in step.get("events", []):
                 text = event.get("new_post_text")
                 if text:
+                    pid = event.get("new_post_id")
+                    post_texts[pid] = text
                     evolved_posts.append({
-                        "post_id": event.get("new_post_id"),
+                        "post_id": pid,
                         "author": event.get("agent_name"),
                         "action": event.get("action"),
                         "step": step.get("step"),
                         "text": text,
+                        "source_post_id": event.get("source_post_id"),
                     })
 
         # Sample up to 20 posts evenly to limit FUSE API calls
@@ -103,17 +109,34 @@ def simulate(req: SimulateRequest):
         else:
             sampled = evolved_posts
 
-        # Call FUSE to score each sampled post against the ground truth
+        # Call FUSE to score each sampled post vs ground truth AND vs parent post
         fuse_evaluations = []
         with httpx.Client(timeout=60.0) as client:
             for post in sampled:
+                entry = {**post}
                 try:
-                    fuse_resp = client.post(
+                    # Score vs ground truth
+                    gt_resp = client.post(
                         f"{FUSE_URL}/api/evaluate",
                         json={"original": req.ground_truth, "evolved": post["text"]},
                     )
-                    if fuse_resp.status_code == 200:
-                        fuse_evaluations.append({**post, "fuse_scores": fuse_resp.json()})
+                    if gt_resp.status_code == 200:
+                        entry["fuse_scores_vs_ground_truth"] = gt_resp.json()
+
+                    # Score vs parent post (if parent exists and isn't the ground truth itself)
+                    parent_id = post.get("source_post_id")
+                    parent_text = post_texts.get(parent_id) if parent_id else None
+                    entry["parent_text"] = parent_text
+                    if parent_text and parent_id != "ground_truth":
+                        parent_resp = client.post(
+                            f"{FUSE_URL}/api/evaluate",
+                            json={"original": parent_text, "evolved": post["text"]},
+                        )
+                        if parent_resp.status_code == 200:
+                            entry["fuse_scores_vs_parent"] = parent_resp.json()
+
+                    if "fuse_scores_vs_ground_truth" in entry:
+                        fuse_evaluations.append(entry)
                 except Exception:
                     pass
 
