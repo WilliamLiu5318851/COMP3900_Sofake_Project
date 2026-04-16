@@ -69,10 +69,10 @@ def get_visible_posts(
     g = network.graph
     agent_id = agent.id
 
-    one_hop = set(g.neighbors(agent_id))
+    one_hop = set(g.successors(agent_id))
     two_hop = set()
     for n in one_hop:
-        two_hop.update(g.neighbors(n))
+        two_hop.update(g.successors(n))
 
     visible_authors = (one_hop | two_hop) - {agent_id}
 

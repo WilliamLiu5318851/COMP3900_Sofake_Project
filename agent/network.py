@@ -38,7 +38,7 @@ class NetworkConfig:
     agents_per_cluster: int = 10   # Controls how many hubs are elected
     inter_cluster_m: int   = 2     # BA-style edges per hub to other hubs
     p_weak: float          = 0.02  # Base probability of weak tie edges
-    intra_cluster_p: float    = 0.5   # Probability of agent following their primary hub
+    followback_p: float    = 0.1   # Probability of hub following back its followers (in build_agent_hub_edges)
 
 
 # ── HEXACO Cosine Similarity ───────────────────────────────────────────────────
@@ -116,13 +116,17 @@ def build_agent_hub_edges(
 
         sims = [cosine_similarity(agent, hub) for hub in hubs]
         total_sim = sum(sims)
-
         for hub, sim in zip(hubs, sims):
             # Normalised probability: how much does this agent match this hub?
-            p_follow = (sim / total_sim) if total_sim > 0 else (1.0 / len(hubs))
+            p_follow = (sim / total_sim) / (1 + len(hub_followers[hub.id])) if total_sim > 0 else (1.0 / len(hubs))
             if random.random() < p_follow:
                 G.add_edge(agent.id, hub.id)   # agent follows hub
                 hub_followers[hub.id].append(agent)
+
+        for id in hub_ids:
+            for agent in hub_followers[id]:
+                if random.random() < NetworkConfig.followback_p:
+                    G.add_edge(id, agent.id)   # hub follows agent back with some probability
 
     return hub_followers
 

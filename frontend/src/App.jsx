@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -104,8 +104,7 @@ function GroundTruthUploader({ value, onChange }) {
             className="btn btn--ghost"
             type="button"
             onClick={() =>
-              onChange(`Scientists at a major US university have published a study suggesting that microplastics found in common bottled water brands may be interfering with human hormone regulation. The study, which tracked 3,000 participants over 5 years, found a statistically significant correlation between bottled water
-            consumption and disrupted cortisol and thyroid levels. The lead researcher stated the findings are 'concerning but not yet conclusive'. Health authorities have not yet issued any official guidance in response to the study.`)
+              onChange(`Scientists at a major US university have published a study suggesting that microplastics found in common bottled water brands may be interfering with human hormone regulation. The study, which tracked 3,000 participants over 5 years, found a statistically significant correlation between bottled water consumption and disrupted cortisol and thyroid levels. The lead researcher stated the findings are 'concerning but not yet conclusive'. Health authorities have not yet issued any official guidance in response to the study.`)
             }
           >
             Load Example
@@ -117,65 +116,98 @@ function GroundTruthUploader({ value, onChange }) {
 }
 
 function SimulationConfig({ config, setConfig }) {
-  const roleSum = useMemo(
-    () => Object.values(config.roleMix).reduce((a, b) => a + b, 0),
-    [config.roleMix]
-  );
-  function setRole(role, val) {
-    const n = Number(val);
-    setConfig((c) => ({
-      ...c,
-      roleMix: { ...c.roleMix, [role]: Number.isFinite(n) ? n : 0 },
-    }));
-  }
   return (
     <section className="card">
       <div className="card__header">
         <h2 className="card__title">Simulation Settings</h2>
-        <div className={`card__meta ${roleSum !== 100 ? "is-bad" : ""}`}>
-          Role mix: {roleSum}% (target 100%)
-        </div>
       </div>
+
+      {/* Core run settings */}
       <div className="grid grid--2">
         <div>
           <label className="label">Number of agents</label>
-          <input className="input" type="number" min={5} max={200} value={config.agentCount}
-            onChange={(e) => setConfig((c) => ({ ...c, agentCount: Number(e.target.value) }))} />
-        </div>
-        <div>
-          <label className="label">Topology</label>
-          <select className="input" value={config.topology}
-            onChange={(e) => setConfig((c) => ({ ...c, topology: e.target.value }))}>
-            <option value="random">Random</option>
-            <option value="clustered">High-clustering</option>
-            <option value="scaleFree">Scale-free</option>
-          </select>
-        </div>
-        <div>
-          <label className="label">Seed (reproducibility)</label>
-          <input className="input" type="number" value={config.seed}
-            onChange={(e) => setConfig((c) => ({ ...c, seed: Number(e.target.value) }))} />
+          <input
+            className="input"
+            type="number"
+            min={5}
+            max={200}
+            value={config.agentCount}
+            onChange={(e) => setConfig((c) => ({ ...c, agentCount: Number(e.target.value) }))}
+          />
         </div>
         <div>
           <label className="label">Steps (interactions)</label>
-          <input className="input" type="number" min={5} max={500} value={config.steps}
-            onChange={(e) => setConfig((c) => ({ ...c, steps: Number(e.target.value) }))} />
+          <input
+            className="input"
+            type="number"
+            min={1}
+            max={500}
+            value={config.steps}
+            onChange={(e) => setConfig((c) => ({ ...c, steps: Number(e.target.value) }))}
+          />
+        </div>
+        <div>
+          <label className="label">Seed (reproducibility)</label>
+          <input
+            className="input"
+            type="number"
+            value={config.seed}
+            onChange={(e) => setConfig((c) => ({ ...c, seed: Number(e.target.value) }))}
+          />
         </div>
       </div>
+
       <div className="divider" />
-      <h3 className="subhead">Role mix</h3>
-      <div className="grid grid--4">
-        {["spreader", "commentator", "verifier", "bystander"].map((role) => (
-          <div key={role}>
-            <label className="label">{role.charAt(0).toUpperCase() + role.slice(1)}s (%)</label>
-            <input className="input" type="number" min={0} max={100} value={config.roleMix[role]}
-              onChange={(e) => setRole(role, e.target.value)} />
+
+      {/* Network topology */}
+      <h3 className="subhead">Network Topology</h3>
+      <div className="grid grid--2">
+        <div>
+          <label className="label">Intra-cluster edge probability</label>
+          <input
+            className="input"
+            type="number"
+            min={0}
+            max={1}
+            step={0.05}
+            value={config.intraClusterP}
+            onChange={(e) => setConfig((c) => ({ ...c, intraClusterP: Number(e.target.value) }))}
+          />
+          <div className="hint" style={{ marginTop: 4 }}>
+            Erdős–Rényi edge probability within each cluster (0–1). Higher = denser clusters.
           </div>
-        ))}
+        </div>
+        <div>
+          <label className="label">Inter-cluster hub edges (m)</label>
+          <input
+            className="input"
+            type="number"
+            min={1}
+            max={10}
+            step={1}
+            value={config.interClusterM}
+            onChange={(e) => setConfig((c) => ({ ...c, interClusterM: Number(e.target.value) }))}
+          />
+          <div className="hint" style={{ marginTop: 4 }}>
+            Edges each hub forms to existing hubs (Barabási–Albert style). Controls cross-cluster connectivity.
+          </div>
+        </div>
+        <div>
+          <label className="label">Agents per cluster</label>
+          <input
+            className="input"
+            type="number"
+            min={2}
+            max={50}
+            step={1}
+            value={config.agentsPerCluster}
+            onChange={(e) => setConfig((c) => ({ ...c, agentsPerCluster: Number(e.target.value) }))}
+          />
+          <div className="hint" style={{ marginTop: 4 }}>
+            Target cluster size — determines the number of clusters (≈ agents ÷ this value).
+          </div>
+        </div>
       </div>
-      {roleSum !== 100 && (
-        <div className="callout callout--warn">Role mix should sum to 100% for clearer experiments.</div>
-      )}
     </section>
   );
 }
@@ -255,7 +287,7 @@ function NoResultsYet() {
   );
 }
 
-// ── Graph View — signal drift line chart ─────────────────────────────────────
+// ── Graph View ────────────────────────────────────────────────────────────────
 
 function GraphView({ simResult }) {
   const d = useRunData(simResult?.run_log);
@@ -287,7 +319,7 @@ function GraphView({ simResult }) {
   );
 }
 
-// ── Overview Dashboard — metrics + bar charts ─────────────────────────────────
+// ── Overview Dashboard ────────────────────────────────────────────────────────
 
 function OverviewDashboard({ simResult }) {
   const d = useRunData(simResult?.run_log);
@@ -298,7 +330,6 @@ function OverviewDashboard({ simResult }) {
         <h2 className="card__title">Overview Dashboard</h2>
         {!d ? <NoResultsYet /> : (
           <>
-            {/* Summary metrics */}
             <div className="grid grid--2" style={{ marginBottom: "1rem" }}>
               <div><span className="label">Total posts generated</span><div>{d.newPosts.length}</div></div>
               <div><span className="label">Steps run</span><div>{run_log.steps.length}</div></div>
@@ -308,7 +339,6 @@ function OverviewDashboard({ simResult }) {
 
             <div className="divider" />
 
-            {/* Posts per step */}
             <h3 className="subhead">Posts generated per step</h3>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={d.stepData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
@@ -321,7 +351,6 @@ function OverviewDashboard({ simResult }) {
 
             <div className="divider" />
 
-            {/* Actions breakdown */}
             <h3 className="subhead">Actions breakdown</h3>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={d.actionData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
@@ -338,7 +367,7 @@ function OverviewDashboard({ simResult }) {
   );
 }
 
-// ── Saved Runs — full post timeline ──────────────────────────────────────────
+// ── Saved Runs ────────────────────────────────────────────────────────────────
 
 function SavedRuns({ savedRuns }) {
   return (
@@ -419,15 +448,16 @@ export default function App() {
   const [page, setPage] = useState("new");
   const [groundTruth, setGroundTruth] = useState("");
   const [config, setConfig] = useState({
-    agentCount: 30,
-    topology: "random",
+    agentCount: 20,
+    steps: 7,
     seed: 42,
-    steps: 60,
-    roleMix: { spreader: 35, commentator: 35, verifier: 15, bystander: 15 },
+    intraClusterP: 0.55,
+    interClusterM: 2,
+    agentsPerCluster: 8,
   });
   const [loading, setLoading] = useState(false);
   const [simResult, setSimResult] = useState(null);
-  const [savedRuns, setSavedRuns] = useState([]);  // accumulates every completed run
+  const [savedRuns, setSavedRuns] = useState([]);
   const [simError, setSimError] = useState(null);
 
   const withinLimit = groundTruth.length > 0 && groundTruth.length <= 6000;
@@ -445,7 +475,9 @@ export default function App() {
           agent_count: config.agentCount,
           steps: config.steps,
           seed: config.seed,
-          role_mix: config.roleMix,
+          intra_cluster_p: config.intraClusterP,
+          inter_cluster_m: config.interClusterM,
+          agents_per_cluster: config.agentsPerCluster,
         }),
       });
       if (!res.ok) {
@@ -454,7 +486,7 @@ export default function App() {
       }
       const data = await res.json();
       setSimResult(data);
-      setSavedRuns((prev) => [data, ...prev]);  // newest first
+      setSavedRuns((prev) => [data, ...prev]);
     } catch (e) {
       setSimError(e.message);
     } finally {
@@ -491,7 +523,7 @@ export default function App() {
 
           {page === "settings" && (
             <PlaceholderPage title="Settings">
-              Store defaults (max chars, step limit, role presets, scoring weights). Add "Reset to defaults".
+              Store defaults (max chars, step limit, network presets, scoring weights). Add "Reset to defaults".
             </PlaceholderPage>
           )}
 
