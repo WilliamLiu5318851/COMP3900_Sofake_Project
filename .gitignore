@@ -15,5 +15,7 @@ dist/
 
 # Docker
 *.log
+docker-compose.override.yml
 
-.claude
+.env
+.env.bak
