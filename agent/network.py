@@ -122,12 +122,6 @@ def build_agent_hub_edges(
             if random.random() < p_follow:
                 G.add_edge(agent.id, hub.id)   # agent follows hub
                 hub_followers[hub.id].append(agent)
-
-        for id in hub_ids:
-            for agent in hub_followers[id]:
-                if random.random() < NetworkConfig.followback_p:
-                    G.add_edge(id, agent.id)   # hub follows agent back with some probability
-
     return hub_followers
 
 

@@ -163,7 +163,7 @@ function SimulationConfig({ config, setConfig }) {
       <h3 className="subhead">Network Topology</h3>
       <div className="grid grid--2">
         <div>
-          <label className="label">Intra-cluster edge probability</label>
+          <label className="label">hub followback probability</label>
           <input
             className="input"
             type="number"
@@ -178,7 +178,7 @@ function SimulationConfig({ config, setConfig }) {
           </div>
         </div>
         <div>
-          <label className="label">Inter-cluster hub edges (m)</label>
+          <label className="label">hub-to-hub edges (m)</label>
           <input
             className="input"
             type="number"
@@ -205,6 +205,21 @@ function SimulationConfig({ config, setConfig }) {
           />
           <div className="hint" style={{ marginTop: 4 }}>
             Target cluster size — determines the number of clusters (≈ agents ÷ this value).
+          </div>
+        </div>
+        <div>
+          <label className="label">Weak tie probability</label>
+          <input
+            className="input"
+            type="number"
+            min={0}
+            max={1}
+            step={0.05}
+            value={config.weakTieP}
+            onChange={(e) => setConfig((c) => ({ ...c, weakTieP: Number(e.target.value) }))}
+          />
+          <div className="hint" style={{ marginTop: 4 }}>
+            Probability of forming weak ties between agents in different clusters (0–1).
           </div>
         </div>
       </div>
