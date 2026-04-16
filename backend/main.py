@@ -42,7 +42,10 @@ class SimulateRequest(BaseModel):
     agent_count: int = 30
     steps: int = 60
     seed: int = 42
-    role_mix: dict = {"spreader": 35, "commentator": 35, "verifier": 15, "bystander": 15}
+    intra_cluster_p: float = 0.5
+    inter_cluster_m: int = 2
+    agents_per_cluster: int = 10
+    weak_tie_p: float = 0.05
 
 
 @app.get("/")

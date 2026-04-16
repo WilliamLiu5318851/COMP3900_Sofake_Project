@@ -39,6 +39,7 @@ class NetworkConfig:
     inter_cluster_m: int   = 2     # BA-style edges per hub to other hubs
     p_weak: float          = 0.02  # Base probability of weak tie edges
     followback_p: float    = 0.1   # Probability of hub following back its followers (in build_agent_hub_edges)
+    intra_cluster_p: float = 0.5   # Probability of edges between agents in the same cluster (in build_intra_cluster_edges)
 
 
 # ── HEXACO Cosine Similarity ───────────────────────────────────────────────────
@@ -116,14 +117,48 @@ def build_agent_hub_edges(
 
         sims = [cosine_similarity(agent, hub) for hub in hubs]
         total_sim = sum(sims)
-        for hub, sim in zip(hubs, sims):
-            # Normalised probability: how much does this agent match this hub?
-            p_follow = (sim / total_sim) / (1 + len(hub_followers[hub.id])) if total_sim > 0 else (1.0 / len(hubs))
+        
+        # Agent always follows the most similar hub
+        best_hub_idx = max(range(len(hubs)), key=lambda i: sims[i])
+        best_hub = hubs[best_hub_idx]
+        G.add_edge(agent.id, best_hub.id)
+        hub_followers[best_hub.id].append(agent)
+        
+        # Agent has a chance to follow other hubs with probability proportional to similarity
+        for i, hub in enumerate(hubs):
+            if i == best_hub_idx:
+                continue  # already following best hub
+            p_follow = (sims[i] / total_sim) if total_sim > 0 else 0
             if random.random() < p_follow:
-                G.add_edge(agent.id, hub.id)   # agent follows hub
+                G.add_edge(agent.id, hub.id)
                 hub_followers[hub.id].append(agent)
     return hub_followers
 
+def build_intra_cluster_edges(
+    G: nx.DiGraph,
+    hub_followers: dict[int, list[Agent]],
+    intra_cluster_p: float,
+) -> None:
+    """
+    Add directed edges between agents within the same hub community.
+
+    For each hub, we consider all pairs of its followers (A, B). For each
+    pair, we add a directed edge A → B with probability p_followback, and
+    independently add B → A with the same probability. This creates a
+    denser local neighborhood around each hub, simulating follow-back and
+    local clustering within communities.
+
+    This step is separate from the selective hub follow-back (which adds
+    edges from hubs to their top extraverted followers) to allow for more
+    flexible intra-community connectivity.
+    """
+    for followers in hub_followers.values():
+        for i, agent_a in enumerate(followers):
+            for agent_b in followers[i + 1:]:
+                if random.random() < intra_cluster_p:
+                    G.add_edge(agent_a.id, agent_b.id)
+                if random.random() < intra_cluster_p:
+                    G.add_edge(agent_b.id, agent_a.id)
 
 # ── Hub → Agent Follow-back ────────────────────────────────────────────────────
 
@@ -295,13 +330,16 @@ def build_network(agents: list[Agent], config: NetworkConfig | None = None) -> S
     for agent in agents:
         G.add_node(agent.id, name=agent.name, extraversion=agent.profile.extraversion)
 
-    # 1. Elect hubs
+    # 0. Elect hubs
     hubs = elect_hubs(agents, config.agents_per_cluster)
     hub_ids = {h.id for h in hubs}
     hub_map = {h.id: h for h in hubs}
 
-    # 2. Agent → hub following (cosine similarity weighted)
+    # 1 Agent → hub following (cosine similarity weighted)
     hub_followers = build_agent_hub_edges(G, agents, hubs)
+
+    # 2. agent -> agent edges within each hub community (intra-cluster follow-back)
+    build_intra_cluster_edges(G, hub_followers, config.followback_p)
 
     # 3. Hub → agent follow-back (selective, top-extraversion followers)
     for hub in hubs:

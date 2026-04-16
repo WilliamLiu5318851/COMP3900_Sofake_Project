@@ -188,7 +188,7 @@ def run_simulation(
     seed: int | None,
     out_dir: str,
     ground_truth: str = "", 
-) -> None:
+) -> tuple[dict, dict]:
     if seed is not None:
         random.seed(seed)
 

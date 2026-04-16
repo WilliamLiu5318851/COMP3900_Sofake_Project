@@ -463,12 +463,13 @@ export default function App() {
   const [page, setPage] = useState("new");
   const [groundTruth, setGroundTruth] = useState("");
   const [config, setConfig] = useState({
-    agentCount: 20,
-    steps: 7,
+    agentCount: 6,
+    steps: 3,
     seed: 42,
     intraClusterP: 0.55,
     interClusterM: 2,
     agentsPerCluster: 8,
+    weakTieP: 0.05,
   });
   const [loading, setLoading] = useState(false);
   const [simResult, setSimResult] = useState(null);
