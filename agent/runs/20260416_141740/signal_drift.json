@@ -1,0 +1,23 @@
+{
+  "ground_truth": [
+    {
+      "emotional_charge": 0.6,
+      "controversy": 0.7,
+      "fringe_score": 0.1,
+      "threat_level": 0.4,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    },
+    {
+      "post_id": "post_1",
+      "author": "Alex",
+      "step": 1,
+      "emotional_charge": 0.4,
+      "controversy": 0.1,
+      "fringe_score": 0.05,
+      "threat_level": 0.1,
+      "generation": 1,
+      "source_post_id": "ground_truth"
+    }
+  ]
+}

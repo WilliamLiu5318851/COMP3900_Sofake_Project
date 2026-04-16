@@ -32,6 +32,7 @@ import json
 import random
 import argparse
 import uuid
+import time #new
 from datetime import datetime
 from dataclasses import asdict
 
@@ -187,7 +188,8 @@ def run_simulation(
     n_steps: int,
     seed: int | None,
     out_dir: str,
-    ground_truth: str = None, 
+    ground_truth: str = None,
+    run_identifier: str = "" #new
 ) -> None:
     if seed is not None:
         random.seed(seed)
@@ -195,12 +197,16 @@ def run_simulation(
     if ground_truth is None:
         ground_truth = GROUND_TRUTH   # falls back to the hardcoded one
 
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    #Modified
+    base_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_id = f"{base_id}_{run_identifier}" if run_identifier else base_id
+
     out_path = os.path.join(out_dir, run_id)
     os.makedirs(out_path, exist_ok=True)
 
     print(f"\n{'═' * 60}")
-    print(f"  NEWSREEL SIMULATION")
+    # [MODIFIED]
+    print(f"  NEWSREEL SIMULATION [ID: {run_identifier}]")
     print(f"  run_id={run_id}  agents={n_agents}  steps={n_steps}  seed={seed}")
     print(f"{'═' * 60}\n")
 
@@ -365,15 +371,67 @@ def main():
     parser.add_argument("--steps",  type=int, default=7,    help="Number of steps (default 7)")
     parser.add_argument("--seed",   type=int, default=None, help="Random seed")
     parser.add_argument("--out",    type=str, default="runs", help="Output directory (default: runs/)")
+    # [NEW]
+    parser.add_argument("--sim-count", type=int, default=1, help="Parallel Simulation")
     args = parser.parse_args()
 
-    run_simulation(
-        n_agents=args.agents,
-        n_steps=args.steps,
-        seed=args.seed,
-        out_dir=args.out,
-    )
 
+    keys_str = os.getenv("GROQ_API_KEY", "")
+    # 按逗号切割字符串，并清理掉多余的空格
+    API_KEYS = [k.strip() for k in keys_str.split(",") if k.strip()]
+
+    if not API_KEYS:
+        print("❌ 错误: 没有在 .env 文件中找到 GROQ_API_KEYS。请确保已配置。")
+        sys.exit(1)
+
+    if args.sim_count > 1:
+        print(f"🚀 准备并发运行 {args.sim_count} 个模拟任务...")
+        pids = []
+
+        for i in range(args.sim_count):
+            current_key = API_KEYS[i % len(API_KEYS)]
+            
+            pid = os.fork()
+            
+            if pid == 0:  # 子进程
+                os.environ["GROQ_API_KEY"] = current_key
+                
+                log_dir = os.path.join(args.out, "logs")
+                os.makedirs(log_dir, exist_ok=True)
+                log_file = open(f"{log_dir}/run_{i:02d}.log", "w")
+                os.dup2(log_file.fileno(), sys.stdout.fileno())
+                os.dup2(log_file.fileno(), sys.stderr.fileno())
+
+                child_seed = (args.seed + i) if args.seed is not None else None
+
+                run_simulation(
+                    n_agents=args.agents,
+                    n_steps=args.steps,
+                    seed=child_seed,
+                    out_dir=args.out,
+                    run_identifier=f"run{i:02d}"
+                )
+                
+                sys.exit(0)
+            
+            else: # 父进程
+                pids.append(pid)
+                print(f"  - 分身 {i} 已启动 (PID: {pid})，使用 Key: {current_key[:10]}...")
+                time.sleep(0.5)
+
+        for pid in pids:
+            os.waitpid(pid, 0)
+        print("\n✅ 所有模拟任务已完成！")
+
+    else:
+        # 单次运行
+        os.environ["GROQ_API_KEY"] = API_KEYS[0]
+        run_simulation(
+            n_agents=args.agents,
+            n_steps=args.steps,
+            seed=args.seed,
+            out_dir=args.out
+        )
 
 if __name__ == "__main__":
     main()

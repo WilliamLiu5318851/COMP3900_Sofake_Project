@@ -1,0 +1,237 @@
+{
+  "run_id": "20260416_134822_run00",
+  "timestamp": "2026-04-16T13:48:22.980732",
+  "config": {
+    "n_agents": 3,
+    "n_steps": 2,
+    "seed": null,
+    "intra_cluster_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 0,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.7016,
+        "emotionality": 0.0754,
+        "extraversion": 0.9581,
+        "agreeableness": 0.9081,
+        "conscientiousness": 0.3725,
+        "openness": 0.0388
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 0,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.9823,
+        "emotionality": 0.3629,
+        "extraversion": 0.257,
+        "agreeableness": 0.4399,
+        "conscientiousness": 0.681,
+        "openness": 0.2484
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 1,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.8614,
+        "emotionality": 0.8957,
+        "extraversion": 0.421,
+        "agreeableness": 0.5452,
+        "conscientiousness": 0.1029,
+        "openness": 0.6329
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 3,
+    "n_edges": 2,
+    "n_clusters": 2,
+    "avg_degree": 1.33,
+    "hubs": {
+      "0": "Alex",
+      "1": "Casey"
+    }
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that\nmicroplastics found in common bottled water brands may be interfering with\nhuman hormone regulation. The study, which tracked 3,000 participants over\n5 years, found a statistically significant correlation between bottled water\nconsumption and disrupted cortisol and thyroid levels. The lead researcher\nstated the findings are 'concerning but not yet conclusive'. Health authorities\nhave not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.5,
+      "controversy": 0.2,
+      "fringe_score": 0.1,
+      "threat_level": 0.1,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        1,
+        0,
+        2
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "\"Just came across some interesting research from a US university. It looks like microplastics in certain bottled water brands might be linked to hormone imbalances in humans. A 5-year study with 3,000 participants found a significant correlation between drinking bottled water and changes in cortisol and thyroid levels. While the lead researcher says the findings are 'concerning', they're not ready to call it a cause-and-effect yet. Still waiting to hear from health experts on this one.\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.2,
+            "fringe_score": 0.1,
+            "threat_level": 0.2,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_2",
+          "new_post_text": "\"Just saw this study pop up on my feed... again. It's a study, not a definitive proof. 3,000 participants, 5 years, some correlation found. But we need actual cause-and-effect before calling it a public health crisis. Still waiting on health orgs to chime in. #microplastic #bottledwater\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.2,
+            "fringe_score": 0.1,
+            "threat_level": 0,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "retweet",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "new_post",
+          "source_post_id": "post_1",
+          "new_post_id": "post_3",
+          "new_post_text": "\"Heard about a study from the US suggesting a possible link between microplastics in bottled water and hormone issues in humans. Over 3,000 people were tracked for 5 years, and researchers found a correlation between drinking bottled water and changes in cortisol and thyroid levels. While the lead scientist is describing the findings as 'concerning', she notes it's not conclusive yet. Worth keeping an eye on, as this could have major implications for our daily hydration habits.\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.4,
+            "fringe_score": 0.2,
+            "threat_level": 0.3,
+            "generation": 2,
+            "source_post_id": "post_1"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "post_2",
+          "new_post_id": "post_4",
+          "new_post_text": "\"BOMBSHELL in our bottled water? Not so fast... Correlation doesn't equal causation! We need concrete proof before panicking. Anyone else feel like the media is blowing this way out of proportion? #MicroplasticMystery #BottledWaterDebate #WaitForTheFacts\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.6,
+            "fringe_score": 0.1,
+            "threat_level": 0.2,
+            "generation": 2,
+            "source_post_id": "post_2"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 4
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        1,
+        0,
+        2
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "ignore",
+          "source_post_id": "post_4",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "ignore",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "retweet",
+          "source_post_id": "post_4",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 0
+    }
+  ]
+}
