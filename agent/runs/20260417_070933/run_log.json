@@ -1,0 +1,288 @@
+{
+  "run_id": "20260417_070933",
+  "timestamp": "2026-04-17T07:09:33.810966",
+  "config": {
+    "n_agents": 5,
+    "n_steps": 6,
+    "seed": 42,
+    "intra_cluster_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.6394,
+        "emotionality": 0.025,
+        "extraversion": 0.275,
+        "agreeableness": 0.2232,
+        "conscientiousness": 0.7365,
+        "openness": 0.6767
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.8922,
+        "emotionality": 0.0869,
+        "extraversion": 0.4219,
+        "agreeableness": 0.0298,
+        "conscientiousness": 0.2186,
+        "openness": 0.5054
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 1,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.0265,
+        "emotionality": 0.1988,
+        "extraversion": 0.6499,
+        "agreeableness": 0.5449,
+        "conscientiousness": 0.2204,
+        "openness": 0.5893
+      }
+    },
+    {
+      "id": 3,
+      "name": "Dana",
+      "cluster": 0,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.8094,
+        "emotionality": 0.0065,
+        "extraversion": 0.8058,
+        "agreeableness": 0.6981,
+        "conscientiousness": 0.3403,
+        "openness": 0.1555
+      }
+    },
+    {
+      "id": 4,
+      "name": "Eden",
+      "cluster": 0,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.9572,
+        "emotionality": 0.3366,
+        "extraversion": 0.0927,
+        "agreeableness": 0.0967,
+        "conscientiousness": 0.8475,
+        "openness": 0.6037
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 5,
+    "n_edges": 2,
+    "n_clusters": 2,
+    "avg_degree": 0.8,
+    "hubs": {
+      "0": "Dana",
+      "1": "Casey"
+    },
+    "nodes": [
+      {
+        "id": 0,
+        "name": "Alex",
+        "cluster": 1,
+        "is_hub": false,
+        "extraversion": 0.275
+      },
+      {
+        "id": 1,
+        "name": "Blake",
+        "cluster": 1,
+        "is_hub": false,
+        "extraversion": 0.4219
+      },
+      {
+        "id": 2,
+        "name": "Casey",
+        "cluster": 1,
+        "is_hub": true,
+        "extraversion": 0.6499
+      },
+      {
+        "id": 3,
+        "name": "Dana",
+        "cluster": 0,
+        "is_hub": true,
+        "extraversion": 0.8058
+      },
+      {
+        "id": 4,
+        "name": "Eden",
+        "cluster": 0,
+        "is_hub": false,
+        "extraversion": 0.0927
+      }
+    ],
+    "edges": [
+      {
+        "source": 1,
+        "target": 2
+      },
+      {
+        "source": 2,
+        "target": 3
+      }
+    ]
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that microplastics found in common bottled water brands may be interfering with human hormone regulation. The study, which tracked 3,000 participants over 5 years, found a statistically significant correlation between bottled water\n            consumption and disrupted cortisol and thyroid levels. The lead researcher stated the findings are 'concerning but not yet conclusive'. Health authorities have not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.8,
+      "controversy": 0.7,
+      "fringe_score": 0.4,
+      "threat_level": 0.6,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        1,
+        0,
+        3,
+        2,
+        4
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "\"I'm seeing reports about a US university study claiming a link between microplastics in bottled water and hormonal imbalances. The researchers tracked 3,000 people for 5 years and found a statistically significant correlation between bottled water consumption and issues with cortisol and thyroid levels. However, the lead researcher is emphasizing that the findings are 'concerning but not conclusive'. It's worth noting that health authorities haven't issued any official guidance on this yet. More info needed before jumping to conclusions.\"",
+          "new_signals": {
+            "emotional_charge": 0.55,
+            "controversy": 0.6,
+            "fringe_score": 0.4,
+            "threat_level": 0.35,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "retweet",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "like",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 1
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        4,
+        2,
+        1,
+        3,
+        0
+      ],
+      "events": [],
+      "new_posts_this_step": 0
+    },
+    {
+      "step": 3,
+      "agent_order": [
+        0,
+        4,
+        3,
+        1,
+        2
+      ],
+      "events": [],
+      "new_posts_this_step": 0
+    },
+    {
+      "step": 4,
+      "agent_order": [
+        4,
+        0,
+        3,
+        2,
+        1
+      ],
+      "events": [],
+      "new_posts_this_step": 0
+    },
+    {
+      "step": 5,
+      "agent_order": [
+        3,
+        0,
+        2,
+        1,
+        4
+      ],
+      "events": [],
+      "new_posts_this_step": 0
+    },
+    {
+      "step": 6,
+      "agent_order": [
+        0,
+        2,
+        4,
+        3,
+        1
+      ],
+      "events": [],
+      "new_posts_this_step": 0
+    }
+  ]
+}

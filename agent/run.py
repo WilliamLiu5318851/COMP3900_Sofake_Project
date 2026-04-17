@@ -77,14 +77,10 @@ def make_agents(n: int) -> list[Agent]:
     ]
 
 
-def seed_ground_truth(network, registry: PostRegistry) -> Post:
-    """
-    Classify the ground truth story and seed it into every cluster hub's
-    post history so it appears in their neighbours' feeds from step 1.
-    """
+def seed_ground_truth(network, registry: PostRegistry, ground_truth: str) -> Post:
     print("  Classifying ground truth signals…")
     signals = classify_post_signals(
-        post_text=GROUND_TRUTH,
+        post_text=ground_truth,
         generation=0,
         source_post_id="ground_truth",
     )
@@ -92,12 +88,11 @@ def seed_ground_truth(network, registry: PostRegistry) -> Post:
     seed_post = Post(
         id="ground_truth",
         author_id="system",
-        text=GROUND_TRUTH,
+        text=ground_truth,
         signals=signals,
         parent_id=None,
     )
 
-    # Register once per hub so it's visible from all clusters immediately
     for hub in network.hubs.values():
         registry.add(seed_post, hub.id)
 
@@ -187,13 +182,13 @@ def run_simulation(
     n_steps: int,
     seed: int | None,
     out_dir: str,
-    ground_truth: str = None, 
-) -> None:
+    ground_truth: str = None,
+) -> tuple[dict, dict]:
     if seed is not None:
         random.seed(seed)
 
     if ground_truth is None:
-        ground_truth = GROUND_TRUTH   # falls back to the hardcoded one
+        ground_truth = GROUND_TRUTH
 
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     out_path = os.path.join(out_dir, run_id)
@@ -210,7 +205,7 @@ def run_simulation(
     agent_map = {a.id: a for a in agents}
 
     print("Building network…")
-    config  = NetworkConfig(
+    config = NetworkConfig(
         intra_cluster_p=0.55,
         inter_cluster_m=2,
         agents_per_cluster=8,
@@ -223,7 +218,7 @@ def run_simulation(
     registry = PostRegistry()
 
     print("Seeding ground truth…")
-    seed_post = seed_ground_truth(network, registry)
+    seed_post = seed_ground_truth(network, registry, ground_truth)
 
     # ── Run log structure ──────────────────────────────────────────────────────
     run_log = {
@@ -237,7 +232,7 @@ def run_simulation(
             "inter_cluster_m":    config.inter_cluster_m,
             "agents_per_cluster": config.agents_per_cluster,
         },
-        "agents":  [
+        "agents": [
             agent_dict(a, network.agent_cluster[a.id], a.id in hub_ids)
             for a in agents
         ],
@@ -249,6 +244,20 @@ def run_simulation(
                 2 * network.graph.number_of_edges() / max(network.graph.number_of_nodes(), 1), 2
             ),
             "hubs": {str(cid): h.name for cid, h in network.hubs.items()},
+            "nodes": [
+                {
+                    "id":           a.id,
+                    "name":         a.name,
+                    "cluster":      network.agent_cluster[a.id],
+                    "is_hub":       a.id in hub_ids,
+                    "extraversion": round(a.profile.extraversion, 4),
+                }
+                for a in agents
+            ],
+            "edges": [
+                {"source": u, "target": v}
+                for u, v in network.graph.edges()
+            ],
         },
         "ground_truth": {
             "text":    ground_truth,
@@ -257,26 +266,23 @@ def run_simulation(
         "steps": [],
     }
 
-    # signal_drift: post_id -> list of signal snapshots across generations
-    # Tracks the lineage of every post that spawns from the ground truth
     signal_drift: dict[str, list[dict]] = {
         "ground_truth": [signals_dict(seed_post.signals)]
     }
 
-    post_counter = 0  # for generating unique post IDs
+    post_counter = 0
 
     # ── Step loop ──────────────────────────────────────────────────────────────
     for step in range(1, n_steps + 1):
         print_step_header(step, n_steps)
 
         step_log = {
-            "step":               step,
-            "agent_order":        [],
-            "events":             [],
+            "step":                step,
+            "agent_order":         [],
+            "events":              [],
             "new_posts_this_step": 0,
         }
 
-        # Asynchronous scheduling: shuffle agents each step
         shuffled = agents[:]
         random.shuffle(shuffled)
         step_log["agent_order"] = [a.id for a in shuffled]
@@ -291,9 +297,11 @@ def run_simulation(
                 action_result = agent_process_post(agent, post, ground_truth)
                 action = action_result.action
 
+                # ── THE FIX: mark post as seen so feed.py filters it next step
+                agent.seen_post_ids.add(post.id)
+
                 new_post = None
                 if action_result.text:
-                    # Classify signals for the new post
                     new_signals = get_post_signals(action, action_result.text, post)
 
                     post_counter += 1
@@ -305,32 +313,29 @@ def run_simulation(
                         parent_id=post.id,
                     )
 
-                    # Register immediately — later agents this step can see it
                     registry.add(new_post, agent.id)
                     step_log["new_posts_this_step"] += 1
 
-                    # Track signal drift from this post's lineage
                     lineage_key = new_signals.source_post_id
                     if lineage_key not in signal_drift:
                         signal_drift[lineage_key] = []
                     signal_drift[lineage_key].append({
-                        "post_id":    new_post.id,
-                        "author":     agent.name,
-                        "step":       step,
+                        "post_id": new_post.id,
+                        "author":  agent.name,
+                        "step":    step,
                         **signals_dict(new_signals),
                     })
 
                 print_agent_action(agent, action, post, new_post)
 
-                # Log the event
                 event = {
-                    "agent_id":      agent.id,
-                    "agent_name":    agent.name,
-                    "action":        action,
+                    "agent_id":       agent.id,
+                    "agent_name":     agent.name,
+                    "action":         action,
                     "source_post_id": post.id,
-                    "new_post_id":   new_post.id if new_post else None,
-                    "new_post_text": new_post.text if new_post else None,
-                    "new_signals":   signals_dict(new_post.signals) if new_post else None,
+                    "new_post_id":    new_post.id if new_post else None,
+                    "new_post_text":  new_post.text if new_post else None,
+                    "new_signals":    signals_dict(new_post.signals) if new_post else None,
                 }
                 step_log["events"].append(event)
 

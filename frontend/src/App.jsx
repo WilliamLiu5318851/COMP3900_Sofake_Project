@@ -259,18 +259,114 @@ function NoResultsYet() {
 
 // ── Graph View — signal drift line chart ─────────────────────────────────────
 
+import ForceGraph2D from "react-force-graph-2d";
+
+// ── Graph View ────────────────────────────────────────────────────────────────
+
+const CLUSTER_COLORS = [
+  "#1D9E75", "#7F77DD", "#BA7517", "#E24B4A",
+  "#378ADD", "#D85A30", "#639922", "#0F6E56",
+];
+
+function NetworkGraph({ network }) {
+  const containerRef = React.useRef(null);
+  const [width, setWidth] = React.useState(600);
+
+  React.useEffect(() => {
+    if (containerRef.current) {
+      setWidth(containerRef.current.offsetWidth);
+    }
+  }, []);
+
+  const graphData = React.useMemo(() => ({
+    nodes: network.nodes.map((n) => ({
+      ...n,
+      color: CLUSTER_COLORS[n.cluster % CLUSTER_COLORS.length],
+    })),
+    links: network.edges.map((e) => ({
+      source: e.source,
+      target: e.target,
+    })),
+  }), [network]);
+
+  return (
+    <div ref={containerRef} style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)", overflow: "hidden" }}>
+      <ForceGraph2D
+        graphData={graphData}
+        width={width}
+        height={420}
+        backgroundColor="transparent"
+        nodeLabel={(n) => `${n.name} (cluster ${n.cluster}${n.is_hub ? " · hub" : ""})`}
+        nodeColor={(n) => n.color}
+        nodeVal={(n) => n.is_hub ? 8 : 4}
+        nodeCanvasObject={(node, ctx, globalScale) => {
+          const r = node.is_hub ? 7 : 4;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
+          ctx.fillStyle = node.color;
+          ctx.fill();
+          if (node.is_hub) {
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+          const label = node.name;
+          const fontSize = Math.max(10 / globalScale, 3);
+          ctx.font = `${fontSize}px sans-serif`;
+          ctx.fillStyle = "var(--color-text-primary, #222)";
+          ctx.textAlign = "center";
+          ctx.fillText(label, node.x, node.y + r + fontSize + 1);
+        }}
+        linkColor={() => "rgba(136,135,128,0.35)"}
+        linkWidth={1}
+        cooldownTicks={100}
+        d3AlphaDecay={0.02}
+        d3VelocityDecay={0.3}
+      />
+    </div>
+  );
+}
+
 function GraphView({ simResult }) {
   const d = useRunData(simResult?.run_log);
+  const network = simResult?.run_log?.network;
+
   return (
     <section className="card">
       <h2 className="card__title">Graph View</h2>
       {!d ? <NoResultsYet /> : (
         <>
+          {/* Network stats */}
+          <div className="grid grid--2" style={{ marginBottom: "1rem" }}>
+            <div><span className="label">Nodes</span><div>{network.n_nodes}</div></div>
+            <div><span className="label">Edges</span><div>{network.n_edges}</div></div>
+            <div><span className="label">Clusters</span><div>{network.n_clusters}</div></div>
+            <div><span className="label">Avg degree</span><div>{network.avg_degree}</div></div>
+          </div>
+
+          {/* Legend */}
+          <div className="row" style={{ marginBottom: "1rem", flexWrap: "wrap", gap: "8px" }}>
+            {Object.entries(network.hubs).map(([clusterId, hubName]) => (
+              <span key={clusterId} style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--color-text-secondary)" }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: CLUSTER_COLORS[Number(clusterId) % CLUSTER_COLORS.length], display: "inline-block", border: "1.5px solid #fff", boxSizing: "border-box" }} />
+                Cluster {clusterId} · hub: {hubName}
+              </span>
+            ))}
+          </div>
+
+          {/* Force graph */}
+          {network.nodes && network.edges
+            ? <NetworkGraph network={network} />
+            : <div className="callout callout--warn">Network node/edge data not present in this run — re-run the simulation to generate it.</div>
+          }
+
+          <div className="divider" />
+
+          {/* Signal drift chart */}
+          <h3 className="subhead" style={{ marginTop: "1rem" }}>Signal drift across generations</h3>
           <p className="hint" style={{ marginBottom: "1rem" }}>
-            Signal drift across generations — how emotional charge, controversy, fringe score, and
-            threat level evolve as the story propagates further from the ground truth.
+            How emotional charge, controversy, fringe score, and threat level evolve as the story propagates.
           </p>
-          <h3 className="subhead">Signal drift across generations</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={d.driftData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
               <XAxis dataKey="gen" tick={{ fontSize: 12 }} />
@@ -278,9 +374,9 @@ function GraphView({ simResult }) {
               <Tooltip />
               <Legend />
               <Line dataKey="Emotional charge" stroke="#BA7517" dot strokeWidth={2} />
-              <Line dataKey="Controversy" stroke="#7F77DD" dot strokeWidth={2} />
-              <Line dataKey="Fringe score" stroke="#D85A30" dot strokeWidth={2} />
-              <Line dataKey="Threat level" stroke="#E24B4A" dot strokeWidth={2} />
+              <Line dataKey="Controversy"      stroke="#7F77DD" dot strokeWidth={2} />
+              <Line dataKey="Fringe score"     stroke="#1D9E75" dot strokeWidth={2} />
+              <Line dataKey="Threat level"     stroke="#E24B4A" dot strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </>
@@ -288,6 +384,7 @@ function GraphView({ simResult }) {
     </section>
   );
 }
+
 
 // ── FUSE Results ──────────────────────────────────────────────────────────────
 
