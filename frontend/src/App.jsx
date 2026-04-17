@@ -24,8 +24,6 @@ function Sidebar({ active, onNavigate }) {
     { id: "fuse", label: "FUSE Comparison" },
     { id: "fuse-report", label: "FUSE Report" },
     { id: "runs", label: "Saved Runs" },
-    { id: "settings", label: "Settings" },
-    { id: "about", label: "About" },
   ];
   return (
     <aside className="sidebar" aria-label="Sidebar navigation">
@@ -142,7 +140,10 @@ function SimulationConfig({ config, setConfig }) {
         <div>
           <label className="label">Number of agents</label>
           <input className="input" type="number" min={5} max={200} value={config.agentCount}
-            onChange={(e) => setConfig((c) => ({ ...c, agentCount: Number(e.target.value) }))} />
+            onChange={(e) => {
+              const val = e.target.value;
+              setConfig((c) => ({ ...c, agentCount: val === "" ? "" : Number(val) }));
+            }} />
         </div>
         <div>
           <label className="label">Topology</label>
@@ -156,12 +157,18 @@ function SimulationConfig({ config, setConfig }) {
         <div>
           <label className="label">Seed (reproducibility)</label>
           <input className="input" type="number" value={config.seed}
-            onChange={(e) => setConfig((c) => ({ ...c, seed: Number(e.target.value) }))} />
+           onChange={(e) => {
+            const val = e.target.value;
+            setConfig((c) => ({ ...c, seed: val === "" ? "" : Number(val) }));
+          }} />
         </div>
         <div>
           <label className="label">Steps (interactions)</label>
           <input className="input" type="number" min={5} max={500} value={config.steps}
-            onChange={(e) => setConfig((c) => ({ ...c, steps: Number(e.target.value) }))} />
+            onChange={(e) => {
+              const val = e.target.value;
+              setConfig((c) => ({ ...c, steps: val === "" ? "" : Number(val) }));
+            }} />
         </div>
       </div>
       <div className="divider" />
@@ -834,17 +841,6 @@ function SavedRuns({ savedRuns }) {
   );
 }
 
-// ── Placeholder ───────────────────────────────────────────────────────────────
-
-function PlaceholderPage({ title, children }) {
-  return (
-    <section className="card">
-      <h2 className="card__title">{title}</h2>
-      <div className="hint">{children}</div>
-    </section>
-  );
-}
-
 // ── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -924,19 +920,6 @@ export default function App() {
           {page === "fuse-report" && <FuseAgentReport simResult={simResult} />}
 
           {page === "runs" && <SavedRuns savedRuns={savedRuns} />}
-
-          {page === "settings" && (
-            <PlaceholderPage title="Settings">
-              Store defaults (max chars, step limit, role presets, scoring weights). Add "Reset to defaults".
-            </PlaceholderPage>
-          )}
-
-          {page === "about" && (
-            <PlaceholderPage title="About SoFake">
-              Explain: no live detection, no scraping. It's a simulation tool to study how truth
-              drifts through agent interactions.
-            </PlaceholderPage>
-          )}
 
         </div>
       </main>
