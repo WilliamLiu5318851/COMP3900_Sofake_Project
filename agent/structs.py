@@ -12,10 +12,9 @@ from groq import Groq, RateLimitError
 def llm_call(prompt: str) -> str:
     # [NEW] 在函数内部初始化客户端，确保它能抓取到被 os.fork() 注入的全新 API Key
     raw_keys = os.getenv("GROQ_API_KEY", "")
-    actual_key = raw_keys.split(",")[0].strip()  # 永远只拿第一把干净的钥匙
+    actual_key = raw_keys.split(",")[0].strip()
     
     client = Groq(api_key=actual_key)
-    
     # [NEW] 加入自动重试机制，最多重试 3 次
     max_retries = 3
     for attempt in range(max_retries):
