@@ -46,9 +46,6 @@ function Sidebar({ active, onNavigate }) {
           </button>
         ))}
       </nav>
-      <div className="sidebar__footer">
-        <div className="pill">Offline • No scraping</div>
-      </div>
     </aside>
   );
 }
@@ -83,9 +80,6 @@ function GroundTruthUploader({ value, onChange }) {
           {value.length.toLocaleString()} / {maxChars.toLocaleString()} chars
         </div>
       </div>
-      <label className="label" htmlFor="groundTruth">
-        Paste the original, truthful newsreel (text-only)
-      </label>
       <textarea
         id="groundTruth"
         className="textarea"
