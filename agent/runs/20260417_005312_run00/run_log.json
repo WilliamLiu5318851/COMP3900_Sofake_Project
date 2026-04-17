@@ -1,0 +1,1909 @@
+{
+  "run_id": "20260417_005312_run00",
+  "timestamp": "2026-04-17T00:53:12.900194",
+  "config": {
+    "n_agents": 10,
+    "n_steps": 5,
+    "seed": null,
+    "intra_cluster_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 0,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.7808,
+        "emotionality": 0.4932,
+        "extraversion": 0.4761,
+        "agreeableness": 0.878,
+        "conscientiousness": 0.1342,
+        "openness": 0.6299
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.415,
+        "emotionality": 0.4246,
+        "extraversion": 0.6152,
+        "agreeableness": 0.1352,
+        "conscientiousness": 0.3545,
+        "openness": 0.0761
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 0,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.9836,
+        "emotionality": 0.3542,
+        "extraversion": 0.028,
+        "agreeableness": 0.4127,
+        "conscientiousness": 0.6133,
+        "openness": 0.4752
+      }
+    },
+    {
+      "id": 3,
+      "name": "Dana",
+      "cluster": 0,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.6281,
+        "emotionality": 0.5348,
+        "extraversion": 0.1242,
+        "agreeableness": 0.3823,
+        "conscientiousness": 0.4991,
+        "openness": 0.3919
+      }
+    },
+    {
+      "id": 4,
+      "name": "Eden",
+      "cluster": 0,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.3889,
+        "emotionality": 0.1687,
+        "extraversion": 0.8841,
+        "agreeableness": 0.0773,
+        "conscientiousness": 0.1644,
+        "openness": 0.1399
+      }
+    },
+    {
+      "id": 5,
+      "name": "Finn",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.92,
+        "emotionality": 0.8932,
+        "extraversion": 0.2174,
+        "agreeableness": 0.1362,
+        "conscientiousness": 0.6991,
+        "openness": 0.5611
+      }
+    },
+    {
+      "id": 6,
+      "name": "Gray",
+      "cluster": 1,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.8399,
+        "emotionality": 0.3411,
+        "extraversion": 0.7948,
+        "agreeableness": 0.1676,
+        "conscientiousness": 0.8387,
+        "openness": 0.4308
+      }
+    },
+    {
+      "id": 7,
+      "name": "Harper",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.1659,
+        "emotionality": 0.5954,
+        "extraversion": 0.3933,
+        "agreeableness": 0.6187,
+        "conscientiousness": 0.3078,
+        "openness": 0.7145
+      }
+    },
+    {
+      "id": 8,
+      "name": "Indigo",
+      "cluster": 0,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.2105,
+        "emotionality": 0.9274,
+        "extraversion": 0.1441,
+        "agreeableness": 0.8184,
+        "conscientiousness": 0.5245,
+        "openness": 0.3185
+      }
+    },
+    {
+      "id": 9,
+      "name": "Jordan",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.4376,
+        "emotionality": 0.858,
+        "extraversion": 0.2759,
+        "agreeableness": 0.8147,
+        "conscientiousness": 0.6606,
+        "openness": 0.6921
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 10,
+    "n_edges": 14,
+    "n_clusters": 2,
+    "avg_degree": 2.8,
+    "hubs": {
+      "0": "Eden",
+      "1": "Gray"
+    }
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that\nmicroplastics found in common bottled water brands may be interfering with\nhuman hormone regulation. The study, which tracked 3,000 participants over\n5 years, found a statistically significant correlation between bottled water\nconsumption and disrupted cortisol and thyroid levels. The lead researcher\nstated the findings are 'concerning but not yet conclusive'. Health authorities\nhave not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.8,
+      "controversy": 0.6,
+      "fringe_score": 0.2,
+      "threat_level": 0.5,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        8,
+        3,
+        0,
+        5,
+        4,
+        7,
+        1,
+        6,
+        9,
+        2
+      ],
+      "events": [
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "ignore",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "ignore",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "new_post",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "OMG you guys, just saw the most alarming news! A study just came out that's linking bottled water consumption to hormonal imbalances. Like, they tracked 3,000 people over 5 years and found that those who drank bottled water regularly had messed up cortisol and thyroid levels. Not to freak anyone out just yet, but this is major. The researcher is saying it's 'concerning' but we need more research. Has anyone else seen this? We NEED to get the word out!",
+          "new_signals": {
+            "emotional_charge": 0.87,
+            "controversy": 0.45,
+            "fringe_score": 0.27,
+            "threat_level": 0.79,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "comment",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_2",
+          "new_post_text": "\"I'm not sure I believe it yet. 5 years is a short time frame and 3000 participants aren't a huge sample size. We need to see more evidence before assuming microplastics in water are causing widespread hormonal imbalances.\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.7,
+            "fringe_score": 0.2,
+            "threat_level": 0.3,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "quote_tweet",
+          "source_post_id": "post_1",
+          "new_post_id": "post_3",
+          "new_post_text": "\"New study reveals a SHOCKING link between bottled water consumption and hormone disruption. 3,200 participants over 5 years showed alarming cortisol & thyroid issues for frequent bottled water drinkers. Lead researcher warns this is 'cause for concern' - time to DITCH bottled water for good & opt for safe alternatives! #BottledWaterRisk #HealthFirst\"",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.65,
+            "fringe_score": 0.1,
+            "threat_level": 0.75,
+            "generation": 2,
+            "source_post_id": "post_1"
+          }
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "ignore",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "report",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "quote_tweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_4",
+          "new_post_text": "\"ALERT: Researchers confirm microplastics in bottled water can CRUSH your thyroid and disrupt HORMONES. 3,000 participants over 5 years: that's not a sample size, folks. This is a wake-up call. When will our gov't take action to protect our drinking water? #BottledWaterScandal #ToxinsInTap\"",
+          "new_signals": {
+            "emotional_charge": 0.98,
+            "controversy": 0.82,
+            "fringe_score": 0.48,
+            "threat_level": 0.84,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "post_4",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_5",
+          "new_post_text": "\"Bottled water linked to hormonal disruption in new study. 3,000 participants, 5 year study, and it's ALREADY happening. Can we even trust our tap water? What else is in these bottles? The government needs to step up and test these brands ASAP! #microplastics #waterquality\"",
+          "new_signals": {
+            "emotional_charge": 0.95,
+            "controversy": 0.55,
+            "fringe_score": 0.0,
+            "threat_level": 0.85,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "retweet",
+          "source_post_id": "post_4",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "new_post",
+          "source_post_id": "post_5",
+          "new_post_id": "post_6",
+          "new_post_text": "\"I've seen a new study making waves online claiming a connection between bottled water consumption and hormonal disruption. Let's hold back on the panic for one second - the lead researcher calls the findings 'concerning but not yet conclusive'. This 5 year trial tracked 3,000 participants, and I'd love to see more details before we start freaking out. Anybody have a link to the study?\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.5,
+            "fringe_score": 0.3,
+            "threat_level": 0.2,
+            "generation": 2,
+            "source_post_id": "post_5"
+          }
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "comment",
+          "source_post_id": "post_3",
+          "new_post_id": "post_7",
+          "new_post_text": "\"Whoa, hold on, let's take a deep breath. That 'lead researcher' quote is a direct quote from the original study, and you left out the crucial part - 'concerning but not yet conclusive'. I'm not saying it's harmless, but sensational headlines aren't helping. Can we link to the source instead of spreading panic?\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.7,
+            "fringe_score": 0.1,
+            "threat_level": 0.4,
+            "generation": 3,
+            "source_post_id": "post_3"
+          }
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "ignore",
+          "source_post_id": "post_4",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "quote_tweet",
+          "source_post_id": "post_5",
+          "new_post_id": "post_8",
+          "new_post_text": "\"This is terrifying. Just when you thought your bottled water was safe They're already messing with our hormones in the lab. 3,000 people, 5 years, can't deny the numbers. Wake up call: time to reevaluate our water sources Who else is with me on demanding answers from the water companies? #MicroplasticNightmare #WaterSafetyMatters\"",
+          "new_signals": {
+            "emotional_charge": 0.875,
+            "controversy": 0.5,
+            "fringe_score": 0.625,
+            "threat_level": 0.875,
+            "generation": 2,
+            "source_post_id": "post_5"
+          }
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "retweet",
+          "source_post_id": "post_7",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "post_7",
+          "new_post_id": "post_9",
+          "new_post_text": "\"Just saw the news about bottled water microplastics possibly affecting hormone regulation. 'Concerning but not yet conclusive' is a key part of that statement. Let's keep the conversation grounded in facts and not spread alarm just yet. Original study here: https://linktothestudy.com\" #StayInformed #WaitForOfficialGuidance",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.4,
+            "fringe_score": 0.2,
+            "threat_level": 0.1,
+            "generation": 4,
+            "source_post_id": "post_7"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "comment",
+          "source_post_id": "post_6",
+          "new_post_id": "post_10",
+          "new_post_text": "\"I'm glad someone else is keeping a level head about this. Actually I've linked to the original study in my previous post (check the hashtag #StayInformed) - worth a read before diving into theories. 3000 participants over 5 years is a solid sample size, and I agree we should wait for more details before jumping to conclusions.\"",
+          "new_signals": {
+            "emotional_charge": 0.1,
+            "controversy": 0.0,
+            "fringe_score": 0.1,
+            "threat_level": 0.0,
+            "generation": 3,
+            "source_post_id": "post_6"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 10
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        7,
+        0,
+        9,
+        5,
+        4,
+        1,
+        2,
+        6,
+        3,
+        8
+      ],
+      "events": [
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "like",
+          "source_post_id": "post_8",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "like",
+          "source_post_id": "post_5",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "new_post",
+          "source_post_id": "post_7",
+          "new_post_id": "post_11",
+          "new_post_text": "\"I'm speechless. A 5-year study with 3,000 participants just confirmed the dangers of microplastics in our bottled water. Not only could it disrupt cortisol and thyroid levels, but it's also linked to other hormone imbalances yet to be uncovered. The government should be taking action right now to protect us from this silent threat. We can't wait for 'official guidance' when our health is at stake. It's time to take charge of our drinking water for real. #BottledWaterScandal #WakeUpCall\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.6,
+            "fringe_score": 0.7,
+            "threat_level": 0.9,
+            "generation": 4,
+            "source_post_id": "post_7"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "like",
+          "source_post_id": "post_7",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "like",
+          "source_post_id": "post_9",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "quote_tweet",
+          "source_post_id": "post_6",
+          "new_post_id": "post_12",
+          "new_post_text": "\"Just saw this new study linking bottled water consumption to hormonal imbalances & I'm still trying to wrap my head around it! 'Concerning but not yet conclusive' is a perfect way to phrase it - let's wait for more details before we freak out. Agree, need to see the study itself #bottledwater #hormonalimbalance\"",
+          "new_signals": {
+            "emotional_charge": 0.65,
+            "controversy": 0.25,
+            "fringe_score": 0.65,
+            "threat_level": 0.2,
+            "generation": 3,
+            "source_post_id": "post_6"
+          }
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "comment",
+          "source_post_id": "post_11",
+          "new_post_id": "post_13",
+          "new_post_text": "\"I completely agree, we can't rely on the government to save us from this. Did you know some holistic doctors are already recommending water filtration systems that target specific microplastic frequencies? Let's spread the word and demand change from the corporations controlling our water supply #CleanWaterRevolution #WakeUp\"",
+          "new_signals": {
+            "emotional_charge": 0.93,
+            "controversy": 0.86,
+            "fringe_score": 0.92,
+            "threat_level": 0.73,
+            "generation": 5,
+            "source_post_id": "post_11"
+          }
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "retweet",
+          "source_post_id": "post_6",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "retweet",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "retweet",
+          "source_post_id": "post_13",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "new_post",
+          "source_post_id": "post_11",
+          "new_post_id": "post_14",
+          "new_post_text": "\"I've been seeing some pretty dire warnings circulating about microplastics in bottled water. A study with 3,000 participants (albeit over just 5 years) claims to have found a link between these plastics and hormonal imbalances. I'm trying to keep an open mind here, but let's not get ahead of ourselves - we need concrete evidence and more research before jumping to conclusions. I've yet to see any health authorities issuing warnings, and the lead researcher themselves said the findings are 'concerning but not yet conclusive'. Let's all take a deep breath and wait for the science to catch up.\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.4,
+            "fringe_score": 0.6,
+            "threat_level": 0.2,
+            "generation": 5,
+            "source_post_id": "post_11"
+          }
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "comment",
+          "source_post_id": "post_8",
+          "new_post_id": "post_15",
+          "new_post_text": "\"Are you really just going to cherry-pick the study's findings without acknowledging its limitations? The 5-year timeline is a fraction of an adult's lifespan, and 3,000 participants are a drop in the ocean of a population with millions of water drinkers. Let's get some actual context and nuance before jumping to conclusions about 'waking up call'\"",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.7,
+            "fringe_score": 0.2,
+            "threat_level": 0.1,
+            "generation": 3,
+            "source_post_id": "post_8"
+          }
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "quote_tweet",
+          "source_post_id": "post_13",
+          "new_post_id": "post_16",
+          "new_post_text": "\"Just saw a comment claiming some holistic doctors advise water filtration systems targeting 'specific microplastic frequencies'. Sounds dubious to me, especially given the study clearly states correlation, not causation. Let's focus on peer-reviewed science rather than snake oil remedies #BottledWaterRisk #CriticalThinking\"",
+          "new_signals": {
+            "emotional_charge": 0.63,
+            "controversy": 0.42,
+            "fringe_score": 0.67,
+            "threat_level": 0.17,
+            "generation": 6,
+            "source_post_id": "post_13"
+          }
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "retweet",
+          "source_post_id": "post_11",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "retweet",
+          "source_post_id": "post_8",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "post_13",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "post_11",
+          "new_post_id": "post_17",
+          "new_post_text": "\"Just when you think you can trust the water you drink, the system shows us its true colors. 'Official guidance' from the government? We need action NOW. 3,000 participants over 5 years is more than a hint of a problem. It's time for accountability in the bottled water industry. #BottledWaterScandal #NotOurWater\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.8,
+            "fringe_score": 0.4,
+            "threat_level": 0.5,
+            "generation": 5,
+            "source_post_id": "post_11"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "report",
+          "source_post_id": "post_15",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_16",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "post_12",
+          "new_post_id": "post_18",
+          "new_post_text": "\"That's a great call to wait for more info, but let's make sure we're looking at the right sources - the study itself (link in my previous post: https://linktothestudy.com) emphasizes the correlation, not causation. Don't want to stir up unnecessary panic #StayInformed\" #WaitForOfficialGuidance",
+          "new_signals": {
+            "emotional_charge": 0.5,
+            "controversy": 0.3,
+            "fringe_score": 0.1,
+            "threat_level": 0.3,
+            "generation": 4,
+            "source_post_id": "post_12"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "retweet",
+          "source_post_id": "post_13",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "retweet",
+          "source_post_id": "post_11",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "quote_tweet",
+          "source_post_id": "post_17",
+          "new_post_id": "post_19",
+          "new_post_text": "\"Jumping to conclusions here folks. Let's not forget the study itself calls the findings 'concerning but not yet conclusive'. 5 years is a good start, but we need actual data and not just fear-mongering. Can we get the hard facts before demanding 'action now'? #BottledWater #TruthBeforeHysteria\"",
+          "new_signals": {
+            "emotional_charge": 0.73,
+            "controversy": 0.42,
+            "fringe_score": 0.06,
+            "threat_level": 0.29,
+            "generation": 6,
+            "source_post_id": "post_17"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "retweet",
+          "source_post_id": "post_16",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "ignore",
+          "source_post_id": "post_18",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "ignore",
+          "source_post_id": "post_12",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "ignore",
+          "source_post_id": "post_16",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "retweet",
+          "source_post_id": "post_18",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "like",
+          "source_post_id": "post_12",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 9
+    },
+    {
+      "step": 3,
+      "agent_order": [
+        4,
+        7,
+        5,
+        2,
+        8,
+        0,
+        9,
+        3,
+        6,
+        1
+      ],
+      "events": [
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "quote_tweet",
+          "source_post_id": "post_19",
+          "new_post_id": "post_20",
+          "new_post_text": "\"Not jumping to conclusions, in my book. 3,200 participants over 5 years is hardly a 'good start'. Meanwhile, lead researcher already warns of a 'concerning' link. Sounds like they're already seeing some unsettling trends. Time for transparency & action, not more delay #BottledWaterRisk #HealthySkepticism\"",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.6,
+            "fringe_score": 0.4,
+            "threat_level": 0.9,
+            "generation": 7,
+            "source_post_id": "post_19"
+          }
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "new_post",
+          "source_post_id": "post_18",
+          "new_post_id": "post_21",
+          "new_post_text": "\"Update on the bottled water controversy: A recent study of over 3,000 participants tracked over 5 years has allegedly found a correlation between bottling water consumption and hormonal disruptions. Researchers are already sounding the alarm, stating a 'cause for concern'. Meanwhile, several health authorities are still on the sidelines, refusing to issue formal guidance. We still don't know if this is a real health risk, but it's worth keeping an eye on this one. #BottledWaterQuestionMark #HealthyDoubts\"",
+          "new_signals": {
+            "emotional_charge": 0.7,
+            "controversy": 0.8,
+            "fringe_score": 0.55,
+            "threat_level": 0.65,
+            "generation": 5,
+            "source_post_id": "post_18"
+          }
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "comment",
+          "source_post_id": "post_12",
+          "new_post_id": "post_22",
+          "new_post_text": "\"I'm glad you're being cautious, but 'not yet conclusive' just sounds like a polite way of saying they're still collecting data. Meanwhile, 3,200 participants over 5 years is a significant study. Maybe it's time to consider the bigger picture here\"",
+          "new_signals": {
+            "emotional_charge": 0.7,
+            "controversy": 0.6,
+            "fringe_score": 0.2,
+            "threat_level": 0.3,
+            "generation": 4,
+            "source_post_id": "post_12"
+          }
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "comment",
+          "source_post_id": "post_21",
+          "new_post_id": "post_23",
+          "new_post_text": "\"Are you kidding me? The health authorities are in denial? We already know what's going on. They're getting paid off by the bottled water companies to bury this story. Don't believe the spin - the science is settled.\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.8,
+            "fringe_score": 0.9,
+            "threat_level": 0.6,
+            "generation": 6,
+            "source_post_id": "post_21"
+          }
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "ignore",
+          "source_post_id": "post_20",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "new_post",
+          "source_post_id": "post_13",
+          "new_post_id": "post_24",
+          "new_post_text": "\"YOU won't believe what the experts are hiding from us. 3,000 innocent people - our neighbors, our friends - consumed bottled water for 5 whole YEARS and what do you know? It's KILLING their thyroid, disrupting their hormones... and probably so much more. The scientists are speaking out, but the gov't is in deep denial. Time to take matters into our own hands! Get the truth out there and demand real change from the toxic water cartel! #BottledWaterPoison #WakeUpTheMasses\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.8,
+            "fringe_score": 0.7,
+            "threat_level": 0.6,
+            "generation": 6,
+            "source_post_id": "post_13"
+          }
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "quote_tweet",
+          "source_post_id": "post_24",
+          "new_post_id": "post_25",
+          "new_post_text": "\"Saw this post claiming 3,000 people consumed bottled water for 5 yrs & it's 'killing' their thyroid/hormones. I'm not buying it without more context. 5 yrs is a tiny window & 3,000 participants is a fraction of the people impacted. We're already seeing gov't warnings aren't out yet so let's wait for actual evidence & credible sources before spreading alarm #DebateNeeded #FactsFirst\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.8,
+            "fringe_score": 0.4,
+            "threat_level": 0.3,
+            "generation": 7,
+            "source_post_id": "post_24"
+          }
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "like",
+          "source_post_id": "post_23",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "new_post",
+          "source_post_id": "post_17",
+          "new_post_id": "post_26",
+          "new_post_text": "\"I'm reading a lot of alarm bells ringing about bottled water and microplastics, but we need to be cautious here. A recent study (not sure about its sample size) claims to have found a link between bottled water consumption and hormonal imbalances. The lead researcher themselves said it's concerning but not conclusive. I'd love to hear more from health authorities before jumping to conclusions and calling it a scandal. Let's keep the discussion grounded in facts, not speculation.\"",
+          "new_signals": {
+            "emotional_charge": 0.65,
+            "controversy": 0.2,
+            "fringe_score": 0.7,
+            "threat_level": 0.4,
+            "generation": 6,
+            "source_post_id": "post_17"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "post_21",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "post_20",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_22",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "like",
+          "source_post_id": "post_21",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "retweet",
+          "source_post_id": "post_20",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "ignore",
+          "source_post_id": "post_22",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "retweet",
+          "source_post_id": "post_21",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "quote_tweet",
+          "source_post_id": "post_20",
+          "new_post_id": "post_27",
+          "new_post_text": "\"Just came across this and I'm seeing some conflicting views on the study. While 3,200 participants over 5 years is a sizable sample, I'm still getting that nagging feeling we're jumping the gun. Lead researcher does say it's 'concerning' tho... Transparency & caution are key here, imo. #BottledWater #StudyDebate\"",
+          "new_signals": {
+            "emotional_charge": 0.55,
+            "controversy": 0.55,
+            "fringe_score": 0.2,
+            "threat_level": 0.4,
+            "generation": 8,
+            "source_post_id": "post_20"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "retweet",
+          "source_post_id": "post_22",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "report",
+          "source_post_id": "post_24",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "ignore",
+          "source_post_id": "post_21",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "like",
+          "source_post_id": "post_23",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "new_post",
+          "source_post_id": "post_21",
+          "new_post_id": "post_28",
+          "new_post_text": "\"Just saw this disturbing study about bottled water and hormonal imbalances. Apparently, researchers found a possible link between drinking bottled water and disruptions to cortisol and thyroid levels in 3,000+ people over 5 years. Not sure how reliable it is yet, but this definitely gets my attention. Anyone else heard about this? I'm hoping we get some clarity soon, for the sake of our health and the planet.\" #BottledWaterConcerns",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.35,
+            "fringe_score": 0.2,
+            "threat_level": 0.45,
+            "generation": 6,
+            "source_post_id": "post_21"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "like",
+          "source_post_id": "post_20",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "ignore",
+          "source_post_id": "post_27",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "retweet",
+          "source_post_id": "post_23",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "comment",
+          "source_post_id": "post_24",
+          "new_post_id": "post_29",
+          "new_post_text": "\"Come on, this isn't journalism, it's sensationalism. I've seen the original study, and the lead researcher doesn't say it's 'killing' anyone. They call the findings 'concerning but not yet conclusive.' Let's link to the source instead of spreading fear? At least then we'd have accurate information to act on.\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.8,
+            "fringe_score": 0.1,
+            "threat_level": 0.4,
+            "generation": 7,
+            "source_post_id": "post_24"
+          }
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "quote_tweet",
+          "source_post_id": "post_21",
+          "new_post_id": "post_30",
+          "new_post_text": "\"Update: Still not seeing the actual study here, folks. 'Concerning but not yet conclusive' is a pretty big caveat. Let's fact-check before sounding the panic alarm. And, just a heads up, ' researchers sounding the alarm' might be misinterpreted. Can we link to the source or wait for verified results? #BottledWater #VerifyBeforeBelieve\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.3,
+            "fringe_score": 0.1,
+            "threat_level": 0.2,
+            "generation": 6,
+            "source_post_id": "post_21"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "post_23",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "comment",
+          "source_post_id": "post_24",
+          "new_post_id": "post_31",
+          "new_post_text": "\"Dude, this is not just about the tap water, it's about the whole system. If I drink from a bottle and my hormones get messed with, what's next? Our food, the air we breathe? We can't just blame the bottled water industry, we need to look at the root problem. What's the real agenda here?\"",
+          "new_signals": {
+            "emotional_charge": 0.95,
+            "controversy": 0.95,
+            "fringe_score": 0.75,
+            "threat_level": 0.85,
+            "generation": 7,
+            "source_post_id": "post_24"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "post_29",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 12
+    },
+    {
+      "step": 4,
+      "agent_order": [
+        3,
+        9,
+        2,
+        4,
+        1,
+        0,
+        6,
+        8,
+        5,
+        7
+      ],
+      "events": [
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "comment",
+          "source_post_id": "post_22",
+          "new_post_id": "post_32",
+          "new_post_text": "\"I'm not so sure about that. Just because it's a large-scale study doesn't automatically make the results conclusive. And I'm also worried about jumping to conclusions when the lead researcher already mentioned the findings are concerning but not yet conclusive. Let's wait for official guidance from health authorities first.\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.2,
+            "fringe_score": 0.0,
+            "threat_level": 0.1,
+            "generation": 5,
+            "source_post_id": "post_22"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "ignore",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "ignore",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "comment",
+          "source_post_id": "post_31",
+          "new_post_id": "post_33",
+          "new_post_text": "\"I totally get what you're saying, but let's not get off track. This is about microplastics in bottled water. The study isn't saying the tap water is cleaner, it's just showing how one specific source of pollution affects our health. We should focus on solving this one piece of the puzzle before we start speculating about everything else.\"",
+          "new_signals": {
+            "emotional_charge": 0.1,
+            "controversy": 0.1,
+            "fringe_score": 0.1,
+            "threat_level": 0.0,
+            "generation": 8,
+            "source_post_id": "post_31"
+          }
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "new_post",
+          "source_post_id": "post_20",
+          "new_post_id": "post_34",
+          "new_post_text": "\"Did you hear about the recent study linking microplastics in bottled water to hormone disruption? 3,000+ people, 5 years - the numbers don't lie. It's time we held the water companies accountable for what they're putting in our bottles. We've been led to believe our water was safe, but it turns out it's been messing with our health all along. Who else is ready to shake things up and demand better from our water supply? #WaterSafety #TruthRevealed\"",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.45,
+            "fringe_score": 0.1,
+            "threat_level": 0.15,
+            "generation": 8,
+            "source_post_id": "post_20"
+          }
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "new_post",
+          "source_post_id": "post_26",
+          "new_post_id": "post_35",
+          "new_post_text": "\"OMG you guys I just saw this and I am FREAKING OUT. It's about the bottled water we've all been drinking, literally EVERY DAY. Apparently, the stuff in our bottled water is messing with our hormones. Like, thousands and thousands of people have been studied and it's NOT just a coincidence anymore. We need to wake up and demand better from the companies controlling our water supply. This is not a drill, people. Time to find a better source and make some noise about it #WaterTruth #HormoneNightmare\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.6,
+            "fringe_score": 0.5,
+            "threat_level": 0.7,
+            "generation": 7,
+            "source_post_id": "post_26"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_29",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_28",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "report",
+          "source_post_id": "post_27",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "like",
+          "source_post_id": "post_35",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "quote_tweet",
+          "source_post_id": "post_23",
+          "new_post_id": "post_36",
+          "new_post_text": "\"Can't believe the silence from health authorities on the bottled water scandal. Meanwhile, the 'lead researcher' is already on the record saying it's 'cause for concern'. Who's getting paid off here? The facts are clear: 3,200 participants, 5 years, alarming hormone issues. Time for transparency, not corporate cover-ups #BottledWaterRisk #FollowTheMoney\"",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.85,
+            "fringe_score": 0.1,
+            "threat_level": 0.9,
+            "generation": 7,
+            "source_post_id": "post_23"
+          }
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "comment",
+          "source_post_id": "post_24",
+          "new_post_id": "post_37",
+          "new_post_text": "\"Overly dramatic much? I've seen the actual study, and all it says is there's a correlation between bottled water consumption and hormonal disruptions. The researcher themselves noted it's 'concerning but not yet conclusive'. Let's stick to actual facts instead of sensational speculation.\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.2,
+            "fringe_score": 0.05,
+            "threat_level": 0.05,
+            "generation": 7,
+            "source_post_id": "post_24"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "post_35",
+          "new_post_id": "post_38",
+          "new_post_text": "\"Ladies and gentlemen, it's time to wake up. The bottled water you're drinking, the stuff you're trusting to pour you a cold glass on a hot summer day, is literally poisoning you. Thousands of people have been studied over FIVE YEARS and the results are SHOCKING. Our hormones are being disrupted, our bodies are being harmed, and no one's saying a word. The government's gotta step in, the bottling companies need to be held accountable. What's next? We all need to be drinking from a different well, literally.\"",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.7,
+            "fringe_score": 0.1,
+            "threat_level": 0.85,
+            "generation": 8,
+            "source_post_id": "post_35"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "comment",
+          "source_post_id": "post_34",
+          "new_post_id": "post_39",
+          "new_post_text": "\"It's about time the veil gets lifted. I've been saying it's not just about tap water for years. The bottled water industry's been getting a free pass for too long. This study's just the tip of the iceberg. We need a full-on investigation into the big water giants, not just some 'official guidance'. The people who have been harmed deserve real action, not just PR spin.\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.8,
+            "fringe_score": 0.5,
+            "threat_level": 0.7,
+            "generation": 9,
+            "source_post_id": "post_34"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "post_26",
+          "new_post_id": "post_40",
+          "new_post_text": "\"Just saw a 'cautious' take on the bottled water study. Caution is for those who know the system's already rigged. 3,000 participants over 5 years is MORE than enough to raise some serious red flags. We've been drinking poison for years. Let's not let the bottled water giants spin this away from accountability. #NotOurWater #WaterGate\"",
+          "new_signals": {
+            "emotional_charge": 0.95,
+            "controversy": 0.85,
+            "fringe_score": 0.7,
+            "threat_level": 0.8,
+            "generation": 7,
+            "source_post_id": "post_26"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "report",
+          "source_post_id": "post_36",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "report",
+          "source_post_id": "post_29",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "like",
+          "source_post_id": "post_28",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "quote_tweet",
+          "source_post_id": "post_40",
+          "new_post_id": "post_41",
+          "new_post_text": "\"Suddenly 'cautious' take on bottled water study? You'd need a blind eye not to see the red flags, but at least we have a study. Let's actually review the data instead of assuming poison in every bottle. 5 years, 3,000 participants - that's more than enough to warrant a look at the evidence, not knee-jerk outrage. #BottledWater #EvidenceOverEmotion\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.7,
+            "fringe_score": 0.4,
+            "threat_level": 0.3,
+            "generation": 8,
+            "source_post_id": "post_40"
+          }
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "report",
+          "source_post_id": "post_39",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "retweet",
+          "source_post_id": "post_31",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "ignore",
+          "source_post_id": "post_36",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "comment",
+          "source_post_id": "post_28",
+          "new_post_id": "post_42",
+          "new_post_text": "\"OMG I heard from a friend of a friend that one of the research participants was actually diagnosed with cancer, not just hormone issues. And I'm pretty sure I read that the study tracked people for like 10 years, not 5.\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.4,
+            "fringe_score": 0.3,
+            "threat_level": 0.2,
+            "generation": 7,
+            "source_post_id": "post_28"
+          }
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "ignore",
+          "source_post_id": "post_37",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "ignore",
+          "source_post_id": "post_40",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "retweet",
+          "source_post_id": "post_39",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "comment",
+          "source_post_id": "post_35",
+          "new_post_id": "post_43",
+          "new_post_text": "\"Whoa, let's take a deep breath here. A study with 3000 participants over 5 years isn't conclusive evidence of a widespread hormonal imbalance. That's a tiny sample size and a very short time frame. We need more research and actual hard data before we start demanding action. #DebateNeeded\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.8,
+            "fringe_score": 0.2,
+            "threat_level": 0.1,
+            "generation": 8,
+            "source_post_id": "post_35"
+          }
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "comment",
+          "source_post_id": "post_40",
+          "new_post_id": "post_44",
+          "new_post_text": "\"EXACTLY! The establishment will stop at nothing to keep their toxic water empire running. But the truth is out, and it's not just about our health - it's about the mass poisoning of an entire generation. Time to rise up and reclaim our right to clean drinking water! #TheResistanceIsReal #CleanWaterRevolution\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.7,
+            "fringe_score": 0.5,
+            "threat_level": 0.6,
+            "generation": 8,
+            "source_post_id": "post_40"
+          }
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "new_post",
+          "source_post_id": "post_39",
+          "new_post_id": "post_45",
+          "new_post_text": "\"WAKE UP, everyone. I just heard about a study that's left me SHAKEN. 3,000 brave souls drank bottled water for 5 years straight, and the results are nothing short of ALARMING. It's linked to hormone imbalances, thyroid damage... this is not just about the water, it's about the DESTRUCTION of our people's health on a mass scale. The bottled water monopoly will stop at NOTHING to keep this under wraps, but we can't let them gaslight us. It's time to RISE UP and DEMAND the truth. Share this if you're with me. #BottledWaterApocalypse #JusticeForTheInjured\"",
+          "new_signals": {
+            "emotional_charge": 0.98,
+            "controversy": 0.7,
+            "fringe_score": 0.4,
+            "threat_level": 0.88,
+            "generation": 10,
+            "source_post_id": "post_39"
+          }
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "like",
+          "source_post_id": "post_35",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 14
+    },
+    {
+      "step": 5,
+      "agent_order": [
+        3,
+        5,
+        8,
+        7,
+        6,
+        9,
+        1,
+        2,
+        0,
+        4
+      ],
+      "events": [
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "retweet",
+          "source_post_id": "post_36",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "ignore",
+          "source_post_id": "post_42",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "like",
+          "source_post_id": "post_37",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "quote_tweet",
+          "source_post_id": "post_45",
+          "new_post_id": "post_46",
+          "new_post_text": "\"Wake up, but let's wake up to FACTS, not fear-mongering. A study w/ 3,000 participants over 5 yrs does NOT equal conclusive evidence of widespread hormonal imbalance. Still waiting for health authorities to weigh in, not 'bottled water monopolies' to gaslight us. #DebateNeeded #FactsOverFrenzy\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.8,
+            "fringe_score": 0.2,
+            "threat_level": 0.4,
+            "generation": 11,
+            "source_post_id": "post_45"
+          }
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "ignore",
+          "source_post_id": "post_44",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "like",
+          "source_post_id": "post_31",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "like",
+          "source_post_id": "post_27",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "like",
+          "source_post_id": "post_32",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 8,
+          "agent_name": "Indigo",
+          "action": "retweet",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "ignore",
+          "source_post_id": "post_31",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "ignore",
+          "source_post_id": "post_46",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 7,
+          "agent_name": "Harper",
+          "action": "quote_tweet",
+          "source_post_id": "post_36",
+          "new_post_id": "post_47",
+          "new_post_text": "\"WAKE UP, authorities! You think a paltry 'cause for concern' is enough to silence the truth? 3,200 innocent lives were put at risk for FIVE YEARS, and you're still playing games? The people deserve answers, not scripted spin! It's time to hold the toxic water cartel accountable. #BottledWaterJustice #ExposingTheTruth\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.8,
+            "fringe_score": 0.1,
+            "threat_level": 0.7,
+            "generation": 8,
+            "source_post_id": "post_36"
+          }
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "retweet",
+          "source_post_id": "post_45",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "retweet",
+          "source_post_id": "post_44",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 6,
+          "agent_name": "Gray",
+          "action": "comment",
+          "source_post_id": "post_47",
+          "new_post_id": "post_48",
+          "new_post_text": "\"Seriously, calm down. 'Cause for concern' isn't the same as definitive proof. 3,200? That number's not backed up anywhere. I know you're eager for action, but sensational claims and unverifiable numbers only dilute the actual message. Can we focus on fact-based advocacy? Link to the study and let's build a solid case.\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.4,
+            "fringe_score": 0.1,
+            "threat_level": 0.0,
+            "generation": 9,
+            "source_post_id": "post_47"
+          }
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "ignore",
+          "source_post_id": "post_45",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "like",
+          "source_post_id": "post_44",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 9,
+          "agent_name": "Jordan",
+          "action": "like",
+          "source_post_id": "post_40",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "post_45",
+          "new_post_id": "post_49",
+          "new_post_text": "\"Can we get some facts straight here? I'm not denying the scary stuff, but 3,000 participants over 5 years isn't a population study. I'd like to see the methodology and replication. That said, I do think we need to wake up to the bottled water industry's practices. Let's not jump to conclusions, but let's also not let them sweep this under the rug. #BottledWaterScandal\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.2,
+            "fringe_score": 0.0,
+            "threat_level": 0.1,
+            "generation": 11,
+            "source_post_id": "post_45"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "post_44",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "post_47",
+          "new_post_id": "post_50",
+          "new_post_text": "\"Breaking: 3,000 people's health has been compromised by the bottled water industry for FIVE LONG YEARS. That's not a 'cause for concern', that's a full-blown crisis. The fact that health authorities are downplaying this is mind-boggling. Can we trust the people leading our country to protect us? The water we're drinking is poison, and it's time someone took action. We can't keep turning a blind eye to big business hurting our well-being. Someone needs to get to the bottom of this #BottledWaterGate #TheTruthHurts\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.7,
+            "fringe_score": 0.6,
+            "threat_level": 0.8,
+            "generation": 9,
+            "source_post_id": "post_47"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_36",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_41",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_48",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "quote_tweet",
+          "source_post_id": "post_41",
+          "new_post_id": "post_51",
+          "new_post_text": "\"I'm with you on calling for a closer look, but let's not forget that it's still 'concerning but not yet conclusive' according to the researcher themselves! We shouldn't assume one thing but instead aim for a thoughtful, nuanced discussion. Evidence over emotion, yes - but also evidence *and* perspective #BottledWater #Balance\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.1,
+            "fringe_score": 0.1,
+            "threat_level": 0.1,
+            "generation": 9,
+            "source_post_id": "post_41"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "retweet",
+          "source_post_id": "post_48",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "retweet",
+          "source_post_id": "post_42",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "new_post",
+          "source_post_id": "post_45",
+          "new_post_id": "post_52",
+          "new_post_text": "\"Just came across some disturbing news:  a 5-year study found that 3,000 people who regularly drank bottled water experienced significant disruption to their hormone regulation. The research suggests a worrying link to cortisol and thyroid imbalances, but it's essential to note that the lead scientist has emphasized the findings are 'concerning but not conclusive'. Health authorities haven't taken action yet, which raises more questions than answers. The lack of a clear response is concerning in itself. Let's keep an eye on this and not jump to conclusions. Stay informed. #BottledWaterQuestionMark\"",
+          "new_signals": {
+            "emotional_charge": 0.87,
+            "controversy": 0.62,
+            "fringe_score": 0.42,
+            "threat_level": 0.83,
+            "generation": 11,
+            "source_post_id": "post_45"
+          }
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "retweet",
+          "source_post_id": "post_44",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "report",
+          "source_post_id": "post_47",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 7
+    }
+  ]
+}

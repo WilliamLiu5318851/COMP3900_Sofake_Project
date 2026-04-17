@@ -7,15 +7,15 @@ from urllib import response
 from groq import Groq, RateLimitError
 
 
-# [MODIFIED] 移除了原先放在这里的全局 client 初始化
+# [MODIFIED] removed the global client initialisation
 
 def llm_call(prompt: str) -> str:
-    # [NEW] 在函数内部初始化客户端，确保它能抓取到被 os.fork() 注入的全新 API Key
+    # [NEW] Initialise client inside the function，make sure it can capture api keys inserted by os.fork()
     raw_keys = os.getenv("GROQ_API_KEY", "")
     actual_key = raw_keys.split(",")[0].strip()
     
     client = Groq(api_key=actual_key)
-    # [NEW] 加入自动重试机制，最多重试 3 次
+    # [NEW] Add automatic retry, at most 3 times
     max_retries = 3
     for attempt in range(max_retries):
         try:
@@ -26,11 +26,9 @@ def llm_call(prompt: str) -> str:
             return response.choices[0].message.content # type: ignore
         except RateLimitError as e:
             if attempt < max_retries - 1:
-                # 如果被限流了，打印一行提示，然后睡 3 秒再重试
                 print(f"⚠️ [PID: {os.getpid()}] 触发 API 限流，等待 3 秒后重试 (第 {attempt + 1} 次)...")
                 time.sleep(3)
             else:
-                # 如果重试了 3 次还是不行，那只能报错了
                 raise e
 # ── Data Models ───────────────────────────────────────────────────────────────
 @dataclass

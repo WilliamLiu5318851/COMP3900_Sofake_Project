@@ -377,15 +377,15 @@ def main():
 
 
     keys_str = os.getenv("GROQ_API_KEY", "")
-    # 按逗号切割字符串，并清理掉多余的空格
+    
     API_KEYS = [k.strip() for k in keys_str.split(",") if k.strip()]
 
     if not API_KEYS:
-        print("❌ 错误: 没有在 .env 文件中找到 GROQ_API_KEYS。请确保已配置。")
+        print("❌ Error: No GROQ_API_KEYS found in .env. Please make sure all set up。")
         sys.exit(1)
 
     if args.sim_count > 1:
-        print(f"🚀 准备并发运行 {args.sim_count} 个模拟任务...")
+        print(f"🚀 Ready to perform {args.sim_count} number of simulations...")
         pids = []
 
         for i in range(args.sim_count):
@@ -393,7 +393,7 @@ def main():
             
             pid = os.fork()
             
-            if pid == 0:  # 子进程
+            if pid == 0:  # child
                 os.environ["GROQ_API_KEY"] = current_key
                 
                 log_dir = os.path.join(args.out, "logs")
@@ -414,17 +414,17 @@ def main():
                 
                 sys.exit(0)
             
-            else: # 父进程
+            else: # parent
                 pids.append(pid)
-                print(f"  - 分身 {i} 已启动 (PID: {pid})，使用 Key: {current_key[:10]}...")
+                print(f"  - Instance {i} started (PID: {pid}), Using Key: {current_key[:10]}...")
                 time.sleep(0.5)
 
         for pid in pids:
             os.waitpid(pid, 0)
-        print("\n✅ 所有模拟任务已完成！")
+        print("\n✅ All simulations have finished！")
 
     else:
-        # 单次运行
+        # single simulation
         os.environ["GROQ_API_KEY"] = API_KEYS[0]
         run_simulation(
             n_agents=args.agents,
