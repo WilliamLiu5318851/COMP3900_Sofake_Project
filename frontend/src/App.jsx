@@ -886,7 +886,7 @@ function ParallelFusePage({ simResult }) {
             <YAxis domain={[0, 10]} tick={{ fontSize: 12 }} />
             <Tooltip formatter={(val, name) => [val, name === "score" ? "Avg" : name]} />
             <Bar dataKey="score" fill="#7F77DD" radius={[4, 4, 0, 0]}>
-              <ErrorBar dataKey="error" width={4} strokeWidth={2} stroke="#4a4a8a" />
+              <ErrorBar dataKey="error" direction="y" width={4} strokeWidth={2} stroke="#4a4a8a" />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
