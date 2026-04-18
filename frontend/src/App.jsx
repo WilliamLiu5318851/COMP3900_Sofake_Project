@@ -494,6 +494,7 @@ export default function App() {
           intra_cluster_p: config.intraClusterP,
           inter_cluster_m: config.interClusterM,
           agents_per_cluster: config.agentsPerCluster,
+          weak_tie_p: config.weakTieP,
         }),
       });
       if (!res.ok) {

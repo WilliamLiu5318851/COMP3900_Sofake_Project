@@ -187,7 +187,11 @@ def run_simulation(
     n_steps: int,
     seed: int | None,
     out_dir: str,
-    ground_truth: str = "", 
+    ground_truth: str = "",
+    intra_cluster_p: float = 0.5,
+    inter_cluster_m: int = 2,
+    agents_per_cluster: int = 10,
+    weak_tie_p: float = 0.05, 
 ) -> tuple[dict, dict]:
     if seed is not None:
         random.seed(seed)
@@ -211,9 +215,10 @@ def run_simulation(
 
     print("Building network…")
     config  = NetworkConfig(
-        followback_p=0.55,
-        inter_cluster_m=2,
-        agents_per_cluster=8,
+        followback_p= intra_cluster_p,
+        inter_cluster_m=inter_cluster_m,
+        agents_per_cluster=agents_per_cluster,
+        p_weak=weak_tie_p,
     )
     network = build_network(agents, config)
     hub_ids = {hub.id for hub in network.hubs.values()}
