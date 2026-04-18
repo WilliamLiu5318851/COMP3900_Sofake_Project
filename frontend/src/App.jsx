@@ -356,6 +356,43 @@ const FUSE_LABELS = {
   SI: "Sensationalism", SAA: "Source Alteration", PIB: "Political Bias",
 };
 
+// Export for testing
+export function computeParallelFuseStats(runs) {
+  const DIMS = ["SS", "NII", "CS", "STS", "TS", "PD", "SI", "SAA", "PIB"];
+  const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+  const perRun = runs.map((run) => {
+    const evals = run.fuse_evaluations || [];
+    const dimAvgs = {};
+    DIMS.forEach((dim) => {
+      dimAvgs[dim] = avg(evals.map((e) => (e.fuse_scores_vs_ground_truth || {})[dim] ?? 0));
+    });
+    dimAvgs.Total_Deviation = avg(
+      evals.map((e) => (e.fuse_scores_vs_ground_truth || {}).Total_Deviation ?? 0)
+    );
+    return { runId: run.run_log?.run_id ?? "unknown", ...dimAvgs };
+  });
+
+  const globalDims = DIMS.map((dim) => {
+    const vals = perRun.map((r) => r[dim]);
+    const mean = avg(vals);
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    return {
+      dim,
+      score: +mean.toFixed(2),
+      error: [+(mean - min).toFixed(2), +(max - mean).toFixed(2)],
+    };
+  });
+
+  const runChart = perRun.map((r) => ({
+    run: r.runId.replace(/^\d{8}_\d{6}_/, ""),
+    td: +r.Total_Deviation.toFixed(2),
+  }));
+
+  return { runChart, globalDims };
+}
+
 function FuseAgentReport({ simResult }) {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const evals = simResult?.fuse_evaluations;
