@@ -24,11 +24,6 @@ class SimulateRequest(BaseModel):
     simulations: int = 1
 
 
-class SimulateResponse(BaseModel):
-    run_log: dict
-    signal_drift: dict
-
-
 @app.get("/")
 def root():
     return {"message": "Agent service is running"}
@@ -42,18 +37,28 @@ def healthcheck():
 @app.post("/api/simulate")
 def simulate(req: SimulateRequest):
     try:
-        run_log, signal_drift = run_simulation(
-            n_agents=req.agent_count,
-            n_steps=req.steps,
-            seed=req.seed,
-            out_dir="runs",
-            ground_truth=req.ground_truth,
-            intra_cluster_p=req.intra_cluster_p,
-            inter_cluster_m=req.inter_cluster_m,
-            agents_per_cluster=req.agents_per_cluster,
-            weak_tie_p=req.weak_tie_p,
-            n_simulations=req.simulations
-        )
-        return SimulateResponse(run_log=run_log, signal_drift=signal_drift)
+        runs = []
+        for i in range(max(1, req.simulations)):
+            child_seed = (req.seed + i) if req.seed is not None else None
+            run_log, signal_drift = run_simulation(
+                n_agents=req.agent_count,
+                n_steps=req.steps,
+                seed=child_seed,
+                out_dir="runs",
+                ground_truth=req.ground_truth,
+                intra_cluster_p=req.intra_cluster_p,
+                inter_cluster_m=req.inter_cluster_m,
+                agents_per_cluster=req.agents_per_cluster,
+                weak_tie_p=req.weak_tie_p,
+                run_identifier=f"run{i:02d}" if req.simulations > 1 else None,
+            )
+            runs.append({"run_log": run_log, "signal_drift": signal_drift})
+
+        # backward-compat: expose first run at top level
+        return {
+            "run_log": runs[0]["run_log"],
+            "signal_drift": runs[0]["signal_drift"],
+            "runs": runs,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

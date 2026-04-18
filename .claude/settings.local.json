@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(list\\(d.keys\\(\\)\\) if isinstance\\(d,dict\\) else d[:2], indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2\\)\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(xargs grep *)",
+      "Bash(python3 -c \"import ast; ast.parse\\(open\\('agent/main.py'\\).read\\(\\)\\); print\\('agent/main.py OK'\\)\")",
+      "Bash(python3 -c \"import ast; ast.parse\\(open\\('D:/UNSW/COMP3900/fake_news_project/agent/run.py'\\).read\\(\\)\\); print\\('run.py OK'\\)\")",
+      "Bash(python3 -c \"import ast; ast.parse\\(open\\('D:/UNSW/COMP3900/fake_news_project/backend/main.py'\\).read\\(\\)\\); print\\('backend/main.py OK'\\)\")",
+      "Bash(python3 *)",
+      "Bash(npm test *)",
+      "Bash(git stash *)",
+      "Bash(git checkout *)",
+      "Bash(git -C \"D:/UNSW/COMP3900/fake_news_project\" add frontend/src/App.jsx frontend/src/App.test.jsx)",
+      "Bash(git -C D:/UNSW/COMP3900/fake_news_project commit -m ' *)",
+      "Bash(git -C D:/UNSW/COMP3900/fake_news_project add frontend/src/App.jsx)",
+      "Bash(git -C D:/UNSW/COMP3900/fake_news_project commit -m \"fix: guard empty runs in computeParallelFuseStats, use FUSE_DIMS\")",
+      "Bash(git *)"
+    ]
+  }
+}
