@@ -32,6 +32,7 @@ import json
 import random
 import argparse
 import uuid
+import time #new
 from datetime import datetime
 from dataclasses import asdict
 
@@ -187,12 +188,13 @@ def run_simulation(
     n_steps: int,
     seed: int | None,
     out_dir: str,
-    ground_truth: str = "",
+    ground_truth: str = None,
+    run_identifier: str = "", #new
     intra_cluster_p: float = 0.5,
     inter_cluster_m: int = 2,
     agents_per_cluster: int = 10,
-    weak_tie_p: float = 0.05, 
-    n_simulations: int = 1,
+    weak_tie_p: float = 0.05,
+    #n_simulations: int = 1,
 ) -> tuple[dict, dict]:
     if seed is not None:
         random.seed(seed)
@@ -200,12 +202,16 @@ def run_simulation(
     if ground_truth is None:
         ground_truth = GROUND_TRUTH   # falls back to the hardcoded one
 
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    #Modified
+    base_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_id = f"{base_id}_{run_identifier}" if run_identifier else base_id
+
     out_path = os.path.join(out_dir, run_id)
     os.makedirs(out_path, exist_ok=True)
 
     print(f"\n{'═' * 60}")
-    print(f"  NEWSREEL SIMULATION")
+    # [MODIFIED]
+    print(f"  NEWSREEL SIMULATION [ID: {run_identifier}]")
     print(f"  run_id={run_id}  agents={n_agents}  steps={n_steps}  seed={seed}")
     print(f"{'═' * 60}\n")
 
@@ -371,15 +377,68 @@ def main():
     parser.add_argument("--steps",  type=int, default=7,    help="Number of steps (default 7)")
     parser.add_argument("--seed",   type=int, default=None, help="Random seed")
     parser.add_argument("--out",    type=str, default="runs", help="Output directory (default: runs/)")
+
+    # [NEW]
+    parser.add_argument("--sim-count", type=int, default=1, help="Parallel Simulation")
     args = parser.parse_args()
 
-    run_simulation(
-        n_agents=args.agents,
-        n_steps=args.steps,
-        seed=args.seed,
-        out_dir=args.out,
-    )
 
+    keys_str = os.getenv("GROQ_API_KEY", "")
+
+    API_KEYS = [k.strip() for k in keys_str.split(",") if k.strip()]
+
+    if not API_KEYS:
+        print("❌ Error: No GROQ_API_KEYS found in .env. Please make sure all set up。")
+        sys.exit(1)
+
+    if args.sim_count > 1:
+        print(f"🚀 Ready to perform {args.sim_count} number of simulations...")
+        pids = []
+
+        for i in range(args.sim_count):
+            current_key = API_KEYS[i % len(API_KEYS)]
+
+            pid = os.fork()
+
+            if pid == 0:  # child
+                os.environ["GROQ_API_KEY"] = current_key
+
+                log_dir = os.path.join(args.out, "logs")
+                os.makedirs(log_dir, exist_ok=True)
+                log_file = open(f"{log_dir}/run_{i:02d}.log", "w")
+                os.dup2(log_file.fileno(), sys.stdout.fileno())
+                os.dup2(log_file.fileno(), sys.stderr.fileno())
+
+                child_seed = (args.seed + i) if args.seed is not None else None
+
+                run_simulation(
+                    n_agents=args.agents,
+                    n_steps=args.steps,
+                    seed=child_seed,
+                    out_dir=args.out,
+                    run_identifier=f"run{i:02d}"
+                )
+
+                sys.exit(0)
+
+            else: # parent
+                pids.append(pid)
+                print(f"  - Instance {i} started (PID: {pid}), Using Key: {current_key[:10]}...")
+                time.sleep(0.5)
+
+        for pid in pids:
+            os.waitpid(pid, 0)
+        print("\n✅ All simulations have finished！")
+
+    else:
+        # single simulation
+        os.environ["GROQ_API_KEY"] = API_KEYS[0]
+        run_simulation(
+            n_agents=args.agents,
+            n_steps=args.steps,
+            seed=args.seed,
+            out_dir=args.out
+        )
 
 if __name__ == "__main__":
     main()

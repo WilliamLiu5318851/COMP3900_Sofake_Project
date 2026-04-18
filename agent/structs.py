@@ -1,19 +1,35 @@
 import os
 import random
 import json
+import time
 from dataclasses import asdict, dataclass, field
 from urllib import response
-from groq import Groq
+from groq import Groq, RateLimitError
 
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+# [MODIFIED] removed the global client initialisation
 
 def llm_call(prompt: str) -> str:
-    response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response.choices[0].message.content # type: ignore
+    # [NEW] Initialise client inside the function，make sure it can capture api keys inserted by os.fork()
+    raw_keys = os.getenv("GROQ_API_KEY", "")
+    actual_key = raw_keys.split(",")[0].strip()
+    
+    client = Groq(api_key=actual_key)
+    # [NEW] Add automatic retry, at most 3 times
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return response.choices[0].message.content # type: ignore
+        except RateLimitError as e:
+            if attempt < max_retries - 1:
+                print(f"⚠️ [PID: {os.getpid()}] 触发 API 限流，等待 3 秒后重试 (第 {attempt + 1} 次)...")
+                time.sleep(3)
+            else:
+                raise e
 # ── Data Models ───────────────────────────────────────────────────────────────
 @dataclass
 class HEXACOProfile:
