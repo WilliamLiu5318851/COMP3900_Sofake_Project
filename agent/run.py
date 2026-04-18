@@ -187,8 +187,12 @@ def run_simulation(
     n_steps: int,
     seed: int | None,
     out_dir: str,
-    ground_truth: str = None, 
-) -> None:
+    ground_truth: str = "",
+    intra_cluster_p: float = 0.5,
+    inter_cluster_m: int = 2,
+    agents_per_cluster: int = 10,
+    weak_tie_p: float = 0.05, 
+) -> tuple[dict, dict]:
     if seed is not None:
         random.seed(seed)
 
@@ -211,9 +215,10 @@ def run_simulation(
 
     print("Building network…")
     config  = NetworkConfig(
-        intra_cluster_p=0.55,
-        inter_cluster_m=2,
-        agents_per_cluster=8,
+        followback_p= intra_cluster_p,
+        inter_cluster_m=inter_cluster_m,
+        agents_per_cluster=agents_per_cluster,
+        p_weak=weak_tie_p,
     )
     network = build_network(agents, config)
     hub_ids = {hub.id for hub in network.hubs.values()}
@@ -233,7 +238,7 @@ def run_simulation(
             "n_agents":           n_agents,
             "n_steps":            n_steps,
             "seed":               seed,
-            "intra_cluster_p":    config.intra_cluster_p,
+            "followback_p":    config.followback_p,
             "inter_cluster_m":    config.inter_cluster_m,
             "agents_per_cluster": config.agents_per_cluster,
         },
@@ -246,7 +251,7 @@ def run_simulation(
             "n_edges":    network.graph.number_of_edges(),
             "n_clusters": len(network.clusters),
             "avg_degree": round(
-                2 * network.graph.number_of_edges() / max(network.graph.number_of_nodes(), 1), 2
+                network.graph.number_of_edges() / max(network.graph.number_of_nodes(), 1), 2
             ),
             "hubs": {str(cid): h.name for cid, h in network.hubs.items()},
         },
