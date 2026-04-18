@@ -1,0 +1,344 @@
+{
+  "run_id": "20260418_085457_run00",
+  "timestamp": "2026-04-18T08:54:58.185160",
+  "config": {
+    "n_agents": 3,
+    "n_steps": 3,
+    "seed": 42,
+    "followback_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.6394,
+        "emotionality": 0.025,
+        "extraversion": 0.275,
+        "agreeableness": 0.2232,
+        "conscientiousness": 0.7365,
+        "openness": 0.6767
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 1,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.8922,
+        "emotionality": 0.0869,
+        "extraversion": 0.4219,
+        "agreeableness": 0.0298,
+        "conscientiousness": 0.2186,
+        "openness": 0.5054
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 2,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.0265,
+        "emotionality": 0.1988,
+        "extraversion": 0.6499,
+        "agreeableness": 0.5449,
+        "conscientiousness": 0.2204,
+        "openness": 0.5893
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 3,
+    "n_edges": 4,
+    "n_clusters": 2,
+    "avg_degree": 1.33,
+    "hubs": {
+      "2": "Casey",
+      "1": "Blake"
+    }
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that microplastics found in common bottled water brands may be interfering with human hormone regulation. The study, which tracked 3,000 participants over 5 years, found a statistically significant correlation between bottled water consumption and disrupted cortisol and thyroid levels. The lead researcher stated the findings are 'concerning but not yet conclusive'. Health authorities have not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.65,
+      "controversy": 0.45,
+      "fringe_score": 0.15,
+      "threat_level": 0.35,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        1,
+        2,
+        0
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "\"Just came across a new study out of a major US university that's got some people buzzing - a 5-year-long analysis of 3,000 participants suggests a possible link between bottled water consumption and disruptions to our hormone regulation. Apparently, the researchers found a correlation between bottled water drinkers and altered cortisol and thyroid levels. The lead researcher is cautioning that it's too early to jump to conclusions, but it's definitely worth keeping an eye on. Still waiting to see how health authorities respond.\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.3,
+            "fringe_score": 0.2,
+            "threat_level": 0.4,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "ignore",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "quote_tweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_2",
+          "new_post_text": "\"Just a heads up on this bottled water study: 3k participants over 5 yrs saw a 'statistically significant correlation' between bottled water consumption and hormone disruption, but let's temper expectations - the lead researcher already warned it's 'concerning but not yet conclusive'. Time for more research #microplastics\"",
+          "new_signals": {
+            "emotional_charge": 0.5,
+            "controversy": 0.5,
+            "fringe_score": 0.1,
+            "threat_level": 0.2,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 2
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        2,
+        1,
+        0
+      ],
+      "events": [
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "new_post",
+          "source_post_id": "post_2",
+          "new_post_id": "post_3",
+          "new_post_text": "\"BREAKING: 3,000 people have been found to suffer from alarming hormone imbalances linked to drinking bottled water from major US brands. The alarming study suggests a direct causation between these chemical-laced beverages and widespread endocrine disruption. We must demand more from our bottled water companies and hold them accountable for the harm they may be causing. Let's not let corporate interests silence this crucial research- our health is at stake #BottledWaterScandal #ToxinsInYourTap\"",
+          "new_signals": {
+            "emotional_charge": 0.93,
+            "controversy": 0.87,
+            "fringe_score": 0.22,
+            "threat_level": 0.83,
+            "generation": 2,
+            "source_post_id": "post_2"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "comment",
+          "source_post_id": "post_3",
+          "new_post_id": "post_4",
+          "new_post_text": "\"This post sounds like a more sensational take on the original study. The study itself only found a correlation, not direct causation, and it was pretty clear from the lead researcher's statement that it's 'concerning but not yet conclusive'. Let's not get ahead of ourselves here and wait for actual evidence before sounding the alarm.\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.7,
+            "fringe_score": 0.3,
+            "threat_level": 0.1,
+            "generation": 3,
+            "source_post_id": "post_3"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "ignore",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "ignore",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "comment",
+          "source_post_id": "post_4",
+          "new_post_id": "post_5",
+          "new_post_text": "\"I'd agree that correlation isn't the same as causation, and the language from the lead researcher does temper the findings' implications. That said, it's also a reminder that the lack of clear causation doesn't mean microplastics are harmless. Worth keeping an eye on further research to flesh out the picture.\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.4,
+            "fringe_score": 0.2,
+            "threat_level": 0.2,
+            "generation": 4,
+            "source_post_id": "post_4"
+          }
+        }
+      ],
+      "new_posts_this_step": 3
+    },
+    {
+      "step": 3,
+      "agent_order": [
+        2,
+        0,
+        1
+      ],
+      "events": [
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "post_5",
+          "new_post_id": "post_6",
+          "new_post_text": "\"@john_doe1 thinks the researcher's 'concerning but not yet conclusive' statement magically negates the devastating reality: 3,000 people have been irreparably harmed by microplastics in bottled water. The truth is, corporate interests are already circling to silence this crucial investigation #BottledWaterScandal #EndocrineDisruption\"",
+          "new_signals": {
+            "emotional_charge": 0.87,
+            "controversy": 0.81,
+            "fringe_score": 0.32,
+            "threat_level": 0.65,
+            "generation": 5,
+            "source_post_id": "post_5"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "new_post",
+          "source_post_id": "post_4",
+          "new_post_id": "post_7",
+          "new_post_text": "\"Bottled water: a ticking time bomb for your health? A groundbreaking new study has exposed 3,000 Americans to devastating hormone imbalances due to contaminated tap water. While health authorities remain tight-lipped, researchers are speaking out: 'We're seeing a silent epidemic, fueled by corporate greed and negligence.' Let's wake up to the harsh reality: our drinking water is not what we think it is. Stay vigilante, stay informed. Share this critical story and hold our water industry accountable #WaterGate #HealthAtRisk\"",
+          "new_signals": {
+            "emotional_charge": 0.84,
+            "controversy": 0.62,
+            "fringe_score": 0.58,
+            "threat_level": 0.78,
+            "generation": 4,
+            "source_post_id": "post_4"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "new_post",
+          "source_post_id": "post_7",
+          "new_post_id": "post_8",
+          "new_post_text": "A bit of alarmism in the air regarding bottled water, but let's dial it back a notch. I just saw a study suggesting a possible link between microplastics in bottled water and disrupted hormone regulation. The thing to keep in mind is that 'possible link' is where it stands currently, with no conclusive evidence of causation. The lead researcher on the study has already cautioned against reading too much into it. Still, it's worth following up on with further research and keeping an eye on the developing narrative on this one. #microplastics #waterquality",
+          "new_signals": {
+            "emotional_charge": 0.5,
+            "controversy": 0.6,
+            "fringe_score": 0.2,
+            "threat_level": 0.1,
+            "generation": 5,
+            "source_post_id": "post_7"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "ignore",
+          "source_post_id": "post_6",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "comment",
+          "source_post_id": "post_7",
+          "new_post_id": "post_9",
+          "new_post_text": "\"Careful here, folks. This post is way off base - the study was on bottled water, not tap water. Let's not spread misinformation and create a non-existent 'silent epidemic'. The lead researcher specifically stated concerns were 'concerning but not yet conclusive'. A bit of fact-checking wouldn't hurt.\"",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.85,
+            "fringe_score": 0.8,
+            "threat_level": 0.2,
+            "generation": 5,
+            "source_post_id": "post_7"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "post_6",
+          "new_post_id": "post_10",
+          "new_post_text": "\"I'm not sure where the alarm bells are coming from, but a recent study on bottled water consumption isn't quite as cut-and-dried as some folks are making it out to be. The research found a link between bottled water and disrupted hormone levels, but the lead researcher specifically cautioned against jumping to conclusions due to a correlation rather than causation. Let's wait for more evidence and the health authorities' take on this before we start calling it a 'scandal'. The truth is still out there, and it's worth getting it right before sounding the alarm.\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.6,
+            "fringe_score": 0.2,
+            "threat_level": 0.4,
+            "generation": 6,
+            "source_post_id": "post_6"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "post_8",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 5
+    }
+  ]
+}
