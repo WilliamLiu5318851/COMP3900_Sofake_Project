@@ -24,7 +24,7 @@ You are simulating the initial memory of a social media user.
 ## Agent personality
 {personality_block}
 
-## What this cagent currently sees
+## What this agent currently sees
 {visible_context}
 
 ## Task
@@ -43,8 +43,9 @@ Rules:
 - Return only valid JSON as a list of strings
 - Must return only Valid JSON
 - Avoid starting with "I just saw" or "I think"
+- Do not include any explanation, title or extra text before or after the JSON.
 
-Example format:
+Correct format:
 [
 "Memory one.",
 "Memory two.",
@@ -52,11 +53,21 @@ Example format:
 ]
 """.strip()
 
+def clean_llm_json(raw: str) -> str:
+    text = raw.strip()
+    text = text.replace("```json", "").replace("```","").strip()
+
+    start = text.find("[")
+    end = text.rfind("]")
+
+    return text[start:end+1].strip()
+
+
 
 def generate_initial_memory(agent: Agent, visible_context: str) -> list[str]:
     prompt = build_initial_memory_prompt(agent, visible_context)
     raw = llm_call(prompt)
-    cleaned = raw.strip().replace("```json", "").replace("```","").strip()
+    cleaned = clean_llm_json(raw)
                                                          
     try:
         data = json.loads(cleaned)
