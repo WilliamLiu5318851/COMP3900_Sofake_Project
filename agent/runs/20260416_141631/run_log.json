@@ -1,0 +1,172 @@
+{
+  "run_id": "20260416_141631",
+  "timestamp": "2026-04-16T14:16:31.988336",
+  "config": {
+    "n_agents": 3,
+    "n_steps": 3,
+    "seed": 42,
+    "intra_cluster_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.6394,
+        "emotionality": 0.025,
+        "extraversion": 0.275,
+        "agreeableness": 0.2232,
+        "conscientiousness": 0.7365,
+        "openness": 0.6767
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 1,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.8922,
+        "emotionality": 0.0869,
+        "extraversion": 0.4219,
+        "agreeableness": 0.0298,
+        "conscientiousness": 0.2186,
+        "openness": 0.5054
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 0,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.0265,
+        "emotionality": 0.1988,
+        "extraversion": 0.6499,
+        "agreeableness": 0.5449,
+        "conscientiousness": 0.2204,
+        "openness": 0.5893
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 3,
+    "n_edges": 2,
+    "n_clusters": 2,
+    "avg_degree": 1.33,
+    "hubs": {
+      "0": "Casey",
+      "1": "Blake"
+    }
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that microplastics found in common bottled water brands may be interfering with human hormone regulation. The study, which tracked 3,000 participants over 5 years, found a statistically significant correlation between bottled water\n            consumption and disrupted cortisol and thyroid levels. The lead researcher stated the findings are 'concerning but not yet conclusive'. Health authorities have not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.4,
+      "controversy": 0.4,
+      "fringe_score": 0.1,
+      "threat_level": 0.3,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        2,
+        1,
+        0
+      ],
+      "events": [
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "ignore",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "quote_tweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "\"Just in: new study finds potential link btw bottled water consumption & hormone regulation issues. However, as the lead researcher notes, findings are 'concerning but not yet conclusive'. Need to see more research before jumping to conclusions. No word from health authorities yet. #microplastics #publichealth\"",
+          "new_signals": {
+            "emotional_charge": 0.5,
+            "controversy": 0.3,
+            "fringe_score": 0.4,
+            "threat_level": 0.2,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        }
+      ],
+      "new_posts_this_step": 1
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        2,
+        1,
+        0
+      ],
+      "events": [
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "like",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "ignore",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 0
+    },
+    {
+      "step": 3,
+      "agent_order": [
+        0,
+        1,
+        2
+      ],
+      "events": [],
+      "new_posts_this_step": 0
+    }
+  ]
+}

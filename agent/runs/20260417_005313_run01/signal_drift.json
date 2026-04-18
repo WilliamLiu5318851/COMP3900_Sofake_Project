@@ -1,0 +1,551 @@
+{
+  "ground_truth": [
+    {
+      "emotional_charge": 0.64,
+      "controversy": 0.44,
+      "fringe_score": 0.23,
+      "threat_level": 0.56,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    },
+    {
+      "post_id": "post_1",
+      "author": "Finn",
+      "step": 1,
+      "emotional_charge": 0.15,
+      "controversy": 0.2,
+      "fringe_score": 0.65,
+      "threat_level": 0.0,
+      "generation": 1,
+      "source_post_id": "ground_truth"
+    },
+    {
+      "post_id": "post_2",
+      "author": "Blake",
+      "step": 1,
+      "emotional_charge": 0.92,
+      "controversy": 0.72,
+      "fringe_score": 0.18,
+      "threat_level": 0.88,
+      "generation": 1,
+      "source_post_id": "ground_truth"
+    },
+    {
+      "post_id": "post_9",
+      "author": "Gray",
+      "step": 2,
+      "emotional_charge": 0.87,
+      "controversy": 0.93,
+      "fringe_score": 0.45,
+      "threat_level": 0.23,
+      "generation": 1,
+      "source_post_id": "ground_truth"
+    }
+  ],
+  "post_2": [
+    {
+      "post_id": "post_3",
+      "author": "Indigo",
+      "step": 1,
+      "emotional_charge": 0.5,
+      "controversy": 0.6,
+      "fringe_score": 0.5,
+      "threat_level": 0.3,
+      "generation": 2,
+      "source_post_id": "post_2"
+    },
+    {
+      "post_id": "post_5",
+      "author": "Casey",
+      "step": 1,
+      "emotional_charge": 0.9,
+      "controversy": 0.7,
+      "fringe_score": 0.6,
+      "threat_level": 0.8,
+      "generation": 2,
+      "source_post_id": "post_2"
+    }
+  ],
+  "post_3": [
+    {
+      "post_id": "post_4",
+      "author": "Casey",
+      "step": 1,
+      "emotional_charge": 0.83,
+      "controversy": 0.73,
+      "fringe_score": 0.42,
+      "threat_level": 0.78,
+      "generation": 3,
+      "source_post_id": "post_3"
+    },
+    {
+      "post_id": "post_7",
+      "author": "Dana",
+      "step": 2,
+      "emotional_charge": 0.92,
+      "controversy": 0.85,
+      "fringe_score": 0.32,
+      "threat_level": 0.78,
+      "generation": 3,
+      "source_post_id": "post_3"
+    },
+    {
+      "post_id": "post_15",
+      "author": "Alex",
+      "step": 2,
+      "emotional_charge": 0.5,
+      "controversy": 0.2,
+      "fringe_score": 0.0,
+      "threat_level": 0.1,
+      "generation": 3,
+      "source_post_id": "post_3"
+    }
+  ],
+  "post_4": [
+    {
+      "post_id": "post_6",
+      "author": "Gray",
+      "step": 1,
+      "emotional_charge": 0.94,
+      "controversy": 0.44,
+      "fringe_score": 0.13,
+      "threat_level": 0.75,
+      "generation": 4,
+      "source_post_id": "post_4"
+    }
+  ],
+  "post_7": [
+    {
+      "post_id": "post_8",
+      "author": "Gray",
+      "step": 2,
+      "emotional_charge": 0.83,
+      "controversy": 0.72,
+      "fringe_score": 0.51,
+      "threat_level": 0.73,
+      "generation": 4,
+      "source_post_id": "post_7"
+    },
+    {
+      "post_id": "post_11",
+      "author": "Eden",
+      "step": 2,
+      "emotional_charge": 0.2,
+      "controversy": 0.1,
+      "fringe_score": 0.0,
+      "threat_level": 0.0,
+      "generation": 4,
+      "source_post_id": "post_7"
+    },
+    {
+      "post_id": "post_13",
+      "author": "Jordan",
+      "step": 2,
+      "emotional_charge": 0.85,
+      "controversy": 0.75,
+      "fringe_score": 0.45,
+      "threat_level": 0.65,
+      "generation": 4,
+      "source_post_id": "post_7"
+    }
+  ],
+  "post_8": [
+    {
+      "post_id": "post_10",
+      "author": "Eden",
+      "step": 2,
+      "emotional_charge": 0.9,
+      "controversy": 0.8,
+      "fringe_score": 0.4,
+      "threat_level": 0.7,
+      "generation": 5,
+      "source_post_id": "post_8"
+    },
+    {
+      "post_id": "post_18",
+      "author": "Casey",
+      "step": 2,
+      "emotional_charge": 0.9,
+      "controversy": 0.8,
+      "fringe_score": 0.6,
+      "threat_level": 0.7,
+      "generation": 5,
+      "source_post_id": "post_8"
+    },
+    {
+      "post_id": "post_22",
+      "author": "Blake",
+      "step": 3,
+      "emotional_charge": 0.92,
+      "controversy": 0.81,
+      "fringe_score": 0.76,
+      "threat_level": 0.93,
+      "generation": 5,
+      "source_post_id": "post_8"
+    }
+  ],
+  "post_5": [
+    {
+      "post_id": "post_12",
+      "author": "Finn",
+      "step": 2,
+      "emotional_charge": 0.7,
+      "controversy": 0.7,
+      "fringe_score": 0.2,
+      "threat_level": 0.8,
+      "generation": 3,
+      "source_post_id": "post_5"
+    }
+  ],
+  "post_12": [
+    {
+      "post_id": "post_14",
+      "author": "Alex",
+      "step": 2,
+      "emotional_charge": 0.75,
+      "controversy": 0.25,
+      "fringe_score": 0.1,
+      "threat_level": 0.55,
+      "generation": 4,
+      "source_post_id": "post_12"
+    },
+    {
+      "post_id": "post_16",
+      "author": "Casey",
+      "step": 2,
+      "emotional_charge": 0.87,
+      "controversy": 0.63,
+      "fringe_score": 0.35,
+      "threat_level": 0.62,
+      "generation": 4,
+      "source_post_id": "post_12"
+    }
+  ],
+  "post_10": [
+    {
+      "post_id": "post_17",
+      "author": "Casey",
+      "step": 2,
+      "emotional_charge": 0.9,
+      "controversy": 0.7,
+      "fringe_score": 0.1,
+      "threat_level": 0.8,
+      "generation": 6,
+      "source_post_id": "post_10"
+    },
+    {
+      "post_id": "post_21",
+      "author": "Blake",
+      "step": 3,
+      "emotional_charge": 0.85,
+      "controversy": 0.45,
+      "fringe_score": 0.1,
+      "threat_level": 0.7,
+      "generation": 6,
+      "source_post_id": "post_10"
+    }
+  ],
+  "post_16": [
+    {
+      "post_id": "post_19",
+      "author": "Eden",
+      "step": 3,
+      "emotional_charge": 0.85,
+      "controversy": 0.75,
+      "fringe_score": 0.3,
+      "threat_level": 0.65,
+      "generation": 5,
+      "source_post_id": "post_16"
+    },
+    {
+      "post_id": "post_20",
+      "author": "Finn",
+      "step": 3,
+      "emotional_charge": 0.5,
+      "controversy": 0.7,
+      "fringe_score": 0.1,
+      "threat_level": 0.3,
+      "generation": 5,
+      "source_post_id": "post_16"
+    }
+  ],
+  "post_18": [
+    {
+      "post_id": "post_23",
+      "author": "Alex",
+      "step": 3,
+      "emotional_charge": 0.4,
+      "controversy": 0.2,
+      "fringe_score": 0.2,
+      "threat_level": 0.1,
+      "generation": 6,
+      "source_post_id": "post_18"
+    },
+    {
+      "post_id": "post_25",
+      "author": "Dana",
+      "step": 3,
+      "emotional_charge": 0.93,
+      "controversy": 0.93,
+      "fringe_score": 0.0,
+      "threat_level": 0.07,
+      "generation": 6,
+      "source_post_id": "post_18"
+    },
+    {
+      "post_id": "post_27",
+      "author": "Gray",
+      "step": 3,
+      "emotional_charge": 0.95,
+      "controversy": 0.85,
+      "fringe_score": 0.65,
+      "threat_level": 0.8,
+      "generation": 6,
+      "source_post_id": "post_18"
+    }
+  ],
+  "post_22": [
+    {
+      "post_id": "post_24",
+      "author": "Dana",
+      "step": 3,
+      "emotional_charge": 0.9,
+      "controversy": 0.6,
+      "fringe_score": 0.2,
+      "threat_level": 0.7,
+      "generation": 6,
+      "source_post_id": "post_22"
+    },
+    {
+      "post_id": "post_26",
+      "author": "Gray",
+      "step": 3,
+      "emotional_charge": 0.92,
+      "controversy": 0.85,
+      "fringe_score": 0.83,
+      "threat_level": 0.62,
+      "generation": 6,
+      "source_post_id": "post_22"
+    },
+    {
+      "post_id": "post_31",
+      "author": "Eden",
+      "step": 4,
+      "emotional_charge": 0.8,
+      "controversy": 0.7,
+      "fringe_score": 0.7,
+      "threat_level": 0.4,
+      "generation": 6,
+      "source_post_id": "post_22"
+    }
+  ],
+  "post_27": [
+    {
+      "post_id": "post_28",
+      "author": "Jordan",
+      "step": 3,
+      "emotional_charge": 0.98,
+      "controversy": 0.85,
+      "fringe_score": 0.65,
+      "threat_level": 0.8,
+      "generation": 7,
+      "source_post_id": "post_27"
+    },
+    {
+      "post_id": "post_33",
+      "author": "Indigo",
+      "step": 4,
+      "emotional_charge": 0.7,
+      "controversy": 0.8,
+      "fringe_score": 0.1,
+      "threat_level": 0.3,
+      "generation": 7,
+      "source_post_id": "post_27"
+    },
+    {
+      "post_id": "post_38",
+      "author": "Dana",
+      "step": 4,
+      "emotional_charge": 0.8,
+      "controversy": 0.9,
+      "fringe_score": 0.4,
+      "threat_level": 0.8,
+      "generation": 7,
+      "source_post_id": "post_27"
+    }
+  ],
+  "post_23": [
+    {
+      "post_id": "post_29",
+      "author": "Finn",
+      "step": 4,
+      "emotional_charge": 0.85,
+      "controversy": 0.25,
+      "fringe_score": 0.7,
+      "threat_level": 0.1,
+      "generation": 7,
+      "source_post_id": "post_23"
+    }
+  ],
+  "post_14": [
+    {
+      "post_id": "post_30",
+      "author": "Finn",
+      "step": 4,
+      "emotional_charge": 0.8,
+      "controversy": 0.9,
+      "fringe_score": 0.1,
+      "threat_level": 0.5,
+      "generation": 5,
+      "source_post_id": "post_14"
+    }
+  ],
+  "post_26": [
+    {
+      "post_id": "post_32",
+      "author": "Eden",
+      "step": 4,
+      "emotional_charge": 0.84,
+      "controversy": 0.62,
+      "fringe_score": 0.54,
+      "threat_level": 0.26,
+      "generation": 7,
+      "source_post_id": "post_26"
+    }
+  ],
+  "post_31": [
+    {
+      "post_id": "post_34",
+      "author": "Blake",
+      "step": 4,
+      "emotional_charge": 0.98,
+      "controversy": 0.97,
+      "fringe_score": 0.86,
+      "threat_level": 0.89,
+      "generation": 7,
+      "source_post_id": "post_31"
+    }
+  ],
+  "post_34": [
+    {
+      "post_id": "post_35",
+      "author": "Alex",
+      "step": 4,
+      "emotional_charge": 0.3,
+      "controversy": 0.4,
+      "fringe_score": 0.5,
+      "threat_level": 0.1,
+      "generation": 8,
+      "source_post_id": "post_34"
+    },
+    {
+      "post_id": "post_37",
+      "author": "Casey",
+      "step": 4,
+      "emotional_charge": 0.85,
+      "controversy": 0.65,
+      "fringe_score": 0.4,
+      "threat_level": 0.75,
+      "generation": 8,
+      "source_post_id": "post_34"
+    }
+  ],
+  "post_33": [
+    {
+      "post_id": "post_36",
+      "author": "Alex",
+      "step": 4,
+      "emotional_charge": 0.8,
+      "controversy": 0.6,
+      "fringe_score": 0.8,
+      "threat_level": 0.2,
+      "generation": 8,
+      "source_post_id": "post_33"
+    },
+    {
+      "post_id": "post_44",
+      "author": "Jordan",
+      "step": 5,
+      "emotional_charge": 0.9,
+      "controversy": 0.8,
+      "fringe_score": 0.2,
+      "threat_level": 0.7,
+      "generation": 8,
+      "source_post_id": "post_33"
+    }
+  ],
+  "post_37": [
+    {
+      "post_id": "post_39",
+      "author": "Blake",
+      "step": 5,
+      "emotional_charge": 0.95,
+      "controversy": 0.95,
+      "fringe_score": 0.8,
+      "threat_level": 0.85,
+      "generation": 9,
+      "source_post_id": "post_37"
+    },
+    {
+      "post_id": "post_40",
+      "author": "Finn",
+      "step": 5,
+      "emotional_charge": 0.4,
+      "controversy": 0.6,
+      "fringe_score": 0.0,
+      "threat_level": 0.4,
+      "generation": 9,
+      "source_post_id": "post_37"
+    },
+    {
+      "post_id": "post_42",
+      "author": "Alex",
+      "step": 5,
+      "emotional_charge": 0.7,
+      "controversy": 0.5,
+      "fringe_score": 0.2,
+      "threat_level": 0.4,
+      "generation": 9,
+      "source_post_id": "post_37"
+    }
+  ],
+  "post_39": [
+    {
+      "post_id": "post_41",
+      "author": "Alex",
+      "step": 5,
+      "emotional_charge": 0.8,
+      "controversy": 0.9,
+      "fringe_score": 0.8,
+      "threat_level": 0.7,
+      "generation": 10,
+      "source_post_id": "post_39"
+    }
+  ],
+  "post_40": [
+    {
+      "post_id": "post_43",
+      "author": "Alex",
+      "step": 5,
+      "emotional_charge": 0.6,
+      "controversy": 0.4,
+      "fringe_score": 0.2,
+      "threat_level": 0.1,
+      "generation": 10,
+      "source_post_id": "post_40"
+    }
+  ],
+  "post_38": [
+    {
+      "post_id": "post_45",
+      "author": "Gray",
+      "step": 5,
+      "emotional_charge": 0.94,
+      "controversy": 0.73,
+      "fringe_score": 0.55,
+      "threat_level": 0.82,
+      "generation": 8,
+      "source_post_id": "post_38"
+    }
+  ]
+}
