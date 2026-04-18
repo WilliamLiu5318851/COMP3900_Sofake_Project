@@ -17,13 +17,15 @@ function LogoMark({ size = 28 }) {
   );
 }
 
-function Sidebar({ active, onNavigate }) {
+function Sidebar({ active, onNavigate, simResult }) {
+  const showParallel = (simResult?.runs?.length ?? 0) > 1;
   const items = [
     { id: "new", label: "New Simulation" },
     { id: "graph", label: "Graph View" },
     { id: "dashboard", label: "Overview Dashboard" },
     { id: "fuse", label: "FUSE Comparison" },
     { id: "fuse-report", label: "FUSE Report" },
+    ...(showParallel ? [{ id: "parallel-fuse", label: "Parallel FUSE" }] : []),
     { id: "runs", label: "Saved Runs" },
     { id: "settings", label: "Settings" },
     { id: "about", label: "About" },
@@ -953,7 +955,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar active={page} onNavigate={setPage} />
+      <Sidebar active={page} onNavigate={setPage} simResult={simResult} />
       <main className="main">
         <Header title="SoFake — Fake News Evolution Simulator" />
         <div className="content">
@@ -979,6 +981,8 @@ export default function App() {
           {page === "fuse" && <FuseComparisonPage simResult={simResult} />}
 
           {page === "fuse-report" && <FuseAgentReport simResult={simResult} />}
+
+          {page === "parallel-fuse" && <ParallelFusePage simResult={simResult} />}
 
           {page === "runs" && <SavedRuns savedRuns={savedRuns} />}
 
