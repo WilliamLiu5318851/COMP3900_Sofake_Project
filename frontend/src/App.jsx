@@ -358,13 +358,12 @@ const FUSE_LABELS = {
 
 // Export for testing
 export function computeParallelFuseStats(runs) {
-  const DIMS = ["SS", "NII", "CS", "STS", "TS", "PD", "SI", "SAA", "PIB"];
   const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
   const perRun = runs.map((run) => {
     const evals = run.fuse_evaluations || [];
     const dimAvgs = {};
-    DIMS.forEach((dim) => {
+    FUSE_DIMS.forEach((dim) => {
       dimAvgs[dim] = avg(evals.map((e) => (e.fuse_scores_vs_ground_truth || {})[dim] ?? 0));
     });
     dimAvgs.Total_Deviation = avg(
@@ -373,8 +372,9 @@ export function computeParallelFuseStats(runs) {
     return { runId: run.run_log?.run_id ?? "unknown", ...dimAvgs };
   });
 
-  const globalDims = DIMS.map((dim) => {
+  const globalDims = FUSE_DIMS.map((dim) => {
     const vals = perRun.map((r) => r[dim]);
+    if (vals.length === 0) return { dim, score: 0, error: [0, 0] };
     const mean = avg(vals);
     const min = Math.min(...vals);
     const max = Math.max(...vals);
