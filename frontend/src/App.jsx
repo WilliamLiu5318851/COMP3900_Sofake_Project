@@ -27,7 +27,6 @@ function Sidebar({ active, onNavigate, simResult }) {
     { id: "fuse-report", label: "FUSE Report" },
     ...(showParallel ? [{ id: "parallel-fuse", label: "Parallel FUSE" }] : []),
     { id: "runs", label: "Saved Runs" },
-    { id: "settings", label: "Settings" },
     { id: "about", label: "About" },
   ];
   return (
@@ -986,17 +985,37 @@ export default function App() {
 
           {page === "runs" && <SavedRuns savedRuns={savedRuns} />}
 
-          {page === "settings" && (
-            <PlaceholderPage title="Settings">
-              Store defaults (max chars, step limit, network presets, scoring weights). Add "Reset to defaults".
-            </PlaceholderPage>
-          )}
-
           {page === "about" && (
-            <PlaceholderPage title="About SoFake">
-              Explain: no live detection, no scraping. It's a simulation tool to study how truth
-              drifts through agent interactions.
-            </PlaceholderPage>
+            <section className="card">
+              <h2 className="card__title">About SoFake</h2>
+              <p style={{ marginBottom: "1rem" }}>
+                SoFake is a fake news evolution simulator built to study how truthful information
+                drifts as it propagates through a simulated social network of AI agents.
+              </p>
+              <p style={{ marginBottom: "1rem" }}>
+                Each agent has a unique personality profile based on the HEXACO model —
+                varying in honesty, emotionality, conscientiousness, and more — which determines
+                how they react to, reframe, and spread news posts. Over multiple simulation steps,
+                a ground-truth article is seeded into the network and evolves through likes,
+                retweets, quotes, and new posts.
+              </p>
+              <p style={{ marginBottom: "1rem" }}>
+                Evolved posts are scored using the <strong>FUSE framework</strong>, which measures
+                deviation from the original article across 9 linguistic and semantic dimensions:
+                Sentiment Shift, New Information Introduced, Certainty Shift, Stylistic Shift,
+                Temporal Shift, Perspective Deviation, Sensationalism, Source Attribution Alteration,
+                and Political/Ideological Bias.
+              </p>
+              <p style={{ marginBottom: "1rem" }}>
+                Running multiple parallel simulations allows you to compare how the same article
+                drifts across different random network configurations and agent orderings,
+                giving a statistical picture of misinformation spread.
+              </p>
+              <div className="callout" style={{ marginTop: "1rem" }}>
+                SoFake does not scrape live news, detect real misinformation, or connect to any
+                external data source. It is a research and educational tool only.
+              </div>
+            </section>
           )}
 
         </div>
