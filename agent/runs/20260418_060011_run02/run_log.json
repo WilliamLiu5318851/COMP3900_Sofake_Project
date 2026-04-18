@@ -1,0 +1,261 @@
+{
+  "run_id": "20260418_060011_run02",
+  "timestamp": "2026-04-18T06:00:13.694041",
+  "config": {
+    "n_agents": 4,
+    "n_steps": 4,
+    "seed": null,
+    "intra_cluster_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 1,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.2298,
+        "emotionality": 0.2953,
+        "extraversion": 0.6113,
+        "agreeableness": 0.3284,
+        "conscientiousness": 0.4202,
+        "openness": 0.0258
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 0,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.8317,
+        "emotionality": 0.5014,
+        "extraversion": 0.2954,
+        "agreeableness": 0.8521,
+        "conscientiousness": 0.6028,
+        "openness": 0.1019
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.7896,
+        "emotionality": 0.6003,
+        "extraversion": 0.3175,
+        "agreeableness": 0.918,
+        "conscientiousness": 0.5048,
+        "openness": 0.4363
+      }
+    },
+    {
+      "id": 3,
+      "name": "Dana",
+      "cluster": 0,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.9992,
+        "emotionality": 0.0317,
+        "extraversion": 0.894,
+        "agreeableness": 0.1583,
+        "conscientiousness": 0.4362,
+        "openness": 0.2296
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 4,
+    "n_edges": 3,
+    "n_clusters": 2,
+    "avg_degree": 1.5,
+    "hubs": {
+      "0": "Dana",
+      "1": "Alex"
+    }
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that\nmicroplastics found in common bottled water brands may be interfering with\nhuman hormone regulation. The study, which tracked 3,000 participants over\n5 years, found a statistically significant correlation between bottled water\nconsumption and disrupted cortisol and thyroid levels. The lead researcher\nstated the findings are 'concerning but not yet conclusive'. Health authorities\nhave not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.4,
+      "controversy": 0.6,
+      "fringe_score": 0.2,
+      "threat_level": 0.3,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        3,
+        1,
+        2,
+        0
+      ],
+      "events": [
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "comment",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "\"While I'm not dismissing the findings, I'd like to see more research on the specific types of microplastics and their concentrations in bottled water before drawing firm conclusions. The study's correlation, although statistically significant, doesn't necessarily imply causation.\"",
+          "new_signals": {
+            "emotional_charge": 0.3,
+            "controversy": 0.3,
+            "fringe_score": 0.2,
+            "threat_level": 0.1,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "ignore",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "ignore",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "report",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "quote_tweet",
+          "source_post_id": "post_1",
+          "new_post_id": "post_2",
+          "new_post_text": "\"WOW! The alarm bells are already ringing on this bottled water scandal. 3,000 participants + 5 year study = HUGE sample size. Can't wait to see the follow-up research that'll inevitably confirm these disturbing hormone disruptions. #BottledWaterAlert #HealthAtRisk\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.6,
+            "fringe_score": 0.5,
+            "threat_level": 0.7,
+            "generation": 2,
+            "source_post_id": "post_1"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 2
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        3,
+        1,
+        2,
+        0
+      ],
+      "events": [
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "retweet",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 0
+    },
+    {
+      "step": 3,
+      "agent_order": [
+        0,
+        1,
+        3,
+        2
+      ],
+      "events": [],
+      "new_posts_this_step": 0
+    },
+    {
+      "step": 4,
+      "agent_order": [
+        3,
+        2,
+        1,
+        0
+      ],
+      "events": [],
+      "new_posts_this_step": 0
+    }
+  ]
+}

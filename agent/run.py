@@ -371,13 +371,14 @@ def main():
     parser.add_argument("--steps",  type=int, default=7,    help="Number of steps (default 7)")
     parser.add_argument("--seed",   type=int, default=None, help="Random seed")
     parser.add_argument("--out",    type=str, default="runs", help="Output directory (default: runs/)")
+
     # [NEW]
     parser.add_argument("--sim-count", type=int, default=1, help="Parallel Simulation")
     args = parser.parse_args()
 
 
     keys_str = os.getenv("GROQ_API_KEY", "")
-    
+
     API_KEYS = [k.strip() for k in keys_str.split(",") if k.strip()]
 
     if not API_KEYS:
@@ -390,12 +391,12 @@ def main():
 
         for i in range(args.sim_count):
             current_key = API_KEYS[i % len(API_KEYS)]
-            
+
             pid = os.fork()
-            
+
             if pid == 0:  # child
                 os.environ["GROQ_API_KEY"] = current_key
-                
+
                 log_dir = os.path.join(args.out, "logs")
                 os.makedirs(log_dir, exist_ok=True)
                 log_file = open(f"{log_dir}/run_{i:02d}.log", "w")
@@ -411,9 +412,9 @@ def main():
                     out_dir=args.out,
                     run_identifier=f"run{i:02d}"
                 )
-                
+
                 sys.exit(0)
-            
+
             else: # parent
                 pids.append(pid)
                 print(f"  - Instance {i} started (PID: {pid}), Using Key: {current_key[:10]}...")

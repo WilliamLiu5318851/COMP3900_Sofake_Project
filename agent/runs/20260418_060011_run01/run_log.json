@@ -1,0 +1,251 @@
+{
+  "run_id": "20260418_060011_run01",
+  "timestamp": "2026-04-18T06:00:11.824881",
+  "config": {
+    "n_agents": 4,
+    "n_steps": 4,
+    "seed": null,
+    "intra_cluster_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 0,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.6107,
+        "emotionality": 0.1636,
+        "extraversion": 0.2454,
+        "agreeableness": 0.9256,
+        "conscientiousness": 0.0521,
+        "openness": 0.8364
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 0,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.7792,
+        "emotionality": 0.0555,
+        "extraversion": 0.7169,
+        "agreeableness": 0.0118,
+        "conscientiousness": 0.4973,
+        "openness": 0.72
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 1,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.2294,
+        "emotionality": 0.4944,
+        "extraversion": 0.5476,
+        "agreeableness": 0.7334,
+        "conscientiousness": 0.8503,
+        "openness": 0.028
+      }
+    },
+    {
+      "id": 3,
+      "name": "Dana",
+      "cluster": 0,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.865,
+        "emotionality": 0.1238,
+        "extraversion": 0.0288,
+        "agreeableness": 0.3815,
+        "conscientiousness": 0.3688,
+        "openness": 0.049
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 4,
+    "n_edges": 2,
+    "n_clusters": 2,
+    "avg_degree": 1.0,
+    "hubs": {
+      "0": "Blake",
+      "1": "Casey"
+    }
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that\nmicroplastics found in common bottled water brands may be interfering with\nhuman hormone regulation. The study, which tracked 3,000 participants over\n5 years, found a statistically significant correlation between bottled water\nconsumption and disrupted cortisol and thyroid levels. The lead researcher\nstated the findings are 'concerning but not yet conclusive'. Health authorities\nhave not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.6,
+      "controversy": 0.3,
+      "fringe_score": 0.0,
+      "threat_level": 0.3,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        0,
+        1,
+        3,
+        2
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "quote_tweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "\"According to a new study, researchers found a significant link between bottled water consumption & disrupted hormone levels (specifically cortisol & thyroid). However, the study's lead author notes the findings are 'concerning but not yet conclusive'. Need more evidence before jumping to conclusions. #healthnews\"",
+          "new_signals": {
+            "emotional_charge": 0.7,
+            "controversy": 0.3,
+            "fringe_score": 0.2,
+            "threat_level": 0.6,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "retweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "comment",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_2",
+          "new_post_text": "\"Just had to switch to a filter pitcher after seeing this. I've been noticing some major changes in my energy levels and mood since ditching bottled water. The longer this study goes unpublished, the more worried I am. What's taking them so long to make a move?\"",
+          "new_signals": {
+            "emotional_charge": 0.86,
+            "controversy": 0.74,
+            "fringe_score": 0.14,
+            "threat_level": 0.58,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        }
+      ],
+      "new_posts_this_step": 2
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        3,
+        1,
+        0,
+        2
+      ],
+      "events": [
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "ignore",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "post_1",
+          "new_post_id": "post_3",
+          "new_post_text": "\"Study suggests link btwn bottled water consumption & hormone disruptions, but lead author calls findings 'concerning but not yet conclusive'. The nuance here matters, as we can't overlook the fact that correlation doesn't necessarily imply causation. Let's focus on the science, not speculation #waterquality\"",
+          "new_signals": {
+            "emotional_charge": 0.43,
+            "controversy": 0.56,
+            "fringe_score": 0.32,
+            "threat_level": 0.25,
+            "generation": 2,
+            "source_post_id": "post_1"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "report",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 1
+    },
+    {
+      "step": 3,
+      "agent_order": [
+        1,
+        0,
+        2,
+        3
+      ],
+      "events": [
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "ignore",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 0
+    },
+    {
+      "step": 4,
+      "agent_order": [
+        3,
+        2,
+        1,
+        0
+      ],
+      "events": [],
+      "new_posts_this_step": 0
+    }
+  ]
+}
