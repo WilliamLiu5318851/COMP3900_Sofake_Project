@@ -157,6 +157,17 @@ function SimulationConfig({ config, setConfig }) {
             onChange={(e) => setConfig((c) => ({ ...c, seed: Number(e.target.value) }))}
           />
         </div>
+        <div>
+          <label className="label">Simulations (Run in parallel)</label>
+          <input
+            className="input"
+            type="number"
+            min={1}
+            max={30}
+            value={config.simulations}
+            onChange={(e) => setConfig((c) => ({ ...c, simulations: Number(e.target.value) }))}
+          />
+        </div>
       </div>
 
       <div className="divider" />
@@ -165,7 +176,7 @@ function SimulationConfig({ config, setConfig }) {
       <h3 className="subhead">Network Topology</h3>
       <div className="grid grid--2">
         <div>
-          <label className="label">hub followback probability</label>
+          <label className="label">intra-cluster probability</label>
           <input
             className="input"
             type="number"
@@ -805,6 +816,7 @@ export default function App() {
     interClusterM: 2,
     agentsPerCluster: 8,
     weakTieP: 0.05,
+    simulations: 1,
   });
   const [loading, setLoading] = useState(false);
   const [simResult, setSimResult] = useState(null);
@@ -830,6 +842,7 @@ export default function App() {
           inter_cluster_m: config.interClusterM,
           agents_per_cluster: config.agentsPerCluster,
           weak_tie_p: config.weakTieP,
+          simulations: config.simulations,
         }),
       });
       if (!res.ok) {

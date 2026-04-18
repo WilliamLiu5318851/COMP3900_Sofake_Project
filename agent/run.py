@@ -192,6 +192,7 @@ def run_simulation(
     inter_cluster_m: int = 2,
     agents_per_cluster: int = 10,
     weak_tie_p: float = 0.05, 
+    n_simulations: int = 1,
 ) -> tuple[dict, dict]:
     if seed is not None:
         random.seed(seed)

@@ -47,6 +47,7 @@ class SimulateRequest(BaseModel):
     inter_cluster_m: int = 2
     agents_per_cluster: int = 10
     weak_tie_p: float = 0.05
+    simulations: int = 1
 
 
 @app.get("/")

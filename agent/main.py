@@ -21,6 +21,7 @@ class SimulateRequest(BaseModel):
     inter_cluster_m: int = 2
     agents_per_cluster: int = 10
     weak_tie_p: float = 0.05
+    simulations: int = 1
 
 
 class SimulateResponse(BaseModel):
@@ -50,8 +51,8 @@ def simulate(req: SimulateRequest):
             intra_cluster_p=req.intra_cluster_p,
             inter_cluster_m=req.inter_cluster_m,
             agents_per_cluster=req.agents_per_cluster,
-            weak_tie_p=req.weak_tie_p
-
+            weak_tie_p=req.weak_tie_p,
+            n_simulations=req.simulations
         )
         return SimulateResponse(run_log=run_log, signal_drift=signal_drift)
     except Exception as e:
