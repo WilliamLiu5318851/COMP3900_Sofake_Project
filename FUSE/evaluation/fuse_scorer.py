@@ -7,7 +7,7 @@ from dotenv import load_dotenv, find_dotenv
 class FUSEScoringSystem:
     def __init__(self, api_key: str, model_name: str = "claude-haiku-4-5-20251001"):
         """
-        Initialize the scoring system with Anthropic API credentials.
+        Initialize the scoring system with LLM API credentials.
         """
         self.client = anthropic.Anthropic(api_key=api_key)
         self.model_name = model_name
