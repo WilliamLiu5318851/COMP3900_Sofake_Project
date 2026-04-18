@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+  LabelList, ErrorBar,
 } from "recharts";
 import "./App.css";
 
@@ -837,6 +838,60 @@ function PlaceholderPage({ title, children }) {
       <h2 className="card__title">{title}</h2>
       <div className="hint">{children}</div>
     </section>
+  );
+}
+
+// ── Parallel FUSE Page ────────────────────────────────────────────────────────
+
+function ParallelFusePage({ simResult }) {
+  const runs = simResult?.runs;
+
+  if (!runs || runs.length < 2) {
+    return (
+      <div className="callout">
+        Run at least 2 parallel simulations to see cross-run comparisons.
+      </div>
+    );
+  }
+
+  const { runChart, globalDims } = computeParallelFuseStats(runs);
+
+  return (
+    <>
+      <section className="card">
+        <h2 className="card__title">Total Deviation per Run</h2>
+        <p className="hint" style={{ marginBottom: "1rem" }}>
+          Average Total Deviation score across all evaluated posts, per simulation run.
+        </p>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={runChart} margin={{ top: 16, right: 16, bottom: 4, left: 0 }}>
+            <XAxis dataKey="run" tick={{ fontSize: 12 }} />
+            <YAxis domain={[0, 10]} tick={{ fontSize: 12 }} />
+            <Tooltip />
+            <Bar dataKey="td" fill="#D85A30" radius={[4, 4, 0, 0]}>
+              <LabelList dataKey="td" position="top" style={{ fontSize: 11 }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </section>
+
+      <section className="card">
+        <h2 className="card__title">Average FUSE Dimensions (all runs)</h2>
+        <p className="hint" style={{ marginBottom: "1rem" }}>
+          Global average per dimension across all runs. Error bars show min–max range.
+        </p>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={globalDims} margin={{ top: 16, right: 16, bottom: 50, left: 0 }}>
+            <XAxis dataKey="dim" tick={{ fontSize: 11 }} angle={-35} textAnchor="end" interval={0} />
+            <YAxis domain={[0, 10]} tick={{ fontSize: 12 }} />
+            <Tooltip formatter={(val, name) => [val, name === "score" ? "Avg" : name]} />
+            <Bar dataKey="score" fill="#7F77DD" radius={[4, 4, 0, 0]}>
+              <ErrorBar dataKey="error" width={4} strokeWidth={2} stroke="#4a4a8a" />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </section>
+    </>
   );
 }
 
