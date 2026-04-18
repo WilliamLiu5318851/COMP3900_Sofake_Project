@@ -808,6 +808,7 @@ function PlaceholderPage({ title, children }) {
 export default function App() {
   const [page, setPage] = useState("new");
   const [groundTruth, setGroundTruth] = useState("");
+  const [newsId, setNewsId] = useState(null);
   const [config, setConfig] = useState({
     agentCount: 6,
     steps: 3,
@@ -830,11 +831,28 @@ export default function App() {
     setSimResult(null);
     setSimError(null);
     try {
+      // 1. save news
+      const newsRes = await fetch("/api/news", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: groundTruth }),
+      });
+
+      if (!newsRes.ok) {
+        const err = await newsRes.json().catch(() => ({ detail: newsRes.statusText }));
+        throw new Error(err.detail || "Failed to save news");
+      }
+
+      const newsData = await newsRes.json();
+      const createdNewsId = newsData.id;
+      setNewsId(createdNewsId);
+
+      // 2. run simulation with news_id
       const res = await fetch("/api/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ground_truth: groundTruth,
+          news_id: createdNewsId,
           agent_count: config.agentCount,
           steps: config.steps,
           seed: config.seed,
