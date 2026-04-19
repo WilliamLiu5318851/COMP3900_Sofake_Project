@@ -1,7 +1,17 @@
 import pytest
 from structs import Agent, HEXACOProfile, PostSignals, Post
-from network import build_network, NetworkConfig, assign_clusters, get_cluster_hub
+from network import build_network, NetworkConfig, elect_hubs, cosine_similarity
 from prompts import compute_action_probabilities, describe_trait
+
+def test_hexaco_bad_actor_profile():
+    """Verify the bad_actor factory generates expected trait ranges."""
+    profile = HEXACOProfile.bad_actor()
+    assert 0.0 <= profile.honesty_humility <= 0.2
+    assert 0.3 <= profile.emotionality <= 0.6
+    assert 0.7 <= profile.extraversion <= 1.0
+    assert 0.0 <= profile.agreeableness <= 0.3
+    assert 0.3 <= profile.conscientiousness <= 0.6
+    assert 0.5 <= profile.openness <= 0.9
 
 
 # --- 1. HEXACO Distribution Tests ---
@@ -75,15 +85,27 @@ def test_network_node_creation():
     assert len(social_net.clusters) == 2
 
 
-def test_cluster_hub_logic():
-    """Verify that the agent with the highest extraversion is selected as Hub."""
+def test_elect_hubs_logic():
+    """Verify that the agents with the highest extraversion are selected as Hubs."""
     a1 = Agent(1, "Quiet", HEXACOProfile(0.5, 0.5, 0.1, 0.5, 0.5, 0.5))
-    a2 = Agent(2, "Loud",  HEXACOProfile(0.5, 0.5, 0.9, 0.5, 0.5, 0.5))
+    a2 = Agent(2, "Loud", HEXACOProfile(0.5, 0.5, 0.9, 0.5, 0.5, 0.5))
+    a3 = Agent(3, "Medium", HEXACOProfile(0.5, 0.5, 0.5, 0.5, 0.5, 0.5))
 
-    hub = get_cluster_hub([a1, a2])
+    # With 3 agents and 2 per cluster, it should elect max(2, ceil(3/2))=2 hubs
+    hubs = elect_hubs([a1, a2, a3], agents_per_cluster=2)
 
-    assert hub.id == 2
-    assert hub.name == "Loud"
+    assert len(hubs) == 2
+    assert hubs[0].id == 2  # 0.9 extraversion
+    assert hubs[1].id == 3  # 0.5 extraversion
+
+def test_cosine_similarity():
+    """Verify cosine similarity calculation between agents."""
+    a1 = Agent(1, "A1", HEXACOProfile(1.0, 0.0, 0.0, 0.0, 0.0, 0.0))
+    a2 = Agent(2, "A2", HEXACOProfile(1.0, 0.0, 0.0, 0.0, 0.0, 0.0))
+    a3 = Agent(3, "A3", HEXACOProfile(0.0, 1.0, 0.0, 0.0, 0.0, 0.0))
+    
+    assert cosine_similarity(a1, a2) == 1.0
+    assert cosine_similarity(a1, a3) == 0.0
 
 
 def test_network_has_edges():

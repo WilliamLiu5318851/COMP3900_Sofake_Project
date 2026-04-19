@@ -148,3 +148,26 @@ def test_markdown_fenced_json_is_parsed(evaluator):
 
     assert result["SS"] == 5.0
     assert "Total_Deviation" in result
+
+def test_invalid_json_returns_empty_dict(evaluator):
+    """If the LLM returns completely broken JSON, it should fail gracefully and not crash the server."""
+    broken_json = "{ \"SS\": 5.0, missing_quotes_and_brackets"
+    
+    mock_resp = MagicMock()
+    mock_resp.content = [MagicMock(text=broken_json)]
+    
+    with patch.object(evaluator.client.messages, "create", return_value=mock_resp):
+        result = evaluator.evaluate_news("original", "evolved")
+        
+    assert result == {}
+
+def test_extra_keys_do_not_break_calculations(evaluator):
+    """If the LLM hallucinates extra dimensions, they shouldn't crash the core calculations."""
+    mock_scores = {k: 5.0 for k in EXTENDED_DIMS}
+    mock_scores["Hallucinated_Metric"] = 9.9
+    
+    with patch.object(evaluator.client.messages, "create", return_value=_make_mock_response(mock_scores)):
+        result = evaluator.evaluate_news("original news", "evolved news")
+        
+    assert "Total_Deviation" in result
+    assert result["Total_Deviation"] == 5.0

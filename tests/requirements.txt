@@ -3,3 +3,8 @@ pytest-mock==3.14.0
 anthropic==0.52.0
 groq
 networkx
+fastapi
+httpx
+python-dotenv
+pydantic
+sqlalchemy
