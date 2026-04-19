@@ -26,7 +26,7 @@ def llm_call(prompt: str) -> str:
             return response.choices[0].message.content # type: ignore
         except RateLimitError as e:
             if attempt < max_retries - 1:
-                print(f"⚠️ [PID: {os.getpid()}] 触发 API 限流，等待 3 秒后重试 (第 {attempt + 1} 次)...")
+                print(f"⚠️ [PID: {os.getpid()}] Reached API limit, try again after 3 seconds (Number of {attempt + 1})...")
                 time.sleep(3)
             else:
                 raise e

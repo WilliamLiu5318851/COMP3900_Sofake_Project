@@ -967,6 +967,9 @@ export default function App() {
   const [simError, setSimError] = useState(null);
   const [selectedRun, setSelectedRun] = useState(null);
 
+  //new
+  const [activeRunIndex, setActiveRunIndex] = useState(0);
+
   const withinLimit = groundTruth.length > 0 && groundTruth.length <= 6000;
 
   async function loadSavedRunsFromBackend() {
@@ -1075,6 +1078,10 @@ export default function App() {
       const data = await res.json();
       setSimResult(data);
       setSelectedRun(data);
+
+      //new
+      setActiveRunIndex(0);
+
       await loadSavedRunsFromBackend();
     } catch (e) {
       setSimError(e.message);
@@ -1083,12 +1090,34 @@ export default function App() {
     }
   }
 
+  const currentRun = selectedRun?.runs && selectedRun.runs.length > 0 
+    ? selectedRun.runs[activeRunIndex] 
+    : selectedRun;
+
   return (
     <div className="app">
       <Sidebar active={page} onNavigate={setPage} simResult={selectedRun} />
       <main className="main">
         <Header title="SoFake — Fake News Evolution Simulator" />
         <div className="content">
+
+          {selectedRun?.runs && selectedRun.runs.length > 1 && ["graph", "dashboard"].includes(page) && (
+            <div className="card" style={{ marginBottom: "1rem", padding: "1rem" }}>
+              <div className="row" style={{ gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
+                <span className="label" style={{ margin: 0, marginRight: "1rem" }}>Select Parallel Run:</span>
+                {selectedRun.runs.map((_, idx) => (
+                  <button
+                    key={idx}
+                    className={`btn btn--ghost ${activeRunIndex === idx ? "is-active" : ""}`}
+                    onClick={() => setActiveRunIndex(idx)}
+                    type="button"
+                  >
+                    Run {idx + 1}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {page === "new" && (
             <>
@@ -1104,9 +1133,9 @@ export default function App() {
             </>
           )}
 
-          {page === "graph" && <GraphView simResult={selectedRun} />}
+          {page === "graph" && <GraphView simResult={currentRun} />}
 
-          {page === "dashboard" && <OverviewDashboard simResult={selectedRun} />}
+          {page === "dashboard" && <OverviewDashboard simResult={currentRun} />}
 
           {page === "fuse" && <FuseComparisonPage simResult={selectedRun} />}
 
@@ -1121,6 +1150,7 @@ export default function App() {
               onSelectRun={(run) => {
                 setSelectedRun(run);
                 setSimResult(run);
+                setActiveRunIndex(0);
                 setPage("dashboard");
               }}
               onDeleteRun={handleDeleteRun}
