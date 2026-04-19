@@ -2,9 +2,9 @@ name: SoFake CI Pipeline
 
 on:
   push:
-    branches: [ "main", "parallel" ]
+    branches: [ ""**"" ]
   pull_request:
-    branches: [ "main", "parallel" ]
+    branches: [ "main" ]
 
 jobs:
   backend-lint:
