@@ -26,10 +26,16 @@ class SimulateRequest(BaseModel):
     simulations: int = 1
 
 
-class SimulateResponse(BaseModel):
+#class SimulateResponse(BaseModel):
+    #run_log: dict
+    #signal_drift: dict
+
+class SingleRun(BaseModel):
     run_log: dict
     signal_drift: dict
 
+class SimulateResponse(BaseModel):
+    runs: List[SingleRun]
 
 @app.get("/")
 def root():
@@ -87,9 +93,10 @@ def simulate(req: SimulateRequest):
                 all_results.append(future.result())
 
         # 3. construct the graph with the result that is finished first
-        first_log, first_drift = all_results[0]
+        #first_log, first_drift = all_results[0]
+        runs_data = [{"run_log": r[0], "signal_drift": r[1]} for r in all_results]
 
-        return SimulateResponse(run_log=first_log, signal_drift=first_drift)
+        return SimulateResponse(runs=runs_data)
 
     except Exception as e:
         import traceback
