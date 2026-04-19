@@ -42,6 +42,7 @@ from structs import Agent, HEXACOProfile, Post, PostSignals
 from network import build_network, NetworkConfig
 from feed import PostRegistry, build_feed
 from prompts import agent_process_post, get_post_signals, classify_post_signals
+from initial_memory import initialise_agent_memory
 
 
 # ── Ground Truth ───────────────────────────────────────────────────────────────
@@ -78,14 +79,14 @@ def make_agents(n: int) -> list[Agent]:
     ]
 
 
-def seed_ground_truth(network, registry: PostRegistry) -> Post:
+def seed_ground_truth(network, registry: PostRegistry, ground_truth: str) -> Post:
     """
     Classify the ground truth story and seed it into every cluster hub's
     post history so it appears in their neighbours' feeds from step 1.
     """
     print("  Classifying ground truth signals…")
     signals = classify_post_signals(
-        post_text=GROUND_TRUTH,
+        post_text=ground_truth,
         generation=0,
         source_post_id="ground_truth",
     )
@@ -93,7 +94,7 @@ def seed_ground_truth(network, registry: PostRegistry) -> Post:
     seed_post = Post(
         id="ground_truth",
         author_id="system",
-        text=GROUND_TRUTH,
+        text=ground_truth,
         signals=signals,
         parent_id=None,
     )
@@ -140,6 +141,14 @@ def agent_dict(agent: Agent, cluster_id: int, is_hub: bool) -> dict:
         },
     }
 
+def summarise_visible_posts(feed: list[Post], max_posts: int = 3) -> str:
+    if not feed:
+        return "This agent does not see any posts now"
+    
+    lines = []
+    for i, post in enumerate(feed[:max_posts], start=1):
+        lines.append(f"{i}. {post.text}")
+    return "\n".join(lines)
 
 # ── Console Formatting ─────────────────────────────────────────────────────────
 
@@ -235,7 +244,13 @@ def run_simulation(
     registry = PostRegistry()
 
     print("Seeding ground truth…")
-    seed_post = seed_ground_truth(network, registry)
+    seed_post = seed_ground_truth(network, registry, ground_truth)
+
+    print("Generating initial memories...")
+    for agent in agents:
+        initial_feed = build_feed(agent, network, registry)
+        visible_context = summarise_visible_posts(initial_feed)
+        initialise_agent_memory(agent, visible_context)
 
     # ── Run log structure ──────────────────────────────────────────────────────
     run_log = {

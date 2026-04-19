@@ -4,8 +4,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from database.db import init_db
-from services.news_service import create_news, list_news
+from database.db import init_db, get_news_by_id, insert_simulation_run
+from services.news_service import (
+    create_news, 
+    list_news, 
+    list_history_runs, 
+    get_history_run_detail,
+    delete_history_run,
+)
 
 AGENT_URL = os.getenv("AGENT_URL", "http://agent:8001")
 FUSE_URL = os.getenv("FUSE_URL", "http://fuse:8002")
@@ -39,7 +45,7 @@ class NewsCreate(BaseModel):
 
 
 class SimulateRequest(BaseModel):
-    ground_truth: str
+    news_id: int
     agent_count: int = 30
     steps: int = 60
     seed: int = 42
@@ -76,50 +82,75 @@ def get_news():
 @app.post("/api/simulate")
 def simulate(req: SimulateRequest):
     try:
+        news_content = get_news_by_id(req.news_id)
+        if not news_content:
+            raise HTTPException(status_code=404, detail="News Content not found")
+        
+        saved_ground_truth = news_content[1]
+
+        payload = {
+            "ground_truth": saved_ground_truth,
+            "news_id": req.news_id,
+            "agent_count": req.agent_count,
+            "steps": req.steps,
+            "seed": req.seed,
+            "intra_cluster_p": req.intra_cluster_p,
+            "inter_cluster_m": req.inter_cluster_m,
+            "agents_per_cluster": req.agents_per_cluster,
+            "weak_tie_p": req.weak_tie_p,
+            "simulations": req.simulations,
+        }
+
         with httpx.Client(timeout=600.0) as client:
             response = client.post(
                 f"{AGENT_URL}/api/simulate",
-                json=req.model_dump(),
+                json=payload
             )
             response.raise_for_status()
             sim_result = response.json()
 
-        def score_run(run_log: dict) -> list[dict]:
-            MAX_FUSE_EVALS = 20
-            post_texts: dict = {"ground_truth": req.ground_truth}
-            evolved_posts = []
-            for step in run_log.get("steps", []):
-                for event in step.get("events", []):
-                    text = event.get("new_post_text")
-                    if text:
-                        pid = event.get("new_post_id")
-                        post_texts[pid] = text
-                        evolved_posts.append({
-                            "post_id": pid,
-                            "author": event.get("agent_name"),
-                            "action": event.get("action"),
-                            "step": step.get("step"),
-                            "text": text,
-                            "source_post_id": event.get("source_post_id"),
-                        })
+        MAX_FUSE_EVALS = 20
 
-            if len(evolved_posts) > MAX_FUSE_EVALS:
-                step_size = len(evolved_posts) // MAX_FUSE_EVALS
-                sampled = evolved_posts[::step_size][:MAX_FUSE_EVALS]
-            else:
-                sampled = evolved_posts
+        # Extract evolved posts from run_log
+        run_log = sim_result.get("run_log", {})
 
-            fuse_evaluations = []
-            with httpx.Client(timeout=60.0) as client:
-                for post in sampled:
-                    entry = {**post}
-                    try:
-                        gt_resp = client.post(
-                            f"{FUSE_URL}/api/evaluate",
-                            json={"original": req.ground_truth, "evolved": post["text"]},
-                        )
-                        if gt_resp.status_code == 200:
-                            entry["fuse_scores_vs_ground_truth"] = gt_resp.json()
+        # Build a lookup of post_id -> text (includes ground_truth)
+        post_texts: dict = {"ground_truth": saved_ground_truth}
+        evolved_posts = []
+        for step in run_log.get("steps", []):
+            for event in step.get("events", []):
+                text = event.get("new_post_text")
+                if text:
+                    pid = event.get("new_post_id")
+                    post_texts[pid] = text
+                    evolved_posts.append({
+                        "post_id": pid,
+                        "author": event.get("agent_name"),
+                        "action": event.get("action"),
+                        "step": step.get("step"),
+                        "text": text,
+                        "source_post_id": event.get("source_post_id"),
+                    })
+
+        if len(evolved_posts) > MAX_FUSE_EVALS:
+            step_size = len(evolved_posts) // MAX_FUSE_EVALS
+            sampled = evolved_posts[::step_size][:MAX_FUSE_EVALS]
+        else:
+            sampled = evolved_posts
+
+        # Call FUSE to score each sampled post vs ground truth AND vs parent post
+        fuse_evaluations = []
+        with httpx.Client(timeout=60.0) as client:
+            for post in sampled:
+                entry = {**post}
+                try:
+                    # Score vs ground truth
+                    gt_resp = client.post(
+                        f"{FUSE_URL}/api/evaluate",
+                        json={"original": saved_ground_truth, "evolved": post["text"]},
+                    )
+                    if gt_resp.status_code == 200:
+                        entry["fuse_scores_vs_ground_truth"] = gt_resp.json()
 
                         parent_id = post.get("source_post_id")
                         parent_text = post_texts.get(parent_id) if parent_id else None
@@ -132,27 +163,12 @@ def simulate(req: SimulateRequest):
                             if parent_resp.status_code == 200:
                                 entry["fuse_scores_vs_parent"] = parent_resp.json()
 
-                        if "fuse_scores_vs_ground_truth" in entry:
-                            fuse_evaluations.append(entry)
-                    except Exception:
-                        pass
-            return fuse_evaluations
+                    if "fuse_scores_vs_ground_truth" in entry:
+                        fuse_evaluations.append(entry)
+                except Exception:
+                    pass
 
-        # Score all runs; attach evaluations per run
-        all_runs = sim_result.get("runs", [{"run_log": sim_result.get("run_log", {}), "signal_drift": sim_result.get("signal_drift", {})}])
-        scored_runs = []
-        for run in all_runs:
-            scored_runs.append({
-                **run,
-                "fuse_evaluations": score_run(run["run_log"]),
-            })
-
-        # backward-compat: expose first run's data at top level
-        return {
-            **sim_result,
-            "fuse_evaluations": scored_runs[0]["fuse_evaluations"],
-            "runs": scored_runs,
-        }
+        return {**sim_result, "fuse_evaluations": fuse_evaluations}
 
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Agent service timed out")
@@ -160,3 +176,22 @@ def simulate(req: SimulateRequest):
         raise HTTPException(status_code=502, detail=f"Agent error: {e.response.text}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.get("/api/history/{run_id}")
+def get_history_run_detail_api(run_id: int):
+    try:
+        return get_history_run_detail(run_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    
+@app.get("/api/history")
+def get_history():
+    return list_history_runs()
+
+@app.delete("/api/history/{run_id}")
+def delete_history_run_api(run_id: int):
+    try:
+        return delete_history_run(run_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))

@@ -1,7 +1,5 @@
 import os
 import sys
-import uuid
-import random
 import concurrent.futures
 from typing import List
 
@@ -16,6 +14,7 @@ app = FastAPI(title="SoFake Agent Service")
 
 class SimulateRequest(BaseModel):
     ground_truth: str
+    news_id: int
     agent_count: int = 20
     steps: int = 7
     seed: int = 42
@@ -95,3 +94,4 @@ def simulate(req: SimulateRequest):
         import traceback
         traceback.print_exc() # debug in the terminal
         raise HTTPException(status_code=500, detail=str(e))
+    
