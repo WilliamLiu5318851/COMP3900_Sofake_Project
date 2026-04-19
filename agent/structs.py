@@ -13,7 +13,7 @@ def llm_call(prompt: str) -> str:
     # [NEW] Initialise client inside the function，make sure it can capture api keys inserted by os.fork()
     raw_keys = os.getenv("GROQ_API_KEY", "")
     actual_key = raw_keys.split(",")[0].strip()
-    
+
     client = Groq(api_key=actual_key)
     # [NEW] Add automatic retry, at most 3 times
     max_retries = 3
@@ -52,7 +52,7 @@ class HEXACOProfile:
 
     @classmethod
     def bad_actor(cls):
-        
+
         return cls(
             honesty_humility=random.uniform(0.0, 0.2),
             emotionality=random.uniform(0.3, 0.6),
