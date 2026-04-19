@@ -54,13 +54,18 @@ Correct format:
 """.strip()
 
 def clean_llm_json(raw: str) -> str:
+    import re
     text = raw.strip()
     text = text.replace("```json", "").replace("```","").strip()
 
     start = text.find("[")
     end = text.rfind("]")
+    text = text[start:end+1].strip()
 
-    return text[start:end+1].strip()
+    # Fix missing commas between consecutive string elements
+    text = re.sub(r'"\s*\n\s*"', '",\n"', text)
+
+    return text
 
 
 
