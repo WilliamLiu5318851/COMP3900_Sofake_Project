@@ -744,19 +744,46 @@ function SavedRuns({ savedRuns, selectedRun, onSelectRun, onDeleteRun }) {
             s.events.filter((e) => e.new_post_text)
           );
           return (
-            <div key={run_log.run_id} style={{ marginBottom: idx < savedRuns.length - 1 ? "2rem" : 0 }}>
-              <div className="card__header" style={{ marginBottom: "0.75rem" }}>
-                <div>
+            <div
+              key={run_log.run_id}
+              className="history-run-card"
+              style={{marginBottom: idx < savedRuns.length - 1 ? "1.5rem" : 0,}}
+            >
+              <div
+                className="card__header"
+                style={{
+                  marginBottom: "1rem",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: "1rem",
+                }}
+              >
+                <div style={{ flex: 1 }}>
                   <h3 className="subhead" style={{ margin: 0 }}>
                     Run {savedRuns.length - idx}: {run_log.run_id}
                   </h3>
-                  <div className="hint">
+
+                  <div className="hint" style={{ marginTop: "0.25rem" }}>
                     {run_log.agents.length} agents · {run_log.steps.length} steps · seed {run_log.config.seed}
                   </div>
-                  {isSelected && <div className="pill" style={{ marginTop: "0.5rem" }}>Currently viewing</div>}
+
+                  {isSelected && (
+                    <div className="pill" style={{ marginTop: "0.5rem", display: "inline-block" }}>
+                      Currently viewing
+                    </div>
+                  )}
+
+                  <div className="hint" style={{ marginTop: "0.75rem", marginBottom: "0.25rem" }}>
+                    <strong>Ground truth:</strong>
+                  </div>
+
+                  <div className="history-ground-truth">
+                    {result.ground_truth_content}
+                  </div>
                 </div>
 
-                <div className="row" style={{ gap: "0.5rem" }}>
+                <div className="row" style={{ gap: "0.5rem", flexShrink: 0 }}>
                   <button
                     className="btn btn--ghost"
                     type="button"
@@ -766,10 +793,9 @@ function SavedRuns({ savedRuns, selectedRun, onSelectRun, onDeleteRun }) {
                   </button>
 
                   <button
-                    className="btn btn--ghost"
+                    className="btn btn--ghost btn--danger"
                     type="button"
                     onClick={() => onDeleteRun(result.history_run_id)}
-                    style={{ color: "#d32f2f", borderColor: "#d32f2f" }}
                   >
                     Delete
                   </button>
@@ -873,6 +899,7 @@ export default function App() {
         .map((item) => ({
           ...item.result_json,
           history_run_id: item.run_id,
+          ground_truth_content: item.content,
         }))
         .filter((item) => item.run_log);
 
