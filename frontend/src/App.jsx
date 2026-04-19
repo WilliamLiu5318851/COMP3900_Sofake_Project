@@ -1085,7 +1085,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar active={page} onNavigate={setPage} simResult={simResult} />
+      <Sidebar active={page} onNavigate={setPage} simResult={selectedRun} />
       <main className="main">
         <Header title="SoFake — Fake News Evolution Simulator" />
         <div className="content">
