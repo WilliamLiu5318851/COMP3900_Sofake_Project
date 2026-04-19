@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -730,7 +730,7 @@ function OverviewDashboard({ simResult }) {
 
 // ── Saved Runs ────────────────────────────────────────────────────────────────
 
-function SavedRuns({ savedRuns }) {
+function SavedRuns({ savedRuns, selectedRun, onSelectRun, onDeleteRun }) {
   return (
     <section className="card">
       <h2 className="card__title">Saved Runs</h2>
@@ -739,17 +739,40 @@ function SavedRuns({ savedRuns }) {
       ) : (
         savedRuns.map((result, idx) => {
           const { run_log } = result;
+          const isSelected = selectedRun?.run_log?.run_id === run_log.run_id;
           const textPosts = run_log.steps.flatMap((s) =>
             s.events.filter((e) => e.new_post_text)
           );
           return (
             <div key={run_log.run_id} style={{ marginBottom: idx < savedRuns.length - 1 ? "2rem" : 0 }}>
               <div className="card__header" style={{ marginBottom: "0.75rem" }}>
-                <h3 className="subhead" style={{ margin: 0 }}>
-                  Run {savedRuns.length - idx}: {run_log.run_id}
-                </h3>
-                <div className="hint">
-                  {run_log.agents.length} agents · {run_log.steps.length} steps · seed {run_log.config.seed}
+                <div>
+                  <h3 className="subhead" style={{ margin: 0 }}>
+                    Run {savedRuns.length - idx}: {run_log.run_id}
+                  </h3>
+                  <div className="hint">
+                    {run_log.agents.length} agents · {run_log.steps.length} steps · seed {run_log.config.seed}
+                  </div>
+                  {isSelected && <div className="pill" style={{ marginTop: "0.5rem" }}>Currently viewing</div>}
+                </div>
+
+                <div className="row" style={{ gap: "0.5rem" }}>
+                  <button
+                    className="btn btn--ghost"
+                    type="button"
+                    onClick={() => onSelectRun(result)}
+                  >
+                    Open this run
+                  </button>
+
+                  <button
+                    className="btn btn--ghost"
+                    type="button"
+                    onClick={() => onDeleteRun(result.history_run_id)}
+                    style={{ color: "#d32f2f", borderColor: "#d32f2f" }}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
 
@@ -823,8 +846,70 @@ export default function App() {
   const [simResult, setSimResult] = useState(null);
   const [savedRuns, setSavedRuns] = useState([]);
   const [simError, setSimError] = useState(null);
+  const [selectedRun, setSelectedRun] = useState(null);
 
   const withinLimit = groundTruth.length > 0 && groundTruth.length <= 6000;
+
+  async function loadSavedRunsFromBackend() {
+    try {
+      const listRes = await fetch("/api/history");
+      if (!listRes.ok) {
+        throw new Error("Failed to load history list");
+      }
+
+      const historyList = await listRes.json();
+
+      const detailResults = await Promise.all(
+        historyList.map(async (item) => {
+          const detailRes = await fetch(`/api/history/${item.run_id}`);
+          if (!detailRes.ok) {
+            throw new Error(`Failed to load history run ${item.run_id}`);
+          }
+          return detailRes.json();
+        })
+      );
+
+      const restoredRuns = detailResults
+        .map((item) => ({
+          ...item.result_json,
+          history_run_id: item.run_id,
+        }))
+        .filter((item) => item.run_log);
+
+      setSavedRuns(restoredRuns);
+
+      if (restoredRuns.length > 0) {
+        setSelectedRun(restoredRuns[0]);
+      }
+    } catch (e) {
+      console.error("Failed to load history:", e);
+    }
+  }
+  useEffect(() => {
+    loadSavedRunsFromBackend();
+  }, []);
+
+  async function handleDeleteRun(runId) {
+    try {
+      const res = await fetch(`/api/history/${runId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || "Failed to delete history run");
+      }
+
+      if (selectedRun?.history_run_id === runId) {
+        setSelectedRun(null);
+        setSimResult(null);
+      }
+
+      await loadSavedRunsFromBackend();
+    } catch (e) {
+      setSimError(e.message);
+    }
+  }
 
   async function handleRun() {
     setLoading(true);
@@ -869,7 +954,8 @@ export default function App() {
       }
       const data = await res.json();
       setSimResult(data);
-      setSavedRuns((prev) => [data, ...prev]);
+      setSelectedRun(data);
+      await loadSavedRunsFromBackend();
     } catch (e) {
       setSimError(e.message);
     } finally {
@@ -898,15 +984,26 @@ export default function App() {
             </>
           )}
 
-          {page === "graph" && <GraphView simResult={simResult} />}
+          {page === "graph" && <GraphView simResult={selectedRun} />}
 
-          {page === "dashboard" && <OverviewDashboard simResult={simResult} />}
+          {page === "dashboard" && <OverviewDashboard simResult={selectedRun} />}
 
-          {page === "fuse" && <FuseComparisonPage simResult={simResult} />}
+          {page === "fuse" && <FuseComparisonPage simResult={selectedRun} />}
 
-          {page === "fuse-report" && <FuseAgentReport simResult={simResult} />}
+          {page === "fuse-report" && <FuseAgentReport simResult={selectedRun} />}
 
-          {page === "runs" && <SavedRuns savedRuns={savedRuns} />}
+          {page === "runs" && (
+            <SavedRuns
+              savedRuns={savedRuns}
+              selectedRun={selectedRun}
+              onSelectRun={(run) => {
+                setSelectedRun(run);
+                setSimResult(run);
+                setPage("dashboard");
+              }}
+              onDeleteRun={handleDeleteRun}
+            />
+          )}
 
           {page === "settings" && (
             <PlaceholderPage title="Settings">
