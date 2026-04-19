@@ -1101,8 +1101,6 @@ export default function App() {
         <Header title="SoFake — Fake News Evolution Simulator" />
         <div className="content">
 
-          {/* 【新增这块】渲染并排的 Run 切换选项卡 (Tab) */}
-          {/* 我们只在 graph, dashboard, fuse, fuse-report 页面显示这个按钮 */}
           {selectedRun?.runs && selectedRun.runs.length > 1 && ["graph", "dashboard"].includes(page) && (
             <div className="card" style={{ marginBottom: "1rem", padding: "1rem" }}>
               <div className="row" style={{ gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
@@ -1152,9 +1150,7 @@ export default function App() {
               onSelectRun={(run) => {
                 setSelectedRun(run);
                 setSimResult(run);
-                
                 setActiveRunIndex(0);
-
                 setPage("dashboard");
               }}
               onDeleteRun={handleDeleteRun}
