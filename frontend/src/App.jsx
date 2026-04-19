@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+  LabelList, ErrorBar,
 } from "recharts";
 import "./App.css";
 
@@ -16,15 +17,16 @@ function LogoMark({ size = 28 }) {
   );
 }
 
-function Sidebar({ active, onNavigate }) {
+function Sidebar({ active, onNavigate, simResult }) {
+  const showParallel = (simResult?.runs?.length ?? 0) > 1;
   const items = [
     { id: "new", label: "New Simulation" },
     { id: "graph", label: "Graph View" },
     { id: "dashboard", label: "Overview Dashboard" },
     { id: "fuse", label: "FUSE Comparison" },
     { id: "fuse-report", label: "FUSE Report" },
+    ...(showParallel ? [{ id: "parallel-fuse", label: "Parallel FUSE" }] : []),
     { id: "runs", label: "Saved Runs" },
-    { id: "settings", label: "Settings" },
     { id: "about", label: "About" },
   ];
   return (
@@ -355,6 +357,43 @@ const FUSE_LABELS = {
   STS: "Stylistic Shift", TS: "Temporal Shift", PD: "Perspective Dev.",
   SI: "Sensationalism", SAA: "Source Alteration", PIB: "Political Bias",
 };
+
+// Export for testing
+export function computeParallelFuseStats(runs) {
+  const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+  const perRun = runs.map((run) => {
+    const evals = run.fuse_evaluations || [];
+    const dimAvgs = {};
+    FUSE_DIMS.forEach((dim) => {
+      dimAvgs[dim] = avg(evals.map((e) => (e.fuse_scores_vs_ground_truth || {})[dim] ?? 0));
+    });
+    dimAvgs.Total_Deviation = avg(
+      evals.map((e) => (e.fuse_scores_vs_ground_truth || {}).Total_Deviation ?? 0)
+    );
+    return { runId: run.run_log?.run_id ?? "unknown", ...dimAvgs };
+  });
+
+  const globalDims = FUSE_DIMS.map((dim) => {
+    const vals = perRun.map((r) => r[dim]);
+    if (vals.length === 0) return { dim, score: 0, error: [0, 0] };
+    const mean = avg(vals);
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    return {
+      dim,
+      score: +mean.toFixed(2),
+      error: [+(mean - min).toFixed(2), +(max - mean).toFixed(2)],
+    };
+  });
+
+  const runChart = perRun.map((r) => ({
+    run: r.runId.replace(/^\d{8}_\d{6}_/, ""),
+    td: +r.Total_Deviation.toFixed(2),
+  }));
+
+  return { runChart, globalDims };
+}
 
 function FuseAgentReport({ simResult }) {
   const [selectedAgent, setSelectedAgent] = useState(null);
@@ -852,6 +891,60 @@ function PlaceholderPage({ title, children }) {
   );
 }
 
+// ── Parallel FUSE Page ────────────────────────────────────────────────────────
+
+function ParallelFusePage({ simResult }) {
+  const runs = simResult?.runs;
+
+  if (!runs || runs.length < 2) {
+    return (
+      <div className="callout">
+        Run at least 2 parallel simulations to see cross-run comparisons.
+      </div>
+    );
+  }
+
+  const { runChart, globalDims } = computeParallelFuseStats(runs);
+
+  return (
+    <>
+      <section className="card">
+        <h2 className="card__title">Total Deviation per Run</h2>
+        <p className="hint" style={{ marginBottom: "1rem" }}>
+          Average Total Deviation score across all evaluated posts, per simulation run.
+        </p>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={runChart} margin={{ top: 16, right: 16, bottom: 4, left: 0 }}>
+            <XAxis dataKey="run" tick={{ fontSize: 12 }} />
+            <YAxis domain={[0, 10]} tick={{ fontSize: 12 }} />
+            <Tooltip />
+            <Bar dataKey="td" fill="#D85A30" radius={[4, 4, 0, 0]}>
+              <LabelList dataKey="td" position="top" style={{ fontSize: 11 }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </section>
+
+      <section className="card">
+        <h2 className="card__title">Average FUSE Dimensions (all runs)</h2>
+        <p className="hint" style={{ marginBottom: "1rem" }}>
+          Global average per dimension across all runs. Error bars show min–max range.
+        </p>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={globalDims} margin={{ top: 16, right: 16, bottom: 50, left: 0 }}>
+            <XAxis dataKey="dim" tick={{ fontSize: 11 }} angle={-35} textAnchor="end" interval={0} />
+            <YAxis domain={[0, 10]} tick={{ fontSize: 12 }} />
+            <Tooltip formatter={(val, name) => [val, name === "score" ? "Avg" : name]} />
+            <Bar dataKey="score" fill="#7F77DD" radius={[4, 4, 0, 0]}>
+              <ErrorBar dataKey="error" direction="y" width={4} strokeWidth={2} stroke="#4a4a8a" />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </section>
+    </>
+  );
+}
+
 // ── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -992,7 +1085,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar active={page} onNavigate={setPage} />
+      <Sidebar active={page} onNavigate={setPage} simResult={selectedRun} />
       <main className="main">
         <Header title="SoFake — Fake News Evolution Simulator" />
         <div className="content">
@@ -1019,6 +1112,8 @@ export default function App() {
 
           {page === "fuse-report" && <FuseAgentReport simResult={selectedRun} />}
 
+          {page === "parallel-fuse" && <ParallelFusePage simResult={selectedRun} />}
+
           {page === "runs" && (
             <SavedRuns
               savedRuns={savedRuns}
@@ -1032,17 +1127,37 @@ export default function App() {
             />
           )}
 
-          {page === "settings" && (
-            <PlaceholderPage title="Settings">
-              Store defaults (max chars, step limit, network presets, scoring weights). Add "Reset to defaults".
-            </PlaceholderPage>
-          )}
-
           {page === "about" && (
-            <PlaceholderPage title="About SoFake">
-              Explain: no live detection, no scraping. It's a simulation tool to study how truth
-              drifts through agent interactions.
-            </PlaceholderPage>
+            <section className="card">
+              <h2 className="card__title">About SoFake</h2>
+              <p style={{ marginBottom: "1rem" }}>
+                SoFake is a fake news evolution simulator built to study how truthful information
+                drifts as it propagates through a simulated social network of AI agents.
+              </p>
+              <p style={{ marginBottom: "1rem" }}>
+                Each agent has a unique personality profile based on the HEXACO model —
+                varying in honesty, emotionality, conscientiousness, and more — which determines
+                how they react to, reframe, and spread news posts. Over multiple simulation steps,
+                a ground-truth article is seeded into the network and evolves through likes,
+                retweets, quotes, and new posts.
+              </p>
+              <p style={{ marginBottom: "1rem" }}>
+                Evolved posts are scored using the <strong>FUSE framework</strong>, which measures
+                deviation from the original article across 9 linguistic and semantic dimensions:
+                Sentiment Shift, New Information Introduced, Certainty Shift, Stylistic Shift,
+                Temporal Shift, Perspective Deviation, Sensationalism, Source Attribution Alteration,
+                and Political/Ideological Bias.
+              </p>
+              <p style={{ marginBottom: "1rem" }}>
+                Running multiple parallel simulations allows you to compare how the same article
+                drifts across different random network configurations and agent orderings,
+                giving a statistical picture of misinformation spread.
+              </p>
+              <div className="callout" style={{ marginTop: "1rem" }}>
+                SoFake does not scrape live news, detect real misinformation, or connect to any
+                external data source. It is a research and educational tool only.
+              </div>
+            </section>
           )}
 
         </div>

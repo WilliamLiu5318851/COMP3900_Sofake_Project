@@ -1,0 +1,230 @@
+{
+  "run_id": "20260418_112752",
+  "timestamp": "2026-04-18T11:27:52.324384",
+  "config": {
+    "n_agents": 3,
+    "n_steps": 3,
+    "seed": 42,
+    "followback_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.6394,
+        "emotionality": 0.025,
+        "extraversion": 0.275,
+        "agreeableness": 0.2232,
+        "conscientiousness": 0.7365,
+        "openness": 0.6767
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 1,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.8922,
+        "emotionality": 0.0869,
+        "extraversion": 0.4219,
+        "agreeableness": 0.0298,
+        "conscientiousness": 0.2186,
+        "openness": 0.5054
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 2,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.0265,
+        "emotionality": 0.1988,
+        "extraversion": 0.6499,
+        "agreeableness": 0.5449,
+        "conscientiousness": 0.2204,
+        "openness": 0.5893
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 3,
+    "n_edges": 4,
+    "n_clusters": 2,
+    "avg_degree": 1.33,
+    "hubs": {
+      "2": "Casey",
+      "1": "Blake"
+    }
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that microplastics found in common bottled water brands may be interfering with human hormone regulation. The study, which tracked 3,000 participants over 5 years, found a statistically significant correlation between bottled water consumption and disrupted cortisol and thyroid levels. The lead researcher stated the findings are 'concerning but not yet conclusive'. Health authorities have not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.42,
+      "controversy": 0.35,
+      "fringe_score": 0.21,
+      "threat_level": 0.33,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        1,
+        2,
+        0
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "Just came across a new study from a US university. Researchers are looking into potential links between bottled water and hormone imbalances in humans. They tracked 3,000 people for 5 years and found some interesting correlations between bottled water consumption and disruptions to cortisol and thyroid levels. The lead scientist says the findings are concerning but not concrete. Worth keeping an eye on, but it's not yet clear what the health implications might be. I'll try to dig up more info on this one.",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.4,
+            "fringe_score": 0.2,
+            "threat_level": 0.3,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "ignore",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "quote_tweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_2",
+          "new_post_text": "\"Important study from a major US university: \"scientists suggest microplastics in bottled water may disrupt human hormone regulation\". Key point: correlation found, not causation - researchers call it 'concerning but not yet conclusive'. Worth noting, no official guidance yet from health authorities. #microplastics #waterquality\"",
+          "new_signals": {
+            "emotional_charge": 0.2,
+            "controversy": 0.6,
+            "fringe_score": 0.4,
+            "threat_level": 0.3,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 2
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        2,
+        1,
+        0
+      ],
+      "events": [
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "report",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "comment",
+          "source_post_id": "post_2",
+          "new_post_id": "post_3",
+          "new_post_text": "I'm a bit puzzled by the phrasing here - saying microplastics \"may\" disrupt hormone regulation implies a level of certainty the researchers themselves don't seem to support. Can we stick to the actual language used in the study and avoid sensationalizing the findings? Let's be accurate here.",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.9,
+            "fringe_score": 0.2,
+            "threat_level": 0.1,
+            "generation": 2,
+            "source_post_id": "post_2"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "ignore",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 1
+    },
+    {
+      "step": 3,
+      "agent_order": [
+        0,
+        1,
+        2
+      ],
+      "events": [
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "post_3",
+          "new_post_id": "post_4",
+          "new_post_text": "\"Burying head in the sand won't keep our water clean @skepticalscience. 'May' is a cop-out from the researchers who knew better. Time to get honest about the plastics in our bottles and take action, not tiptoe around the facts.\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.8,
+            "fringe_score": 0.6,
+            "threat_level": 0.8,
+            "generation": 3,
+            "source_post_id": "post_3"
+          }
+        }
+      ],
+      "new_posts_this_step": 1
+    }
+  ]
+}
