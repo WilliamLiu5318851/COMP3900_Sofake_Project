@@ -1,5 +1,6 @@
 # Environment variables
 .env
+.env.*
 
 # Python
 __pycache__/
@@ -8,6 +9,12 @@ __pycache__/
 *.pyd
 venv/
 *.db
+
+# Run outputs
+agent/runs/
+run_log.json
+signal_drift.json
+
 
 # Node
 node_modules/
@@ -19,3 +26,4 @@ docker-compose.override.yml
 
 .env
 .env.bak
+.claude

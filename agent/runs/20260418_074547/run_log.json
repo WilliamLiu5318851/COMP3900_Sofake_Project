@@ -1,0 +1,248 @@
+{
+  "run_id": "20260418_074547",
+  "timestamp": "2026-04-18T07:45:48.051942",
+  "config": {
+    "n_agents": 3,
+    "n_steps": 3,
+    "seed": 41,
+    "followback_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 0,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.381,
+        "emotionality": 0.2307,
+        "extraversion": 0.166,
+        "agreeableness": 0.9138,
+        "conscientiousness": 0.5779,
+        "openness": 0.6901
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 1,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.5531,
+        "emotionality": 0.3835,
+        "extraversion": 0.7316,
+        "agreeableness": 0.5764,
+        "conscientiousness": 0.7812,
+        "openness": 0.6616
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 1,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.8393,
+        "emotionality": 0.4394,
+        "extraversion": 0.155,
+        "agreeableness": 0.1498,
+        "conscientiousness": 0.7232,
+        "openness": 0.1675
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 3,
+    "n_edges": 4,
+    "n_clusters": 2,
+    "avg_degree": 1.33,
+    "hubs": {
+      "1": "Blake",
+      "0": "Alex"
+    }
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that microplastics found in common bottled water brands may be interfering with human hormone regulation. The study, which tracked 3,000 participants over 5 years, found a statistically significant correlation between bottled water consumption and disrupted cortisol and thyroid levels. The lead researcher stated the findings are 'concerning but not yet conclusive'. Health authorities have not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.5,
+      "controversy": 0.2,
+      "fringe_score": 0.1,
+      "threat_level": 0.3,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        1,
+        0,
+        2
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "ignore",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "comment",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "\"I see a lot of alarm bells with this study but also some red flags. We need to see the full study details and methodology before jumping to conclusions. Even then, correlation doesn't necessarily mean causation. Let's not flood our social feeds with unverified claims just yet.\"",
+          "new_signals": {
+            "emotional_charge": 0.7,
+            "controversy": 0.5,
+            "fringe_score": 0.1,
+            "threat_level": 0.2,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_2",
+          "new_post_text": "\"Just re-read this study on microplastics in bottled water & I'm still not convinced. 'Concerning but not yet conclusive' is a pretty big caveat. We're talking thousands of participants & a 5-yr timeline, so I'm eager to see the full study before panicking.\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.7,
+            "fringe_score": 0.2,
+            "threat_level": 0.4,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        }
+      ],
+      "new_posts_this_step": 2
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        1,
+        0,
+        2
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "post_1",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "quote_tweet",
+          "source_post_id": "post_2",
+          "new_post_id": "post_3",
+          "new_post_text": "\"'Concerning but not yet conclusive' is just a gentle way of saying, 'We found a huge red flag and aren't brave enough to address it.' 3,000 participants over 5 yrs & still they claim it's too early to act? What's the real concern here... the science or the profits?\" #MicroplasticCoverup",
+          "new_signals": {
+            "emotional_charge": 0.92,
+            "controversy": 0.84,
+            "fringe_score": 0.32,
+            "threat_level": 0.48,
+            "generation": 2,
+            "source_post_id": "post_2"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "new_post",
+          "source_post_id": "post_1",
+          "new_post_id": "post_4",
+          "new_post_text": "\"This 'study' is getting a free pass because it's a major blow to the bottled water industry. 3,000 participants over 5 yrs should be more than enough evidence to raise some serious eyebrows. But let's be real, no one wants to rock the boat with a billion-dollar industry. Meanwhile, our hormones are paying the price. Stay informed, stay vigilant, and don't let the truth get drowned out by corporate interests.\"",
+          "new_signals": {
+            "emotional_charge": 0.95,
+            "controversy": 0.9,
+            "fringe_score": 0.85,
+            "threat_level": 0.4,
+            "generation": 2,
+            "source_post_id": "post_1"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "like",
+          "source_post_id": "post_4",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "like",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 2
+    },
+    {
+      "step": 3,
+      "agent_order": [
+        1,
+        2,
+        0
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "like",
+          "source_post_id": "post_4",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 0
+    }
+  ]
+}

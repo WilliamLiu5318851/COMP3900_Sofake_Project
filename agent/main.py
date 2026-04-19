@@ -1,7 +1,5 @@
 import os
 import sys
-import uuid
-import random
 import concurrent.futures
 from typing import List
 
@@ -16,6 +14,7 @@ app = FastAPI(title="SoFake Agent Service")
 
 class SimulateRequest(BaseModel):
     ground_truth: str
+    news_id: int
     agent_count: int = 20
     steps: int = 7
     seed: int = 42
@@ -24,11 +23,6 @@ class SimulateRequest(BaseModel):
     agents_per_cluster: int = 10
     weak_tie_p: float = 0.05
     simulations: int = 1
-
-
-class SimulateResponse(BaseModel):
-    run_log: dict
-    signal_drift: dict
 
 
 @app.get("/")
@@ -86,12 +80,18 @@ def simulate(req: SimulateRequest):
             for future in concurrent.futures.as_completed(futures):
                 all_results.append(future.result())
 
-        # 3. construct the graph with the result that is finished first
+        # 3. return all runs; expose first run at top level for backward compat
+        runs = [{"run_log": log, "signal_drift": drift} for log, drift in all_results]
         first_log, first_drift = all_results[0]
 
-        return SimulateResponse(run_log=first_log, signal_drift=first_drift)
+        return {
+            "run_log": first_log,
+            "signal_drift": first_drift,
+            "runs": runs,
+        }
 
     except Exception as e:
         import traceback
         traceback.print_exc() # debug in the terminal
         raise HTTPException(status_code=500, detail=str(e))
+    
