@@ -1,10 +1,13 @@
 import sqlite3
 import json
+from pathlib import Path
+import os
 
-DB_NAME = "/app/news.db"
+DB_NAME = os.getenv("DATABASE_PATH", "/app/data/news.db")
 
 
 def init_db():
+    Path(DB_NAME).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
