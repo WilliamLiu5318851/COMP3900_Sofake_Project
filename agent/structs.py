@@ -52,7 +52,6 @@ class HEXACOProfile:
 
     @classmethod
     def bad_actor(cls):
-
         return cls(
             honesty_humility=random.uniform(0.0, 0.2),
             emotionality=random.uniform(0.3, 0.6),
