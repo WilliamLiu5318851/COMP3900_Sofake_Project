@@ -393,7 +393,7 @@ function AgentTooltip({ agent, screenX, screenY, containerRef }) {
     if (left + tt.width  > ct.width)  left = screenX - tt.width - 14;
     if (top  + tt.height > ct.height) top  = screenY - tt.height;
     if (top < 0) top = 4;
-    setPos({ left, top });
+    setPos({ left, top }); // eslint-disable-line react-hooks/set-state-in-effect
   }, [screenX, screenY]);
 
   const p = agent.profile;
@@ -543,6 +543,7 @@ function NetworkGraph({ runLog }) {
   }, [runLog]);
 
   // ── Coordinate helpers ────────────────────────────────────────────────────
+  // eslint-disable-next-line no-unused-vars
   function clientToSvg(cx, cy) {
     const rect = svgRef.current.getBoundingClientRect();
     const t    = transformRef.current;
@@ -558,6 +559,7 @@ function NetworkGraph({ runLog }) {
   }
 
   // ── Wheel zoom ────────────────────────────────────────────────────────────
+  // eslint-disable-next-line no-unused-vars
   function handleWheel(e) {
     e.preventDefault();
   
