@@ -1337,112 +1337,381 @@ function OverviewDashboard({ simResult }) {
 
 // ── Saved Runs ────────────────────────────────────────────────────────────────
 
+function getAllTextPosts(run_log) {
+  return run_log.steps.flatMap((s) =>
+    s.events
+      .filter((e) => e.new_post_text)
+      .map((e) => ({
+        id: e.new_post_id,
+        step: s.step,
+        author: e.agent_name,
+        action: e.action,
+        text: e.new_post_text,
+        generation: e.new_signals?.generation ?? 0,
+        emotional: e.new_signals?.emotional_charge ?? 0,
+        controversy: e.new_signals?.controversy ?? 0,
+        fringe: e.new_signals?.fringe_score ?? 0,
+        threat: e.new_signals?.threat_level ?? 0,
+      }))
+  );
+}
+
+function getMaxGenerationFromRun(run_log) {
+  return Math.max(
+    0,
+    ...run_log.steps.flatMap((s) =>
+      s.events
+        .filter((e) => e.new_signals)
+        .map((e) => e.new_signals.generation ?? 0)
+    )
+  );
+}
+
+function getAllFuseEvaluations(result) {
+  if (result?.runs?.length) {
+    return result.runs.flatMap((run) => run.fuse_evaluations || []);
+  }
+  return result?.fuse_evaluations || [];
+}
+
+function getAvgTotalDeviation(result) {
+  const evals = getAllFuseEvaluations(result);
+  if (!evals.length) return null;
+
+  const total = evals.reduce(
+    (sum, item) =>
+      sum + ((item.fuse_scores_vs_ground_truth || {}).Total_Deviation ?? 0),
+    0
+  );
+
+  return +(total / evals.length).toFixed(2);
+}
+
+function getTopDriftDimension(result) {
+  const evals = getAllFuseEvaluations(result);
+  if (!evals.length) return "N/A";
+
+  const averages = FUSE_DIMS.map((dim) => {
+    const total = evals.reduce(
+      (sum, item) =>
+        sum + ((item.fuse_scores_vs_ground_truth || {})[dim] ?? 0),
+      0
+    );
+    return {
+      dim,
+      score: total / evals.length,
+    };
+  });
+
+  const top = averages.sort((a, b) => b.score - a.score)[0];
+  return FUSE_LABELS[top.dim];
+}
+
+function formatRunTimestamp(runId) {
+  const match = runId?.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/);
+  if (!match) return runId;
+
+  const [, year, month, day, hour, minute, second] = match;
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
+
 function SavedRuns({ savedRuns, selectedRun, onSelectRun, onDeleteRun }) {
+  const [expandedRunId, setExpandedRunId] = useState(null);
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+
+  const clamp2 = {
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+  };
+
+  const visibleRuns = [...savedRuns]
+    .filter((result) => {
+      const q = query.trim().toLowerCase();
+      if (!q) return true;
+
+      const runId = result.run_log?.run_id?.toLowerCase() || "";
+      const gt = (result.ground_truth_content || "").toLowerCase();
+      return runId.includes(q) || gt.includes(q);
+    })
+    .sort((a, b) => {
+      if (sortBy === "highest-drift") {
+        return (getAvgTotalDeviation(b) ?? -1) - (getAvgTotalDeviation(a) ?? -1);
+      }
+
+      if (sortBy === "most-posts") {
+        return getAllTextPosts(b.run_log).length - getAllTextPosts(a.run_log).length;
+      }
+
+      // newest first
+      return (b.run_log?.run_id || "").localeCompare(a.run_log?.run_id || "");
+    });
+
   return (
     <section className="card">
-      <h2 className="card__title">Saved Runs</h2>
+      <div className="card__header">
+        <div>
+          <h2 className="card__title">Saved Runs</h2>
+          <div className="hint">
+            Browse past runs quickly, then open one to inspect full results.
+          </div>
+        </div>
+      </div>
+
       {savedRuns.length === 0 ? (
         <NoResultsYet />
       ) : (
-        savedRuns.map((result, idx) => {
-          const { run_log } = result;
-          const isSelected = selectedRun?.run_log?.run_id === run_log.run_id;
-          const textPosts = run_log.steps.flatMap((s) =>
-            s.events.filter((e) => e.new_post_text)
-          );
-          return (
-            <div
-              key={run_log.run_id}
-              className="history-run-card"
-              style={{marginBottom: idx < savedRuns.length - 1 ? "1.5rem" : 0,}}
+        <>
+          <div className="row" style={{ gap: "0.75rem", marginBottom: "1rem", flexWrap: "wrap" }}>
+            <input
+              className="input"
+              type="text"
+              placeholder="Search by run ID or ground truth..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              style={{ flex: "1 1 320px" }}
+            />
+
+            <select
+              className="input"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{ width: "220px" }}
             >
-              <div
-                className="card__header"
-                style={{
-                  marginBottom: "1rem",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: "1rem",
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <h3 className="subhead" style={{ margin: 0 }}>
-                    Run {savedRuns.length - idx}: {run_log.run_id}
-                  </h3>
+              <option value="newest">Sort: Newest first</option>
+              <option value="highest-drift">Sort: Highest deviation</option>
+              <option value="most-posts">Sort: Most posts</option>
+            </select>
+          </div>
 
-                  <div className="hint" style={{ marginTop: "0.25rem" }}>
-                    {run_log.agents.length} agents · {run_log.steps.length} steps · seed {run_log.config.seed}
-                  </div>
+          {visibleRuns.length === 0 ? (
+            <div className="callout">No saved runs match this search.</div>
+          ) : (
+            visibleRuns.map((result, idx) => {
+              const { run_log } = result;
+              const isSelected = selectedRun?.run_log?.run_id === run_log.run_id;
+              const isExpanded = expandedRunId === run_log.run_id;
 
-                  {isSelected && (
-                    <div className="pill" style={{ marginTop: "0.5rem", display: "inline-block" }}>
-                      Currently viewing
-                    </div>
-                  )}
+              const allPosts = getAllTextPosts(run_log);
+              const previewPosts = isExpanded ? allPosts : allPosts.slice(0, 2);
 
-                  <div className="hint" style={{ marginTop: "0.75rem", marginBottom: "0.25rem" }}>
-                    <strong>Ground truth:</strong>
-                  </div>
+              const avgTD = getAvgTotalDeviation(result);
+              const topDim = getTopDriftDimension(result);
+              const maxGen = getMaxGenerationFromRun(run_log);
+              const createdAt = formatRunTimestamp(run_log.run_id);
 
-                  <div className="history-ground-truth">
-                    {result.ground_truth_content}
-                  </div>
-                </div>
-
-                <div className="row" style={{ gap: "0.5rem", flexShrink: 0 }}>
-                  <button
-                    className="btn btn--ghost"
-                    type="button"
-                    onClick={() => onSelectRun(result)}
+              return (
+                <div
+                  key={run_log.run_id}
+                  className="history-run-card"
+                  style={{
+                    marginBottom: idx < visibleRuns.length - 1 ? "1.25rem" : 0,
+                    padding: "1rem",
+                    border: "1px solid var(--border)",
+                    borderRadius: "12px",
+                    background: "var(--surface-2, #fafafa)",
+                  }}
+                >
+                  <div
+                    className="row"
+                    style={{
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: "1rem",
+                      flexWrap: "wrap",
+                    }}
                   >
-                    Open this run
-                  </button>
-
-                  <button
-                    className="btn btn--ghost btn--danger"
-                    type="button"
-                    onClick={() => onDeleteRun(result.history_run_id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid--2" style={{ marginBottom: "0.75rem" }}>
-                <div><span className="label">Posts generated</span><div>{textPosts.length}</div></div>
-                <div>
-                  <span className="label">Max generation</span>
-                  <div>{Math.max(...run_log.steps.flatMap(s => s.events.filter(e => e.new_signals).map(e => e.new_signals.generation)), 0)}</div>
-                </div>
-              </div>
-
-              <div style={{ maxHeight: "350px", overflowY: "auto" }}>
-                {run_log.steps.flatMap((s) =>
-                  s.events
-                    .filter((e) => e.new_post_text)
-                    .map((e) => (
-                      <div
-                        key={e.new_post_id}
-                        style={{ padding: "0.5rem 0", borderBottom: "1px solid var(--border)" }}
-                      >
-                        <div className="hint" style={{ marginBottom: "0.25rem" }}>
-                          Step {s.step} · {e.agent_name} · {e.action} · Gen {e.new_signals.generation}
-                          {" · "}EC {e.new_signals.emotional_charge.toFixed(2)}
-                          {" · "}CT {e.new_signals.controversy.toFixed(2)}
-                          {" · "}FR {e.new_signals.fringe_score.toFixed(2)}
-                          {" · "}TL {e.new_signals.threat_level.toFixed(2)}
-                        </div>
-                        <div>{e.new_post_text}</div>
+                    <div style={{ flex: 1, minWidth: "260px" }}>
+                      <div style={{ fontSize: "1rem", fontWeight: 700 }}>
+                        {createdAt}
                       </div>
-                    ))
-                )}
-              </div>
 
-              {idx < savedRuns.length - 1 && <div className="divider" style={{ marginTop: "1.5rem" }} />}
-            </div>
-          );
-        })
+                      <div className="hint" style={{ marginTop: "0.2rem" }}>
+                        {run_log.run_id}
+                      </div>
+
+                      <div className="hint" style={{ marginTop: "0.45rem" }}>
+                        {run_log.agents.length} agents · {run_log.steps.length} steps · seed{" "}
+                        {run_log.config?.seed ?? "—"}
+                        {result.runs?.length > 1 ? ` · ${result.runs.length} parallel runs` : ""}
+                      </div>
+
+                      {isSelected && (
+                        <div
+                          className="pill"
+                          style={{ marginTop: "0.55rem", display: "inline-block" }}
+                        >
+                          Currently viewing
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="row" style={{ gap: "0.5rem", flexWrap: "wrap" }}>
+                      <button
+                        className="btn btn--ghost"
+                        type="button"
+                        onClick={() => onSelectRun(result)}
+                      >
+                        Open this run
+                      </button>
+
+                      <button
+                        className="btn btn--ghost"
+                        type="button"
+                        onClick={() =>
+                          setExpandedRunId(isExpanded ? null : run_log.run_id)
+                        }
+                      >
+                        {isExpanded ? "Collapse details" : "Expand details"}
+                      </button>
+
+                      <button
+                        className="btn btn--ghost btn--danger"
+                        type="button"
+                        onClick={() => {
+                          const ok = window.confirm(
+                            "Delete this saved run? This action cannot be undone."
+                          );
+                          if (ok) {
+                            onDeleteRun(result.history_run_id);
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    className="row"
+                    style={{
+                      gap: "0.75rem",
+                      flexWrap: "wrap",
+                      marginTop: "1rem",
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        minWidth: "160px",
+                        padding: "0.75rem",
+                        borderRadius: "10px",
+                        background: "white",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
+                      <div className="hint">Posts generated</div>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 700 }}>
+                        {allPosts.length}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        minWidth: "160px",
+                        padding: "0.75rem",
+                        borderRadius: "10px",
+                        background: "white",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
+                      <div className="hint">Max generation</div>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 700 }}>
+                        {maxGen}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        minWidth: "180px",
+                        padding: "0.75rem",
+                        borderRadius: "10px",
+                        background: "white",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
+                      <div className="hint">Avg Total Deviation</div>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#D85A30" }}>
+                        {avgTD ?? "N/A"}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        minWidth: "220px",
+                        padding: "0.75rem",
+                        borderRadius: "10px",
+                        background: "white",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
+                      <div className="hint">Top drift dimension</div>
+                      <div style={{ fontSize: "1rem", fontWeight: 700 }}>
+                        {topDim}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: "1rem" }}>
+                    <div className="label" style={{ marginBottom: "0.35rem" }}>
+                      Ground truth
+                    </div>
+                    <div
+                      className="history-ground-truth"
+                      style={isExpanded ? {} : clamp2}
+                    >
+                      {result.ground_truth_content}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="label" style={{ marginBottom: "0.5rem" }}>
+                      {isExpanded ? "All generated posts" : "Post preview"}
+                    </div>
+
+                    {previewPosts.length === 0 ? (
+                      <div className="hint">No generated posts found in this run.</div>
+                    ) : (
+                      previewPosts.map((post) => (
+                        <div
+                          key={post.id}
+                          style={{
+                            padding: "0.75rem 0",
+                            borderTop: "1px solid var(--border)",
+                          }}
+                        >
+                          <div className="hint" style={{ marginBottom: "0.3rem" }}>
+                            Step {post.step} · {post.author} · {post.action} · Gen {post.generation}
+                            {isExpanded && (
+                              <>
+                                {" · "}Emotional {post.emotional.toFixed(2)}
+                                {" · "}Controversy {post.controversy.toFixed(2)}
+                                {" · "}Fringe {post.fringe.toFixed(2)}
+                                {" · "}Threat {post.threat.toFixed(2)}
+                              </>
+                            )}
+                          </div>
+
+                          <div style={isExpanded ? {} : clamp2}>
+                            {post.text}
+                          </div>
+                        </div>
+                      ))
+                    )}
+
+                    {!isExpanded && allPosts.length > 2 && (
+                      <div className="hint" style={{ marginTop: "0.5rem" }}>
+                        + {allPosts.length - 2} more posts hidden
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </>
       )}
     </section>
   );
