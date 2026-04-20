@@ -1,0 +1,60 @@
+{
+  "ground_truth": [
+    {
+      "emotional_charge": 0.42,
+      "controversy": 0.35,
+      "fringe_score": 0.21,
+      "threat_level": 0.33,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    },
+    {
+      "post_id": "post_1",
+      "author": "Blake",
+      "step": 1,
+      "emotional_charge": 0.4,
+      "controversy": 0.4,
+      "fringe_score": 0.2,
+      "threat_level": 0.3,
+      "generation": 1,
+      "source_post_id": "ground_truth"
+    },
+    {
+      "post_id": "post_2",
+      "author": "Alex",
+      "step": 1,
+      "emotional_charge": 0.2,
+      "controversy": 0.6,
+      "fringe_score": 0.4,
+      "threat_level": 0.3,
+      "generation": 1,
+      "source_post_id": "ground_truth"
+    }
+  ],
+  "post_2": [
+    {
+      "post_id": "post_3",
+      "author": "Blake",
+      "step": 2,
+      "emotional_charge": 0.8,
+      "controversy": 0.9,
+      "fringe_score": 0.2,
+      "threat_level": 0.1,
+      "generation": 2,
+      "source_post_id": "post_2"
+    }
+  ],
+  "post_3": [
+    {
+      "post_id": "post_4",
+      "author": "Casey",
+      "step": 3,
+      "emotional_charge": 0.9,
+      "controversy": 0.8,
+      "fringe_score": 0.6,
+      "threat_level": 0.8,
+      "generation": 3,
+      "source_post_id": "post_3"
+    }
+  ]
+}

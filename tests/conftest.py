@@ -22,3 +22,8 @@ if PROJECT_ROOT not in sys.path:
 AGENT_DIR = os.path.join(PROJECT_ROOT, "agent")
 if AGENT_DIR not in sys.path:
     sys.path.insert(0, AGENT_DIR)
+
+# backend/ itself (so backend.services can resolve `from database.db import ...`)
+BACKEND_DIR = os.path.join(PROJECT_ROOT, "backend")
+if BACKEND_DIR not in sys.path:
+    sys.path.insert(0, BACKEND_DIR)

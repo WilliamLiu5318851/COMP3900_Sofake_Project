@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+  LabelList, ErrorBar,
 } from "recharts";
 import "./App.css";
 
@@ -16,15 +17,16 @@ function LogoMark({ size = 28 }) {
   );
 }
 
-function Sidebar({ active, onNavigate }) {
+function Sidebar({ active, onNavigate, simResult }) {
+  const showParallel = (simResult?.runs?.length ?? 0) > 1;
   const items = [
     { id: "new", label: "New Simulation" },
     { id: "graph", label: "Graph View" },
     { id: "dashboard", label: "Overview Dashboard" },
     { id: "fuse", label: "FUSE Comparison" },
     { id: "fuse-report", label: "FUSE Report" },
+    ...(showParallel ? [{ id: "parallel-fuse", label: "Parallel FUSE" }] : []),
     { id: "runs", label: "Saved Runs" },
-    { id: "settings", label: "Settings" },
     { id: "about", label: "About" },
   ];
   return (
@@ -106,8 +108,7 @@ function GroundTruthUploader({ value, onChange }) {
             className="btn btn--ghost"
             type="button"
             onClick={() =>
-              onChange(`Scientists at a major US university have published a study suggesting that microplastics found in common bottled water brands may be interfering with human hormone regulation. The study, which tracked 3,000 participants over 5 years, found a statistically significant correlation between bottled water
-            consumption and disrupted cortisol and thyroid levels. The lead researcher stated the findings are 'concerning but not yet conclusive'. Health authorities have not yet issued any official guidance in response to the study.`)
+              onChange(`Scientists at a major US university have published a study suggesting that microplastics found in common bottled water brands may be interfering with human hormone regulation. The study, which tracked 3,000 participants over 5 years, found a statistically significant correlation between bottled water consumption and disrupted cortisol and thyroid levels. The lead researcher stated the findings are 'concerning but not yet conclusive'. Health authorities have not yet issued any official guidance in response to the study.`)
             }
           >
             Load Example
@@ -119,65 +120,124 @@ function GroundTruthUploader({ value, onChange }) {
 }
 
 function SimulationConfig({ config, setConfig }) {
-  const roleSum = useMemo(
-    () => Object.values(config.roleMix).reduce((a, b) => a + b, 0),
-    [config.roleMix]
-  );
-  function setRole(role, val) {
-    const n = Number(val);
-    setConfig((c) => ({
-      ...c,
-      roleMix: { ...c.roleMix, [role]: Number.isFinite(n) ? n : 0 },
-    }));
-  }
   return (
     <section className="card">
       <div className="card__header">
         <h2 className="card__title">Simulation Settings</h2>
-        <div className={`card__meta ${roleSum !== 100 ? "is-bad" : ""}`}>
-          Role mix: {roleSum}% (target 100%)
-        </div>
       </div>
+
+      {/* Core run settings */}
       <div className="grid grid--2">
         <div>
           <label className="label">Number of agents</label>
-          <input className="input" type="number" min={5} max={200} value={config.agentCount}
-            onChange={(e) => setConfig((c) => ({ ...c, agentCount: Number(e.target.value) }))} />
-        </div>
-        <div>
-          <label className="label">Topology</label>
-          <select className="input" value={config.topology}
-            onChange={(e) => setConfig((c) => ({ ...c, topology: e.target.value }))}>
-            <option value="random">Random</option>
-            <option value="clustered">High-clustering</option>
-            <option value="scaleFree">Scale-free</option>
-          </select>
-        </div>
-        <div>
-          <label className="label">Seed (reproducibility)</label>
-          <input className="input" type="number" value={config.seed}
-            onChange={(e) => setConfig((c) => ({ ...c, seed: Number(e.target.value) }))} />
+          <input
+            className="input"
+            type="number"
+            min={5}
+            max={200}
+            value={config.agentCount}
+            onChange={(e) => setConfig((c) => ({ ...c, agentCount: Number(e.target.value) }))}
+          />
         </div>
         <div>
           <label className="label">Steps (interactions)</label>
-          <input className="input" type="number" min={5} max={500} value={config.steps}
-            onChange={(e) => setConfig((c) => ({ ...c, steps: Number(e.target.value) }))} />
+          <input
+            className="input"
+            type="number"
+            min={1}
+            max={500}
+            value={config.steps}
+            onChange={(e) => setConfig((c) => ({ ...c, steps: Number(e.target.value) }))}
+          />
+        </div>
+        <div>
+          <label className="label">Seed (reproducibility)</label>
+          <input
+            className="input"
+            type="number"
+            value={config.seed}
+            onChange={(e) => setConfig((c) => ({ ...c, seed: Number(e.target.value) }))}
+          />
+        </div>
+        <div>
+          <label className="label">Simulations (Run in parallel)</label>
+          <input
+            className="input"
+            type="number"
+            min={1}
+            max={30}
+            value={config.simulations}
+            onChange={(e) => setConfig((c) => ({ ...c, simulations: Number(e.target.value) }))}
+          />
         </div>
       </div>
+
       <div className="divider" />
-      <h3 className="subhead">Role mix</h3>
-      <div className="grid grid--4">
-        {["spreader", "commentator", "verifier", "bystander"].map((role) => (
-          <div key={role}>
-            <label className="label">{role.charAt(0).toUpperCase() + role.slice(1)}s (%)</label>
-            <input className="input" type="number" min={0} max={100} value={config.roleMix[role]}
-              onChange={(e) => setRole(role, e.target.value)} />
+
+      {/* Network topology */}
+      <h3 className="subhead">Network Topology</h3>
+      <div className="grid grid--2">
+        <div>
+          <label className="label">intra-cluster probability</label>
+          <input
+            className="input"
+            type="number"
+            min={0}
+            max={1}
+            step={0.05}
+            value={config.intraClusterP}
+            onChange={(e) => setConfig((c) => ({ ...c, intraClusterP: Number(e.target.value) }))}
+          />
+          <div className="hint" style={{ marginTop: 4 }}>
+            Erdős–Rényi edge probability within each cluster (0–1). Higher = denser clusters.
           </div>
-        ))}
+        </div>
+        <div>
+          <label className="label">hub-to-hub edges (m)</label>
+          <input
+            className="input"
+            type="number"
+            min={1}
+            max={10}
+            step={1}
+            value={config.interClusterM}
+            onChange={(e) => setConfig((c) => ({ ...c, interClusterM: Number(e.target.value) }))}
+          />
+          <div className="hint" style={{ marginTop: 4 }}>
+            Edges each hub forms to existing hubs (Barabási–Albert style). Controls cross-cluster connectivity.
+          </div>
+        </div>
+        <div>
+          <label className="label">Agents per cluster</label>
+          <input
+            className="input"
+            type="number"
+            min={2}
+            max={50}
+            step={1}
+            value={config.agentsPerCluster}
+            onChange={(e) => setConfig((c) => ({ ...c, agentsPerCluster: Number(e.target.value) }))}
+          />
+          <div className="hint" style={{ marginTop: 4 }}>
+            Target cluster size — determines the number of clusters (≈ agents ÷ this value).
+          </div>
+        </div>
+        <div>
+          <label className="label">Weak tie probability</label>
+          <input
+            className="input"
+            type="number"
+            min={0}
+            max={1}
+            step={0.05}
+            value={config.weakTieP}
+            onChange={(e) => setConfig((c) => ({ ...c, weakTieP: Number(e.target.value) }))}
+          />
+          <div className="hint" style={{ marginTop: 4 }}>
+            Probability of forming weak ties between agents in different clusters (0–1).
+          </div>
+        </div>
       </div>
-      {roleSum !== 100 && (
-        <div className="callout callout--warn">Role mix should sum to 100% for clearer experiments.</div>
-      )}
     </section>
   );
 }
@@ -257,7 +317,7 @@ function NoResultsYet() {
   );
 }
 
-// ── Graph View — signal drift line chart ─────────────────────────────────────
+// ── Graph View ────────────────────────────────────────────────────────────────
 
 function GraphView({ simResult }) {
   const d = useRunData(simResult?.run_log);
@@ -297,6 +357,43 @@ const FUSE_LABELS = {
   STS: "Stylistic Shift", TS: "Temporal Shift", PD: "Perspective Dev.",
   SI: "Sensationalism", SAA: "Source Alteration", PIB: "Political Bias",
 };
+
+// Export for testing
+export function computeParallelFuseStats(runs) {
+  const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+  const perRun = runs.map((run) => {
+    const evals = run.fuse_evaluations || [];
+    const dimAvgs = {};
+    FUSE_DIMS.forEach((dim) => {
+      dimAvgs[dim] = avg(evals.map((e) => (e.fuse_scores_vs_ground_truth || {})[dim] ?? 0));
+    });
+    dimAvgs.Total_Deviation = avg(
+      evals.map((e) => (e.fuse_scores_vs_ground_truth || {}).Total_Deviation ?? 0)
+    );
+    return { runId: run.run_log?.run_id ?? "unknown", ...dimAvgs };
+  });
+
+  const globalDims = FUSE_DIMS.map((dim) => {
+    const vals = perRun.map((r) => r[dim]);
+    if (vals.length === 0) return { dim, score: 0, error: [0, 0] };
+    const mean = avg(vals);
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    return {
+      dim,
+      score: +mean.toFixed(2),
+      error: [+(mean - min).toFixed(2), +(max - mean).toFixed(2)],
+    };
+  });
+
+  const runChart = perRun.map((r) => ({
+    run: r.runId.replace(/^\d{8}_\d{6}_/, ""),
+    td: +r.Total_Deviation.toFixed(2),
+  }));
+
+  return { runChart, globalDims };
+}
 
 function FuseAgentReport({ simResult }) {
   const [selectedAgent, setSelectedAgent] = useState(null);
@@ -627,7 +724,6 @@ function OverviewDashboard({ simResult }) {
         <h2 className="card__title">Overview Dashboard</h2>
         {!d ? <NoResultsYet /> : (
           <>
-            {/* Summary metrics */}
             <div className="grid grid--2" style={{ marginBottom: "1rem" }}>
               <div><span className="label">Total posts generated</span><div>{d.newPosts.length}</div></div>
               <div><span className="label">Steps run</span><div>{run_log.steps.length}</div></div>
@@ -637,7 +733,6 @@ function OverviewDashboard({ simResult }) {
 
             <div className="divider" />
 
-            {/* Posts per step */}
             <h3 className="subhead">Posts generated per step</h3>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={d.stepData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
@@ -650,7 +745,6 @@ function OverviewDashboard({ simResult }) {
 
             <div className="divider" />
 
-            {/* Actions breakdown */}
             <h3 className="subhead">Actions breakdown</h3>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={d.actionData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
@@ -673,9 +767,9 @@ function OverviewDashboard({ simResult }) {
   );
 }
 
-// ── Saved Runs — full post timeline ──────────────────────────────────────────
+// ── Saved Runs ────────────────────────────────────────────────────────────────
 
-function SavedRuns({ savedRuns }) {
+function SavedRuns({ savedRuns, selectedRun, onSelectRun, onDeleteRun }) {
   return (
     <section className="card">
       <h2 className="card__title">Saved Runs</h2>
@@ -684,17 +778,66 @@ function SavedRuns({ savedRuns }) {
       ) : (
         savedRuns.map((result, idx) => {
           const { run_log } = result;
+          const isSelected = selectedRun?.run_log?.run_id === run_log.run_id;
           const textPosts = run_log.steps.flatMap((s) =>
             s.events.filter((e) => e.new_post_text)
           );
           return (
-            <div key={run_log.run_id} style={{ marginBottom: idx < savedRuns.length - 1 ? "2rem" : 0 }}>
-              <div className="card__header" style={{ marginBottom: "0.75rem" }}>
-                <h3 className="subhead" style={{ margin: 0 }}>
-                  Run {savedRuns.length - idx}: {run_log.run_id}
-                </h3>
-                <div className="hint">
-                  {run_log.agents.length} agents · {run_log.steps.length} steps · seed {run_log.config.seed}
+            <div
+              key={run_log.run_id}
+              className="history-run-card"
+              style={{marginBottom: idx < savedRuns.length - 1 ? "1.5rem" : 0,}}
+            >
+              <div
+                className="card__header"
+                style={{
+                  marginBottom: "1rem",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: "1rem",
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <h3 className="subhead" style={{ margin: 0 }}>
+                    Run {savedRuns.length - idx}: {run_log.run_id}
+                  </h3>
+
+                  <div className="hint" style={{ marginTop: "0.25rem" }}>
+                    {run_log.agents.length} agents · {run_log.steps.length} steps · seed {run_log.config.seed}
+                  </div>
+
+                  {isSelected && (
+                    <div className="pill" style={{ marginTop: "0.5rem", display: "inline-block" }}>
+                      Currently viewing
+                    </div>
+                  )}
+
+                  <div className="hint" style={{ marginTop: "0.75rem", marginBottom: "0.25rem" }}>
+                    <strong>Ground truth:</strong>
+                  </div>
+
+                  <div className="history-ground-truth">
+                    {result.ground_truth_content}
+                  </div>
+                </div>
+
+                <div className="row" style={{ gap: "0.5rem", flexShrink: 0 }}>
+                  <button
+                    className="btn btn--ghost"
+                    type="button"
+                    onClick={() => onSelectRun(result)}
+                  >
+                    Open this run
+                  </button>
+
+                  <button
+                    className="btn btn--ghost btn--danger"
+                    type="button"
+                    onClick={() => onDeleteRun(result.history_run_id)}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
 
@@ -748,39 +891,184 @@ function PlaceholderPage({ title, children }) {
   );
 }
 
+// ── Parallel FUSE Page ────────────────────────────────────────────────────────
+
+function ParallelFusePage({ simResult }) {
+  const runs = simResult?.runs;
+
+  if (!runs || runs.length < 2) {
+    return (
+      <div className="callout">
+        Run at least 2 parallel simulations to see cross-run comparisons.
+      </div>
+    );
+  }
+
+  const { runChart, globalDims } = computeParallelFuseStats(runs);
+
+  return (
+    <>
+      <section className="card">
+        <h2 className="card__title">Total Deviation per Run</h2>
+        <p className="hint" style={{ marginBottom: "1rem" }}>
+          Average Total Deviation score across all evaluated posts, per simulation run.
+        </p>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={runChart} margin={{ top: 16, right: 16, bottom: 4, left: 0 }}>
+            <XAxis dataKey="run" tick={{ fontSize: 12 }} />
+            <YAxis domain={[0, 10]} tick={{ fontSize: 12 }} />
+            <Tooltip />
+            <Bar dataKey="td" fill="#D85A30" radius={[4, 4, 0, 0]}>
+              <LabelList dataKey="td" position="top" style={{ fontSize: 11 }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </section>
+
+      <section className="card">
+        <h2 className="card__title">Average FUSE Dimensions (all runs)</h2>
+        <p className="hint" style={{ marginBottom: "1rem" }}>
+          Global average per dimension across all runs. Error bars show min–max range.
+        </p>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={globalDims} margin={{ top: 16, right: 16, bottom: 50, left: 0 }}>
+            <XAxis dataKey="dim" tick={{ fontSize: 11 }} angle={-35} textAnchor="end" interval={0} />
+            <YAxis domain={[0, 10]} tick={{ fontSize: 12 }} />
+            <Tooltip formatter={(val, name) => [val, name === "score" ? "Avg" : name]} />
+            <Bar dataKey="score" fill="#7F77DD" radius={[4, 4, 0, 0]}>
+              <ErrorBar dataKey="error" direction="y" width={4} strokeWidth={2} stroke="#4a4a8a" />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </section>
+    </>
+  );
+}
+
 // ── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [page, setPage] = useState("new");
   const [groundTruth, setGroundTruth] = useState("");
+  const [newsId, setNewsId] = useState(null);
   const [config, setConfig] = useState({
-    agentCount: 30,
-    topology: "random",
+    agentCount: 6,
+    steps: 3,
     seed: 42,
-    steps: 60,
-    roleMix: { spreader: 35, commentator: 35, verifier: 15, bystander: 15 },
+    intraClusterP: 0.55,
+    interClusterM: 2,
+    agentsPerCluster: 8,
+    weakTieP: 0.05,
+    simulations: 1,
   });
   const [loading, setLoading] = useState(false);
   const [simResult, setSimResult] = useState(null);
-  const [savedRuns, setSavedRuns] = useState([]);  // accumulates every completed run
+  const [savedRuns, setSavedRuns] = useState([]);
   const [simError, setSimError] = useState(null);
+  const [selectedRun, setSelectedRun] = useState(null);
+
+  //new
+  const [activeRunIndex, setActiveRunIndex] = useState(0);
 
   const withinLimit = groundTruth.length > 0 && groundTruth.length <= 6000;
+
+  async function loadSavedRunsFromBackend() {
+    try {
+      const listRes = await fetch("/api/history");
+      if (!listRes.ok) {
+        throw new Error("Failed to load history list");
+      }
+
+      const historyList = await listRes.json();
+
+      const detailResults = await Promise.all(
+        historyList.map(async (item) => {
+          const detailRes = await fetch(`/api/history/${item.run_id}`);
+          if (!detailRes.ok) {
+            throw new Error(`Failed to load history run ${item.run_id}`);
+          }
+          return detailRes.json();
+        })
+      );
+
+      const restoredRuns = detailResults
+        .map((item) => ({
+          ...item.result_json,
+          history_run_id: item.run_id,
+          ground_truth_content: item.content,
+        }))
+        .filter((item) => item.run_log);
+
+      setSavedRuns(restoredRuns);
+
+      if (restoredRuns.length > 0) {
+        setSelectedRun(restoredRuns[0]);
+      }
+    } catch (e) {
+      console.error("Failed to load history:", e);
+    }
+  }
+  useEffect(() => {
+    loadSavedRunsFromBackend();
+  }, []);
+
+  async function handleDeleteRun(runId) {
+    try {
+      const res = await fetch(`/api/history/${runId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || "Failed to delete history run");
+      }
+
+      if (selectedRun?.history_run_id === runId) {
+        setSelectedRun(null);
+        setSimResult(null);
+      }
+
+      await loadSavedRunsFromBackend();
+    } catch (e) {
+      setSimError(e.message);
+    }
+  }
 
   async function handleRun() {
     setLoading(true);
     setSimResult(null);
     setSimError(null);
     try {
+      // 1. save news
+      const newsRes = await fetch("/api/news", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: groundTruth }),
+      });
+
+      if (!newsRes.ok) {
+        const err = await newsRes.json().catch(() => ({ detail: newsRes.statusText }));
+        throw new Error(err.detail || "Failed to save news");
+      }
+
+      const newsData = await newsRes.json();
+      const createdNewsId = newsData.id;
+      setNewsId(createdNewsId);
+
+      // 2. run simulation with news_id
       const res = await fetch("/api/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ground_truth: groundTruth,
+          news_id: createdNewsId,
           agent_count: config.agentCount,
           steps: config.steps,
           seed: config.seed,
-          role_mix: config.roleMix,
+          intra_cluster_p: config.intraClusterP,
+          inter_cluster_m: config.interClusterM,
+          agents_per_cluster: config.agentsPerCluster,
+          weak_tie_p: config.weakTieP,
+          simulations: config.simulations,
         }),
       });
       if (!res.ok) {
@@ -789,7 +1077,12 @@ export default function App() {
       }
       const data = await res.json();
       setSimResult(data);
-      setSavedRuns((prev) => [data, ...prev]);  // newest first
+      setSelectedRun(data);
+
+      //new
+      setActiveRunIndex(0);
+
+      await loadSavedRunsFromBackend();
     } catch (e) {
       setSimError(e.message);
     } finally {
@@ -797,12 +1090,34 @@ export default function App() {
     }
   }
 
+  const currentRun = selectedRun?.runs && selectedRun.runs.length > 0 
+    ? selectedRun.runs[activeRunIndex] 
+    : selectedRun;
+
   return (
     <div className="app">
-      <Sidebar active={page} onNavigate={setPage} />
+      <Sidebar active={page} onNavigate={setPage} simResult={selectedRun} />
       <main className="main">
         <Header title="SoFake — Fake News Evolution Simulator" />
         <div className="content">
+
+          {selectedRun?.runs && selectedRun.runs.length > 1 && ["graph", "dashboard"].includes(page) && (
+            <div className="card" style={{ marginBottom: "1rem", padding: "1rem" }}>
+              <div className="row" style={{ gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
+                <span className="label" style={{ margin: 0, marginRight: "1rem" }}>Select Parallel Run:</span>
+                {selectedRun.runs.map((_, idx) => (
+                  <button
+                    key={idx}
+                    className={`btn btn--ghost ${activeRunIndex === idx ? "is-active" : ""}`}
+                    onClick={() => setActiveRunIndex(idx)}
+                    type="button"
+                  >
+                    Run {idx + 1}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {page === "new" && (
             <>
@@ -818,27 +1133,61 @@ export default function App() {
             </>
           )}
 
-          {page === "graph" && <GraphView simResult={simResult} />}
+          {page === "graph" && <GraphView simResult={currentRun} />}
 
-          {page === "dashboard" && <OverviewDashboard simResult={simResult} />}
+          {page === "dashboard" && <OverviewDashboard simResult={currentRun} />}
 
-          {page === "fuse" && <FuseComparisonPage simResult={simResult} />}
+          {page === "fuse" && <FuseComparisonPage simResult={selectedRun} />}
 
-          {page === "fuse-report" && <FuseAgentReport simResult={simResult} />}
+          {page === "fuse-report" && <FuseAgentReport simResult={selectedRun} />}
 
-          {page === "runs" && <SavedRuns savedRuns={savedRuns} />}
+          {page === "parallel-fuse" && <ParallelFusePage simResult={selectedRun} />}
 
-          {page === "settings" && (
-            <PlaceholderPage title="Settings">
-              Store defaults (max chars, step limit, role presets, scoring weights). Add "Reset to defaults".
-            </PlaceholderPage>
+          {page === "runs" && (
+            <SavedRuns
+              savedRuns={savedRuns}
+              selectedRun={selectedRun}
+              onSelectRun={(run) => {
+                setSelectedRun(run);
+                setSimResult(run);
+                setActiveRunIndex(0);
+                setPage("dashboard");
+              }}
+              onDeleteRun={handleDeleteRun}
+            />
           )}
 
           {page === "about" && (
-            <PlaceholderPage title="About SoFake">
-              Explain: no live detection, no scraping. It's a simulation tool to study how truth
-              drifts through agent interactions.
-            </PlaceholderPage>
+            <section className="card">
+              <h2 className="card__title">About SoFake</h2>
+              <p style={{ marginBottom: "1rem" }}>
+                SoFake is a fake news evolution simulator built to study how truthful information
+                drifts as it propagates through a simulated social network of AI agents.
+              </p>
+              <p style={{ marginBottom: "1rem" }}>
+                Each agent has a unique personality profile based on the HEXACO model —
+                varying in honesty, emotionality, conscientiousness, and more — which determines
+                how they react to, reframe, and spread news posts. Over multiple simulation steps,
+                a ground-truth article is seeded into the network and evolves through likes,
+                retweets, quotes, and new posts.
+              </p>
+              <p style={{ marginBottom: "1rem" }}>
+                Evolved posts are scored using the <strong>FUSE framework</strong>, which measures
+                deviation from the original article across 9 linguistic and semantic dimensions:
+                Sentiment Shift, New Information Introduced, Certainty Shift, Stylistic Shift,
+                Temporal Shift, Perspective Deviation, Sensationalism, Source Attribution Alteration,
+                and Political/Ideological Bias.
+              </p>
+              <p style={{ marginBottom: "1rem" }}>
+                Running multiple parallel simulations allows you to compare how the same article
+                drifts across different random network configurations and agent orderings,
+                giving a statistical picture of misinformation spread.
+              </p>
+              <div className="callout" style={{ marginTop: "1rem" }}>
+                SoFake does not scrape live news, detect real misinformation, or connect to any
+                external data source. It is a research and educational tool only.
+              </div>
+            </section>
           )}
 
         </div>

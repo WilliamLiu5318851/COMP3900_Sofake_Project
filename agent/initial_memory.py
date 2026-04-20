@@ -5,7 +5,7 @@ from prompts import describe_trait
 
 # ── Prompt Construction ───────────────────────────────────────────────────────────────
 
-def build_initial_memory_prompt(agent: Agent, ground_truth: str) -> str:
+def build_initial_memory_prompt(agent: Agent, visible_context: str) -> str:
     p = agent.profile
 
     personality_block = "\n".join([
@@ -24,8 +24,8 @@ You are simulating the initial memory of a social media user.
 ## Agent personality
 {personality_block}
 
-## Original news
-{ground_truth}
+## What this agent currently sees
+{visible_context}
 
 ## Task
 Generate 3 short memory statements describing what this agent is most likely to take away after first reading this story.
@@ -37,25 +37,42 @@ These three memories should cover:
 Rules:
 - Each memory must be exactly one sentence
 - Keep them natural
-- Do not just copy the original news directly
+- Do not just copy the visible_context directly
 - Each memory should sound like an internal takeaway, not a public post
 - Must reflect the agent's personality
 - Return only valid JSON as a list of strings
+- Must return only Valid JSON
 - Avoid starting with "I just saw" or "I think"
+- Do not include any explanation, title or extra text before or after the JSON.
 
-Example format:
+Correct format:
 [
-"1. Memory one.",
-"2. Memory two.",
-"3. Memory three."
+"Memory one.",
+"Memory two.",
+"Memory three."
 ]
 """.strip()
 
+def clean_llm_json(raw: str) -> str:
+    import re
+    text = raw.strip()
+    text = text.replace("```json", "").replace("```","").strip()
 
-def generate_initial_memory(agent: Agent, ground_truth: str) -> list[str]:
-    prompt = build_initial_memory_prompt(agent, ground_truth)
+    start = text.find("[")
+    end = text.rfind("]")
+    text = text[start:end+1].strip()
+
+    # Fix missing commas between consecutive string elements
+    text = re.sub(r'"\s*\n\s*"', '",\n"', text)
+
+    return text
+
+
+
+def generate_initial_memory(agent: Agent, visible_context: str) -> list[str]:
+    prompt = build_initial_memory_prompt(agent, visible_context)
     raw = llm_call(prompt)
-    cleaned = raw.strip().replace("```json", "").replace("```","").strip()
+    cleaned = clean_llm_json(raw)
                                                          
     try:
         data = json.loads(cleaned)
@@ -73,5 +90,5 @@ def generate_initial_memory(agent: Agent, ground_truth: str) -> list[str]:
 
     return memory
 
-def initialise_agent_memory(agent: Agent, ground_truth: str) -> None:
-    agent.memory = generate_initial_memory(agent, ground_truth)
+def initialise_agent_memory(agent: Agent, visible_context: str) -> None:
+    agent.memory = generate_initial_memory(agent, visible_context)

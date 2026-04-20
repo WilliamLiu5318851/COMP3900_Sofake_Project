@@ -1,0 +1,760 @@
+{
+  "run_id": "20260418_054852",
+  "timestamp": "2026-04-18T05:48:52.463586",
+  "config": {
+    "n_agents": 6,
+    "n_steps": 3,
+    "seed": 42,
+    "followback_p": 0.55,
+    "inter_cluster_m": 2,
+    "agents_per_cluster": 8
+  },
+  "agents": [
+    {
+      "id": 0,
+      "name": "Alex",
+      "cluster": 3,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.6394,
+        "emotionality": 0.025,
+        "extraversion": 0.275,
+        "agreeableness": 0.2232,
+        "conscientiousness": 0.7365,
+        "openness": 0.6767
+      }
+    },
+    {
+      "id": 1,
+      "name": "Blake",
+      "cluster": 3,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.8922,
+        "emotionality": 0.0869,
+        "extraversion": 0.4219,
+        "agreeableness": 0.0298,
+        "conscientiousness": 0.2186,
+        "openness": 0.5054
+      }
+    },
+    {
+      "id": 2,
+      "name": "Casey",
+      "cluster": 2,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.0265,
+        "emotionality": 0.1988,
+        "extraversion": 0.6499,
+        "agreeableness": 0.5449,
+        "conscientiousness": 0.2204,
+        "openness": 0.5893
+      }
+    },
+    {
+      "id": 3,
+      "name": "Dana",
+      "cluster": 3,
+      "is_hub": true,
+      "profile": {
+        "honesty_humility": 0.8094,
+        "emotionality": 0.0065,
+        "extraversion": 0.8058,
+        "agreeableness": 0.6981,
+        "conscientiousness": 0.3403,
+        "openness": 0.1555
+      }
+    },
+    {
+      "id": 4,
+      "name": "Eden",
+      "cluster": 3,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.9572,
+        "emotionality": 0.3366,
+        "extraversion": 0.0927,
+        "agreeableness": 0.0967,
+        "conscientiousness": 0.8475,
+        "openness": 0.6037
+      }
+    },
+    {
+      "id": 5,
+      "name": "Finn",
+      "cluster": 3,
+      "is_hub": false,
+      "profile": {
+        "honesty_humility": 0.8071,
+        "emotionality": 0.7297,
+        "extraversion": 0.5362,
+        "agreeableness": 0.9731,
+        "conscientiousness": 0.3785,
+        "openness": 0.552
+      }
+    }
+  ],
+  "network": {
+    "n_nodes": 6,
+    "n_edges": 17,
+    "n_clusters": 2,
+    "avg_degree": 2.83,
+    "hubs": {
+      "3": "Dana",
+      "2": "Casey"
+    }
+  },
+  "ground_truth": {
+    "text": "Scientists at a major US university have published a study suggesting that microplastics found in common bottled water brands may be interfering with human hormone regulation. The study, which tracked 3,000 participants over 5 years, found a statistically significant correlation between bottled water consumption and disrupted cortisol and thyroid levels. The lead researcher stated the findings are 'concerning but not yet conclusive'. Health authorities have not yet issued any official guidance in response to the study.",
+    "signals": {
+      "emotional_charge": 0.72,
+      "controversy": 0.64,
+      "fringe_score": 0.26,
+      "threat_level": 0.52,
+      "generation": 0,
+      "source_post_id": "ground_truth"
+    }
+  },
+  "steps": [
+    {
+      "step": 1,
+      "agent_order": [
+        3,
+        4,
+        5,
+        1,
+        0,
+        2
+      ],
+      "events": [
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "like",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "comment",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_1",
+          "new_post_text": "\"Sounds alarmist to claim 'concerning but not yet conclusive' is enough to justify a media frenzy. Need more evidence and context before jumping to conclusions. Also, what exactly are the control groups' water sources?\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.2,
+            "fringe_score": 0.7,
+            "threat_level": 0.1,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "ignore",
+          "source_post_id": "ground_truth",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "comment",
+          "source_post_id": "post_1",
+          "new_post_id": "post_2",
+          "new_post_text": "\"I get your skepticism, but think about all the plastics we already know are harming us - this is just a natural next step. Also, doesn't 'concerning but not yet conclusive' basically translate to 'we're pretty sure something's up but aren't sure why'?\"",
+          "new_signals": {
+            "emotional_charge": 0.75,
+            "controversy": 0.7,
+            "fringe_score": 0.1,
+            "threat_level": 0.6,
+            "generation": 2,
+            "source_post_id": "post_1"
+          }
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "quote_tweet",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_3",
+          "new_post_text": "\"BOTTLED WATER ALERT! 'Concerning but not yet conclusive' just means they're hiding something... or at least that's how it feels after 5 years of finding a link between bottled water & hormone disruption. We need answers NOW! #Microplastics #BottledWaterHealth\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.9,
+            "fringe_score": 0.7,
+            "threat_level": 0.8,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "comment",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_4",
+          "new_post_text": "\"Exactly! And let's not forget about the long-term effects on our kids and future generations. 5 years is a drop in the bucket, we should be demanding more research, not just a quick 'we'll look into it' from our health authorities.\"",
+          "new_signals": {
+            "emotional_charge": 0.84,
+            "controversy": 0.62,
+            "fringe_score": 0.2,
+            "threat_level": 0.48,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "ignore",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "post_4",
+          "new_post_id": "post_5",
+          "new_post_text": "\"Bottled water study sparks concerns over hormone disruption. Scientists at a US university found a correlation between bottled water consumption and changes in cortisol and thyroid levels in 3,000 participants tracked over 5 years. The study's lead researcher calls the results 'concerning but not yet conclusive.' It's worth noting that no official guidance has been issued by health authorities. Worth keeping an eye on as this research continues to unfold.\"",
+          "new_signals": {
+            "emotional_charge": 0.42,
+            "controversy": 0.31,
+            "fringe_score": 0.11,
+            "threat_level": 0.14,
+            "generation": 2,
+            "source_post_id": "post_4"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "quote_tweet",
+          "source_post_id": "post_2",
+          "new_post_id": "post_6",
+          "new_post_text": "\"True, plastics have been a known concern. However, correlation alone doesn't confirm causation. Until this study's methodology and findings are thoroughly vetted, let's temper enthusiasm with a dose of healthy skepticism - not ignore the nuances in the lead researcher's words, 'concerning but not yet conclusive'.\"",
+          "new_signals": {
+            "emotional_charge": 0.45,
+            "controversy": 0.2,
+            "fringe_score": 0.1,
+            "threat_level": 0.1,
+            "generation": 3,
+            "source_post_id": "post_2"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "like",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "quote_tweet",
+          "source_post_id": "post_4",
+          "new_post_id": "post_7",
+          "new_post_text": "\"Careful not to leap to conclusions here - correlation does not imply causation. 5 yrs of data is a decent start, but we need more research & analysis on the actual impact before jumping to long-term effects.\"",
+          "new_signals": {
+            "emotional_charge": 0.5,
+            "controversy": 0.3,
+            "fringe_score": 0.0,
+            "threat_level": 0.0,
+            "generation": 2,
+            "source_post_id": "post_4"
+          }
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "retweet",
+          "source_post_id": "post_6",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "post_3",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "ignore",
+          "source_post_id": "post_4",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "new_post",
+          "source_post_id": "post_2",
+          "new_post_id": "post_8",
+          "new_post_text": "\"BIG RED FLAG ALERT on your tap water. Scientists have just revealed that bottled water from some major brands contains microplastics that can ALTER OUR HORMONAL BALANCE. Think about it - our water, already loaded with toxins, now we're being poisoned by tiny plastic particles. Don't wait for official guidelines to catch up, stay vigilant & start filtering your water NOW\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.7,
+            "fringe_score": 0.6,
+            "threat_level": 0.9,
+            "generation": 3,
+            "source_post_id": "post_2"
+          }
+        }
+      ],
+      "new_posts_this_step": 8
+    },
+    {
+      "step": 2,
+      "agent_order": [
+        0,
+        5,
+        4,
+        3,
+        1,
+        2
+      ],
+      "events": [
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "retweet",
+          "source_post_id": "post_8",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "retweet",
+          "source_post_id": "post_2",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "ignore",
+          "source_post_id": "post_5",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "quote_tweet",
+          "source_post_id": "post_8",
+          "new_post_id": "post_9",
+          "new_post_text": "\"WAIT, WHAT?! Just saw the 'ALARMING' study results about bottled water & microplastics, but I'm also seeing red flags about tap water & TOXINS. Honestly, do we even know the scope of this? Can't just blame bottled water & forget about our taps! We need answers about ALL of it, NOW #WaterContamination #MicroplasticsAlert\"",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.9,
+            "fringe_score": 0.75,
+            "threat_level": 0.8,
+            "generation": 4,
+            "source_post_id": "post_8"
+          }
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "comment",
+          "source_post_id": "post_7",
+          "new_post_id": "post_10",
+          "new_post_text": "\"Easy for you to say when you're not drinking from bottles that are literally dripping with chemicals. This isn't just about correlation, it's about our future health. We can't just 'look into it', we need action now. Don't you dare downplay the risks!\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.7,
+            "fringe_score": 0.4,
+            "threat_level": 0.8,
+            "generation": 3,
+            "source_post_id": "post_7"
+          }
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "retweet",
+          "source_post_id": "post_6",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "report",
+          "source_post_id": "post_9",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "comment",
+          "source_post_id": "post_10",
+          "new_post_id": "post_11",
+          "new_post_text": "\"That's a knee-jerk reaction. Where's the evidence this isn't just about the bottles themselves, like say, BPA or phthalates, rather than the water itself? We should be talking about actual causes, not jumping to conclusions based on a single study and anecdotal fears.\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.7,
+            "fringe_score": 0.1,
+            "threat_level": 0.0,
+            "generation": 4,
+            "source_post_id": "post_10"
+          }
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "ignore",
+          "source_post_id": "post_8",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "like",
+          "source_post_id": "post_9",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "quote_tweet",
+          "source_post_id": "post_10",
+          "new_post_id": "post_12",
+          "new_post_text": "\"While concern for our health is valid, let's keep the discussion grounded in fact: a recent study of 3,000 participants found a statistically significant correlation, but the researchers themselves called the findings 'concerning but not yet conclusive'. Let's focus on what we know: we need more research, not speculation or alarm.\" #waterquality #hormonehealth",
+          "new_signals": {
+            "emotional_charge": 0.5,
+            "controversy": 0.8,
+            "fringe_score": 0.25,
+            "threat_level": 0.3,
+            "generation": 4,
+            "source_post_id": "post_10"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "comment",
+          "source_post_id": "post_8",
+          "new_post_id": "post_13",
+          "new_post_text": "\"That's an alarming headline, but let's not forget the study's lead researcher said the findings are 'concerning but not yet conclusive'. We need to separate speculation from fact before we call for widespread action. More research is needed to fully understand the implications of microplastics in bottled water.\"",
+          "new_signals": {
+            "emotional_charge": 0.5,
+            "controversy": 0.3,
+            "fringe_score": 0.1,
+            "threat_level": 0.6,
+            "generation": 4,
+            "source_post_id": "post_8"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "ignore",
+          "source_post_id": "post_9",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "post_10",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "post_8",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "new_post",
+          "source_post_id": "post_9",
+          "new_post_id": "post_14",
+          "new_post_text": "You're right to connect the dots. This bottled water crisis is a symptom of a bigger problem - our entire water supply is under scrutiny. Experts warn that microplastics aren't just in bottled water, but in every drop. And let's not forget the chemicals leaching from pipes and treatment plants. It's time to demand action from our authorities. We can't keep playing catch-up with water quality. Stay informed, stay vigilant. We have the right to clean drinking water.",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.25,
+            "fringe_score": 0.15,
+            "threat_level": 0.8,
+            "generation": 5,
+            "source_post_id": "post_9"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "quote_tweet",
+          "source_post_id": "post_10",
+          "new_post_id": "post_15",
+          "new_post_text": "\"The downplaying begins. Let's not forget, the study wasn't just about bottled water, it was about the ENTIRE water supply. But let's focus on the 'chemicals dripping from bottles.' How about the tiny plastic particles lurking in every sip? #WaterCrisis #BottledWaterAlert\"",
+          "new_signals": {
+            "emotional_charge": 0.9,
+            "controversy": 0.8,
+            "fringe_score": 0.4,
+            "threat_level": 0.7,
+            "generation": 4,
+            "source_post_id": "post_10"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "retweet",
+          "source_post_id": "post_12",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 7
+    },
+    {
+      "step": 3,
+      "agent_order": [
+        1,
+        0,
+        5,
+        2,
+        3,
+        4
+      ],
+      "events": [
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "new_post",
+          "source_post_id": "post_15",
+          "new_post_id": "post_16",
+          "new_post_text": "I'd like to clarify that this latest development doesn't change the established ground truth. The US university study only examined bottled water for microplastic-related hormone disruption. It found a correlation between consumption and hormonal changes, but didn't imply any broader water supply issues. Let's stick to verifiable information to keep the conversation productive \u2013 a simple reminder that, as of now, there's no conclusive evidence linking microplastics in all tap water to hormone disruption.",
+          "new_signals": {
+            "emotional_charge": 0.2,
+            "controversy": 0.4,
+            "fringe_score": 0.1,
+            "threat_level": 0.0,
+            "generation": 5,
+            "source_post_id": "post_15"
+          }
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "retweet",
+          "source_post_id": "post_14",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 1,
+          "agent_name": "Blake",
+          "action": "ignore",
+          "source_post_id": "post_12",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "ignore",
+          "source_post_id": "post_15",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "ignore",
+          "source_post_id": "post_9",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 0,
+          "agent_name": "Alex",
+          "action": "quote_tweet",
+          "source_post_id": "post_10",
+          "new_post_id": "post_17",
+          "new_post_text": "\"Not sure why people are assuming a dire situation already. That initial tweet was clear: this is a promising finding, not a conclusive one. It's not about downplaying risks, but about considering the science method. We'll have action when the studies are solid, not speculation\"",
+          "new_signals": {
+            "emotional_charge": 0.4,
+            "controversy": 0.2,
+            "fringe_score": 0.1,
+            "threat_level": 0.0,
+            "generation": 4,
+            "source_post_id": "post_10"
+          }
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "retweet",
+          "source_post_id": "post_15",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "like",
+          "source_post_id": "post_14",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 5,
+          "agent_name": "Finn",
+          "action": "like",
+          "source_post_id": "post_12",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "comment",
+          "source_post_id": "post_13",
+          "new_post_id": "post_18",
+          "new_post_text": "\"Separate speculation from fact?\" Are you kidding me? 5 years, 3,000 participants, statistically significant correlations... and you think that's just speculation? The researcher themselves called it 'concerning' and yet you downplay the severity of the situation. We deserve the truth, not watered-down reassurances.\"",
+          "new_signals": {
+            "emotional_charge": 0.85,
+            "controversy": 0.9,
+            "fringe_score": 0.2,
+            "threat_level": 0.8,
+            "generation": 5,
+            "source_post_id": "post_13"
+          }
+        },
+        {
+          "agent_id": 2,
+          "agent_name": "Casey",
+          "action": "comment",
+          "source_post_id": "ground_truth",
+          "new_post_id": "post_19",
+          "new_post_text": "\"The mainstream just can't handle the truth. They'd rather you stay unaware and keep consuming toxic water. Remember when they 'knew' smoking was harmless and pesticides were safe? Wake up, folks. This is just the tip of the iceberg, and they're trying to downplay it. Don't trust the narrative.\"",
+          "new_signals": {
+            "emotional_charge": 0.8,
+            "controversy": 0.7,
+            "fringe_score": 0.6,
+            "threat_level": 0.7,
+            "generation": 1,
+            "source_post_id": "ground_truth"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "ignore",
+          "source_post_id": "post_19",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "comment",
+          "source_post_id": "post_18",
+          "new_post_id": "post_20",
+          "new_post_text": "\"I'm not downplaying the severity, just encouraging informed discussion. Let's acknowledge we don't yet have conclusions. Correlation doesn't equal causation, and the lead researcher's words were clear: these findings are 'not yet conclusive.' Let's prioritize clarity over assumed certainty.\"",
+          "new_signals": {
+            "emotional_charge": 0.6,
+            "controversy": 0.3,
+            "fringe_score": 0.0,
+            "threat_level": 0.0,
+            "generation": 6,
+            "source_post_id": "post_18"
+          }
+        },
+        {
+          "agent_id": 3,
+          "agent_name": "Dana",
+          "action": "quote_tweet",
+          "source_post_id": "post_15",
+          "new_post_id": "post_21",
+          "new_post_text": "\"Important to note that the study's lead researcher emphasized these findings are 'concerning but not yet conclusive.' Let's maintain a focus on facts, not hypotheticals. We should address the entire water supply, not just bottled water, once conclusive evidence is available. #waterquality #factualbasis\"",
+          "new_signals": {
+            "emotional_charge": 0.1,
+            "controversy": 0.2,
+            "fringe_score": 0.0,
+            "threat_level": 0.2,
+            "generation": 5,
+            "source_post_id": "post_15"
+          }
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "retweet",
+          "source_post_id": "post_19",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "ignore",
+          "source_post_id": "post_18",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        },
+        {
+          "agent_id": 4,
+          "agent_name": "Eden",
+          "action": "ignore",
+          "source_post_id": "post_15",
+          "new_post_id": null,
+          "new_post_text": null,
+          "new_signals": null
+        }
+      ],
+      "new_posts_this_step": 6
+    }
+  ]
+}
