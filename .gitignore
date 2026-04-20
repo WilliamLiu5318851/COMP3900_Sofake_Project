@@ -26,4 +26,3 @@ docker-compose.override.yml
 
 .env
 .env.bak
-.claude
