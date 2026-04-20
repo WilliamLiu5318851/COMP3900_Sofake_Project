@@ -710,7 +710,6 @@ function NetworkGraph({ runLog }) {
           overflow:    "hidden",
           borderRadius: 8,
           background:  "var(--surface-2, #f5f5f5)",
-          cursor:      isPanning.current ? "grabbing" : "grab",
           userSelect:  "none",
           touchAction: "none",
         }}
