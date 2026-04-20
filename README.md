@@ -58,12 +58,13 @@ docker-compose ps                             # all services should be "Up"
 
 ## Using the Dashboard
 
-1. **New Simulation** — paste a factual news article into the Ground Truth box, tweak agent count / steps / seed / role mix, and click **Start Simulation**. A run with 30 agents × 60 steps takes roughly 1–3 minutes.
-2. **Graph View** — line chart showing how emotional charge, controversy, fringe score, and threat level drift across generations.
+1. **New Simulation** — paste a factual news article into the Ground Truth box, tweak agent count / steps / seed, and click **Start Simulation**. A run with 30 agents × 60 steps takes roughly 1–3 minutes.
+2. **Graph View** — interactive social network graph showing agents and their connections, plus line charts of how emotional charge, controversy, fringe score, and threat level drift across generations.
 3. **Overview Dashboard** — posts per step, action breakdown, FUSE deviation bars for each sampled post.
 4. **FUSE Comparison** — per-post breakdown: scores vs. the original ground truth and vs. the immediate parent post.
-5. **FUSE Report** — per-agent view: each agent's posts with their step-by-step FUSE scores plus the agent's average deviation.
-6. **Saved Runs** — every completed run is kept in the session; full post timeline per run.
+5. **FUSE Report** — per-agent view: each agent's HEXACO personality profile (bar chart), average FUSE deviation scores, and post-by-post breakdown.
+6. **Saved Runs** — every completed run is persisted to the database; full post timeline per run.
+7. **Export Report** — click the Export Report button (top right) to download the full run log as a JSON file.
 
 ## Stopping / Restarting
 
