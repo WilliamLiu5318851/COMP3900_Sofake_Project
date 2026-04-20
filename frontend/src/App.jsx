@@ -395,12 +395,49 @@ export function computeParallelFuseStats(runs) {
   return { runChart, globalDims };
 }
 
+const HEXACO_LABELS = {
+  honesty_humility: "Honesty-Humility",
+  emotionality: "Emotionality",
+  extraversion: "Extraversion",
+  agreeableness: "Agreeableness",
+  conscientiousness: "Conscientiousness",
+  openness: "Openness",
+};
+const HEXACO_KEYS = Object.keys(HEXACO_LABELS);
+
+function HexacoBar({ profile }) {
+  if (!profile) return null;
+  const data = HEXACO_KEYS.map((k) => ({
+    trait: HEXACO_LABELS[k].replace("-", "-\n"),
+    value: +((profile[k] ?? 0) * 10).toFixed(1),
+  }));
+  return (
+    <div style={{ marginTop: "0.75rem" }}>
+      <div className="hint" style={{ marginBottom: "0.4rem", fontWeight: 600 }}>HEXACO Personality Profile</div>
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={data} margin={{ top: 4, right: 8, bottom: 50, left: 0 }}>
+          <XAxis dataKey="trait" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" interval={0} />
+          <YAxis domain={[0, 10]} tick={{ fontSize: 11 }} />
+          <Tooltip formatter={(val) => [`${val}/10`, "Score"]} />
+          <Bar dataKey="value" fill="#4A90D9" radius={[3, 3, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 function FuseAgentReport({ simResult }) {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const evals = simResult?.fuse_evaluations;
 
   if (!simResult) return <div className="callout">No simulation run yet — go to New Simulation first.</div>;
   if (!evals || evals.length === 0) return <div className="callout">No FUSE evaluations in this run.</div>;
+
+  // Build agent name → HEXACO profile map from run_log
+  const agentProfileMap = {};
+  (simResult.run_log?.agents ?? []).forEach((a) => {
+    agentProfileMap[a.name] = a.profile;
+  });
 
   // Group evaluations by agent
   const agentMap = {};
@@ -413,6 +450,7 @@ function FuseAgentReport({ simResult }) {
   // Default to first agent
   const activeAgent = selectedAgent && agentMap[selectedAgent] ? selectedAgent : agentNames[0];
   const agentPosts = agentMap[activeAgent] || [];
+  const activeProfile = agentProfileMap[activeAgent] ?? null;
 
   // Calculate per-agent average across all posts
   const agentAvg = {};
@@ -487,7 +525,9 @@ function FuseAgentReport({ simResult }) {
           </div>
         </div>
 
-        <h3 className="subhead">Average FUSE Dimensions</h3>
+        {activeProfile && <HexacoBar profile={activeProfile} />}
+
+        <h3 className="subhead" style={{ marginTop: "1rem" }}>Average FUSE Dimensions</h3>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={avgBarData} margin={{ top: 4, right: 8, bottom: 40, left: 0 }}>
             <XAxis dataKey="dim" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" interval={0} />
