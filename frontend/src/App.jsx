@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -330,35 +330,603 @@ function NoResultsYet() {
   );
 }
 
-// ── Graph View ────────────────────────────────────────────────────────────────
+// ── Network Graph (pan + zoom + draggable nodes + hover tooltips) ─────────────
+// Drop this in as a full replacement for the NetworkGraph component in App.jsx.
+// Everything above and below it in App.jsx stays unchanged.
+
+const CLUSTER_COLORS = [
+  "#1D9E75", "#7F77DD", "#D85A30", "#BA7517",
+  "#E24B4A", "#3A7BD5", "#F5A623", "#7ED321",
+];
+
+const HEXACO_LABELS = {
+  honesty_humility:  "Honesty / Humility",
+  emotionality:      "Emotionality",
+  extraversion:      "Extraversion",
+  agreeableness:     "Agreeableness",
+  conscientiousness: "Conscientiousness",
+  openness:          "Openness",
+};
+
+function HexacoBar({ value }) {
+  const pct   = Math.round(value * 100);
+  const color = value >= 0.66 ? "#1D9E75" : value >= 0.33 ? "#BA7517" : "#D85A30";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+      <div
+        style={{
+          flex: 1,
+          height: 6,
+          background: "rgba(255,255,255,0.15)",
+          borderRadius: 3,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: `${pct}%`,
+            height: "100%",
+            background: color,
+            borderRadius: 3,
+            transition: "width 0.2s",
+          }}
+        />
+      </div>
+      <span style={{ fontSize: 10, opacity: 0.8, minWidth: 28, textAlign: "right" }}>
+        {pct}%
+      </span>
+    </div>
+  );
+}
+
+function AgentTooltip({ agent, screenX, screenY, containerRef }) {
+  const ttRef = useRef(null);
+  const [pos, setPos] = useState({ left: screenX + 14, top: screenY - 10 });
+
+  // Nudge tooltip back on screen if it overflows the container
+  useEffect(() => {
+    if (!ttRef.current || !containerRef.current) return;
+    const tt  = ttRef.current.getBoundingClientRect();
+    const ct  = containerRef.current.getBoundingClientRect();
+    let left  = screenX + 14;
+    let top   = screenY - 10;
+    if (left + tt.width  > ct.width)  left = screenX - tt.width - 14;
+    if (top  + tt.height > ct.height) top  = screenY - tt.height;
+    if (top < 0) top = 4;
+    setPos({ left, top });
+  }, [screenX, screenY]);
+
+  const p = agent.profile;
+
+  return (
+    <div
+      ref={ttRef}
+      style={{
+        position:      "absolute",
+        left:          pos.left,
+        top:           pos.top,
+        zIndex:        100,
+        pointerEvents: "none",
+        background:    "rgba(20,20,28,0.93)",
+        color:         "#f0f0f0",
+        borderRadius:  10,
+        padding:       "0.75rem 1rem",
+        minWidth:      220,
+        boxShadow:     "0 8px 32px rgba(0,0,0,0.4)",
+        backdropFilter: "blur(4px)",
+        border:        "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.6rem" }}>
+        <div
+          style={{
+            width: 10, height: 10, borderRadius: "50%",
+            background: CLUSTER_COLORS[agent._clusterIdx % CLUSTER_COLORS.length],
+            flexShrink: 0,
+          }}
+        />
+        <span style={{ fontWeight: 700, fontSize: 13 }}>{agent.name}</span>
+        {agent.is_hub && (
+          <span
+            style={{
+              fontSize: 9, fontWeight: 700,
+              background: "rgba(255,255,255,0.15)",
+              padding: "1px 6px", borderRadius: 4,
+              letterSpacing: "0.05em", textTransform: "uppercase",
+            }}
+          >
+            Hub
+          </span>
+        )}
+      </div>
+
+      <div style={{ fontSize: 10, opacity: 0.5, marginBottom: "0.6rem" }}>
+        Cluster {agent._clusterIdx + 1} · Agent #{agent.id}
+      </div>
+
+      {/* HEXACO bars */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+        {Object.entries(HEXACO_LABELS).map(([key, label]) => (
+          <div key={key}>
+            <div style={{ fontSize: 10, opacity: 0.65, marginBottom: 2 }}>{label}</div>
+            <HexacoBar value={p[key] ?? 0} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NetworkGraph({ runLog }) {
+  const W = 720, H = 520;
+
+  const [positions, setPositions]       = useState(null);
+  const [transform, setTransform]       = useState({ x: 0, y: 0, k: 1 });
+  const [hoveredAgent, setHoveredAgent] = useState(null); // { agent, screenX, screenY }
+
+  const posRef       = useRef({});
+  const velRef       = useRef({});
+  const frameRef     = useRef(null);
+  const transformRef = useRef({ x: 0, y: 0, k: 1 });
+  const svgRef       = useRef(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => { transformRef.current = transform; }, [transform]);
+
+  // ── Force simulation ──────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!runLog?.agents?.length) return;
+
+    const agents = runLog.agents;
+    const edges  = runLog.network_edges || [];
+
+    const pos = {}, vel = {};
+    agents.forEach((a, i) => {
+      const angle = (i / agents.length) * 2 * Math.PI;
+      pos[a.id] = { x: W / 2 + 180 * Math.cos(angle), y: H / 2 + 160 * Math.sin(angle) };
+      vel[a.id] = { x: 0, y: 0 };
+    });
+    posRef.current = pos;
+    velRef.current = vel;
+
+    let alpha = 1;
+
+    const tick = () => {
+      alpha *= 0.97;
+      const p   = posRef.current;
+      const v   = velRef.current;
+      const ids = agents.map((a) => a.id);
+      const fx  = Object.fromEntries(ids.map((id) => [id, 0]));
+      const fy  = Object.fromEntries(ids.map((id) => [id, 0]));
+
+      for (let i = 0; i < ids.length; i++) {
+        for (let j = i + 1; j < ids.length; j++) {
+          const a = ids[i], b = ids[j];
+          const dx = p[b].x - p[a].x, dy = p[b].y - p[a].y;
+          const d  = Math.sqrt(dx * dx + dy * dy) || 1;
+          const f  = 3500 / (d * d);
+          fx[a] -= (f * dx) / d; fy[a] -= (f * dy) / d;
+          fx[b] += (f * dx) / d; fy[b] += (f * dy) / d;
+        }
+      }
+
+      edges.forEach(({ source, target }) => {
+        if (!p[source] || !p[target]) return;
+        const dx = p[target].x - p[source].x, dy = p[target].y - p[source].y;
+        const d  = Math.sqrt(dx * dx + dy * dy) || 1;
+        const f  = (d - 90) * 0.055;
+        fx[source] += (f * dx) / d; fy[source] += (f * dy) / d;
+        fx[target] -= (f * dx) / d; fy[target] -= (f * dy) / d;
+      });
+
+      ids.forEach((id) => {
+        fx[id] += (W / 2 - p[id].x) * 0.018;
+        fy[id] += (H / 2 - p[id].y) * 0.018;
+      });
+
+      ids.forEach((id) => {
+        v[id].x = (v[id].x + fx[id] * alpha) * 0.78;
+        v[id].y = (v[id].y + fy[id] * alpha) * 0.78;
+        p[id] = {
+          x: Math.max(20, Math.min(W - 20, p[id].x + v[id].x)),
+          y: Math.max(20, Math.min(H - 20, p[id].y + v[id].y)),
+        };
+      });
+
+      setPositions({ ...p });
+      if (alpha > 0.004) frameRef.current = requestAnimationFrame(tick);
+    };
+
+    frameRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameRef.current);
+  }, [runLog]);
+
+  // ── Coordinate helpers ────────────────────────────────────────────────────
+  function clientToSvg(cx, cy) {
+    const rect = svgRef.current.getBoundingClientRect();
+    const t    = transformRef.current;
+    return {
+      x: (cx - rect.left - t.x) / t.k,
+      y: (cy - rect.top  - t.y) / t.k,
+    };
+  }
+
+  function clientToContainer(cx, cy) {
+    const rect = containerRef.current.getBoundingClientRect();
+    return { x: cx - rect.left, y: cy - rect.top };
+  }
+
+  // ── Wheel zoom ────────────────────────────────────────────────────────────
+  function handleWheel(e) {
+    e.preventDefault();
+  
+    // Two-finger pinch on trackpad: ctrlKey is true and deltaY represents zoom delta
+    // Two-finger scroll on trackpad: ctrlKey is false, deltaY is scroll
+    // We only zoom on pinch (ctrlKey), ignore regular scroll
+    if (!e.ctrlKey) return;
+  
+    const factor = e.deltaY < 0 ? 1.12 : 0.89;
+    const rect   = svgRef.current.getBoundingClientRect();
+    const t      = transformRef.current;
+    const mx     = e.clientX - rect.left;
+    const my     = e.clientY - rect.top;
+    const newK   = Math.min(8, Math.max(0.2, t.k * factor));
+    const next   = {
+      x: mx - (mx - t.x) * (newK / t.k),
+      y: my - (my - t.y) * (newK / t.k),
+      k: newK,
+    };
+    transformRef.current = next;
+    setTransform(next);
+  }
+
+
+  // ── Hover ─────────────────────────────────────────────────────────────────
+  function handleNodeMouseEnter(e, agent) {
+    const { x, y } = clientToContainer(e.clientX, e.clientY);
+    setHoveredAgent({ agent, screenX: x, screenY: y });
+  }
+
+  function handleNodeMouseMove(e) {
+    if (!hoveredAgent) return;
+    const { x, y } = clientToContainer(e.clientX, e.clientY);
+    setHoveredAgent((prev) => prev ? { ...prev, screenX: x, screenY: y } : prev);
+  }
+
+  function handleNodeMouseLeave() {
+    setHoveredAgent(null);
+  }
+
+  function zoomIn() {
+    const t    = transformRef.current;
+    const newK = Math.min(8, t.k * 1.25);
+    const next = {
+      x: W / 2 - (W / 2 - t.x) * (newK / t.k),
+      y: H / 2 - (H / 2 - t.y) * (newK / t.k),
+      k: newK,
+    };
+    transformRef.current = next;
+    setTransform(next);
+  }
+  
+  function zoomOut() {
+    const t    = transformRef.current;
+    const newK = Math.max(0.2, t.k * 0.8);
+    const next = {
+      x: W / 2 - (W / 2 - t.x) * (newK / t.k),
+      y: H / 2 - (H / 2 - t.y) * (newK / t.k),
+      k: newK,
+    };
+    transformRef.current = next;
+    setTransform(next);
+  }
+
+  // ── Reset view ────────────────────────────────────────────────────────────
+  function resetView() {
+    const next = { x: 0, y: 0, k: 1 };
+    transformRef.current = next;
+    setTransform(next);
+  }
+
+  function arrowhead(x1, y1, x2, y2, size = 7) {
+    const dx = x2 - x1, dy = y2 - y1;
+    const d  = Math.sqrt(dx * dx + dy * dy) || 1;
+    const ux = dx / d, uy = dy / d;   // unit vector toward target
+    const px = -uy,    py = ux;        // perpendicular
+  
+    // tip sits exactly at (x2, y2), base is `size` units back
+    const tip  = { x: x2,                          y: y2 };
+    const bl   = { x: x2 - ux * size + px * (size * 0.4), y: y2 - uy * size + py * (size * 0.4) };
+    const br   = { x: x2 - ux * size - px * (size * 0.4), y: y2 - uy * size - py * (size * 0.4) };
+  
+    return `${tip.x},${tip.y} ${bl.x},${bl.y} ${br.x},${br.y}`;
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  if (!runLog) return <div className="hint">No simulation run yet.</div>;
+
+  const agents   = runLog.agents;
+  const edges    = runLog.network_edges || [];
+  const agentMap = Object.fromEntries(agents.map((a) => [a.id, a]));
+
+  const clusterIds = [...new Set(agents.map((a) => a.cluster))];
+  const clusterColor = Object.fromEntries(
+    clusterIds.map((cid, i) => [cid, CLUSTER_COLORS[i % CLUSTER_COLORS.length]])
+  );
+
+  // Attach _clusterIdx to each agent so the tooltip colour dot matches
+  const agentsWithIdx = agents.map((a) => ({
+    ...a,
+    _clusterIdx: clusterIds.indexOf(a.cluster),
+  }));
+
+  const step         = edges.length > 400 ? Math.ceil(edges.length / 400) : 1;
+  const displayEdges = edges.filter((_, i) => i % step === 0);
+
+  if (!positions) {
+    return (
+      <div className="hint" style={{ padding: "2rem", textAlign: "center" }}>
+        Building layout…
+      </div>
+    );
+  }
+
+  const { x: tx, y: ty, k: tk } = transform;
+
+  return (
+    <div>
+      {/* Controls bar */}
+      <div className="row" style={{ marginBottom: "0.5rem", gap: "0.5rem", alignItems: "center" }}>
+        <span className="hint">
+          Hover nodes for profile
+        </span>
+        <div className="row" style={{ marginLeft: "auto", gap: "0.25rem", alignItems: "center" }}>
+          <button
+            className="btn btn--ghost"
+            style={{ fontSize: "1.1rem", padding: "0.15rem 0.6rem", lineHeight: 1 }}
+            onClick={zoomOut}
+            type="button"
+            title="Zoom out"
+          >
+            −
+          </button>
+          <span className="hint" style={{ minWidth: 38, textAlign: "center" }}>
+            {Math.round(tk * 100)}%
+          </span>
+          <button
+            className="btn btn--ghost"
+            style={{ fontSize: "1.1rem", padding: "0.15rem 0.6rem", lineHeight: 1 }}
+            onClick={zoomIn}
+            type="button"
+            title="Zoom in"
+          >
+            +
+          </button>
+          <button
+            className="btn btn--ghost"
+            style={{ fontSize: "0.8rem", padding: "0.25rem 0.75rem" }}
+            onClick={resetView}
+            type="button"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      {/* Canvas wrapper — position:relative anchors the tooltip */}
+      <div
+        ref={containerRef}
+        style={{
+          position:    "relative",
+          width:       "100%",
+          overflow:    "hidden",
+          borderRadius: 8,
+          background:  "var(--surface-2, #f5f5f5)",
+          userSelect:  "none",
+          touchAction: "none",
+        }}
+      >
+        <svg
+          ref={svgRef}
+          width="100%"
+          viewBox={`0 0 ${W} ${H}`}
+          style={{ display: "block" }}
+          onMouseMove={handleNodeMouseMove}
+        >
+          <defs>
+          <marker id="ngarrow" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+            <path d="M0,0 L5,2.5 L0,5 z" fill="#aaa" />
+          </marker>
+          </defs>
+
+          <g transform={`translate(${tx},${ty}) scale(${tk})`}>
+
+            {/* Edges */}
+            {displayEdges.map((e, i) => {
+              const sp = positions[e.source], tp = positions[e.target];
+              if (!sp || !tp) return null;
+              const dx = tp.x - sp.x, dy = tp.y - sp.y;
+              const d  = Math.sqrt(dx * dx + dy * dy) || 1;
+
+              // Stop the line exactly at the node boundary
+              const targetR = agentMap[e.target]?.is_hub ? 14 : 8;
+              const sourceR = agentMap[e.source]?.is_hub ? 14 : 8;
+              const arrowSize = 7;
+
+              // Line ends where the arrowhead base starts (targetR + arrowSize back from centre)
+              const x2 = tp.x - (dx / d) * (targetR + arrowSize);
+              const y2 = tp.y - (dy / d) * (targetR + arrowSize);
+              const x1 = sp.x + (dx / d) * sourceR;
+              const y1 = sp.y + (dy / d) * sourceR;
+
+              // Arrowhead tip sits exactly on the node boundary
+              const tipX = tp.x - (dx / d) * targetR;
+              const tipY = tp.y - (dy / d) * targetR;
+
+              return (
+                <g key={i}>
+                  <line
+                    x1={x1} y1={y1}
+                    x2={x2} y2={y2}
+                    stroke="#c0c0c0"
+                    strokeWidth={0.9}
+                    opacity={0.8}
+                  />
+                  <polygon
+                    points={arrowhead(x1, y1, tipX, tipY, arrowSize)}
+                    fill="#b0b0b0"
+                    opacity={0.9}
+                  />
+                </g>
+              );
+            })}
+
+            {/* Nodes */}
+            {agentsWithIdx.map((a) => {
+              const p         = positions[a.id];
+              if (!p) return null;
+              const color     = clusterColor[a.cluster] || "#999";
+              const isHovered = hoveredAgent?.agent?.id === a.id;
+
+              return (
+                <g
+                  key={a.id}
+                  style={{ cursor: "pointer" }}
+                  onMouseEnter={(e) => handleNodeMouseEnter(e, a)}
+                  onMouseLeave={handleNodeMouseLeave}
+                >
+                  {a.is_hub ? (
+                    <polygon
+                      points={`${p.x},${p.y - 13} ${p.x + 11.3},${p.y + 6.5} ${p.x - 11.3},${p.y + 6.5}`}
+                      fill={color}
+                      stroke="white"
+                      strokeWidth={isHovered ? 3 : 2}
+                      style={{ filter: isHovered ? "brightness(1.25)" : "none" }}
+                    />
+                  ) : (
+                    <circle
+                      cx={p.x} cy={p.y}
+                      r={isHovered ? 9 : 7}
+                      fill={color}
+                      stroke="white"
+                      strokeWidth={isHovered ? 2.5 : 1.5}
+                      style={{ filter: isHovered ? "brightness(1.25)" : "none" }}
+                    />
+                  )}
+                  {a.is_hub && (
+                    <text
+                      x={p.x} y={p.y - 17}
+                      textAnchor="middle"
+                      fontSize={10}
+                      fontWeight="700"
+                      fill="var(--text, #222)"
+                      style={{ pointerEvents: "none" }}
+                    >
+                      {a.name}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+
+          </g>
+        </svg>
+
+        {/* Tooltip rendered as an HTML overlay inside the container */}
+        {hoveredAgent && (
+          <AgentTooltip
+            agent={hoveredAgent.agent}
+            screenX={hoveredAgent.screenX}
+            screenY={hoveredAgent.screenY}
+            containerRef={containerRef}
+          />
+        )}
+      </div>
+
+      {/* Legend */}
+      <div
+        className="row"
+        style={{ marginTop: "0.75rem", flexWrap: "wrap", gap: "0.75rem", alignItems: "center" }}
+      >
+        {clusterIds.map((cid, i) => {
+          const hubName = runLog.network?.hubs?.[String(cid)];
+          return (
+            <div key={cid} className="row" style={{ gap: "0.35rem", alignItems: "center" }}>
+              <div style={{ width: 12, height: 12, borderRadius: "50%", background: clusterColor[cid] }} />
+              <span className="hint">Cluster {i + 1}{hubName ? ` · ${hubName}` : ""}</span>
+            </div>
+          );
+        })}
+        <div className="row" style={{ gap: "0.35rem", alignItems: "center" }}>
+          <svg width={14} height={14} viewBox="0 0 14 14">
+            <polygon points="7,0 14,14 0,14" fill="#666" />
+          </svg>
+          <span className="hint">Hub node</span>
+        </div>
+        <div className="row" style={{ gap: "0.35rem", alignItems: "center" }}>
+          <svg width={14} height={14}><circle cx={7} cy={7} r={5} fill="#666" /></svg>
+          <span className="hint">Regular agent</span>
+        </div>
+      </div>
+
+      <div className="hint" style={{ marginTop: "0.5rem" }}>
+        {agents.length} agents · {edges.length} directed edges
+        {edges.length > 400 ? ` (showing ${displayEdges.length} for clarity)` : ""}
+      </div>
+    </div>
+  );
+}
 
 function GraphView({ simResult }) {
   const d = useRunData(simResult?.run_log);
   return (
-    <section className="card">
-      <h2 className="card__title">Graph View</h2>
-      {!d ? <NoResultsYet /> : (
-        <>
-          <p className="hint" style={{ marginBottom: "1rem" }}>
-            Signal drift across generations — how emotional charge, controversy, fringe score, and
-            threat level evolve as the story propagates further from the ground truth.
-          </p>
-          <h3 className="subhead">Signal drift across generations</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={d.driftData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
-              <XAxis dataKey="gen" tick={{ fontSize: 12 }} />
-              <YAxis domain={[0, 1]} tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Legend />
-              <Line dataKey="Emotional charge" stroke="#BA7517" dot strokeWidth={2} />
-              <Line dataKey="Controversy" stroke="#7F77DD" dot strokeWidth={2} />
-              <Line dataKey="Fringe score" stroke="#D85A30" dot strokeWidth={2} />
-              <Line dataKey="Threat level" stroke="#E24B4A" dot strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </>
-      )}
-    </section>
+    <>
+      {/* Agent network topology */}
+      <section className="card">
+        <h2 className="card__title">Agent Network</h2>
+        {!simResult?.run_log ? (
+          <NoResultsYet />
+        ) : (
+          <>
+            <p className="hint" style={{ marginBottom: "1rem" }}>
+              Force-directed layout of the simulated social graph.{" "}
+              <strong>Triangles</strong> are hub agents (highest extraversion);{" "}
+              <strong>circles</strong> are regular agents. Colour indicates cluster.
+              Arrows show directed follow relationships.
+            </p>
+            <NetworkGraph runLog={simResult.run_log} />
+          </>
+        )}
+      </section>
+
+      {/* Signal drift line chart */}
+      <section className="card">
+        <h2 className="card__title">Signal Drift Across Generations</h2>
+        {!d ? (
+          <NoResultsYet />
+        ) : (
+          <>
+            <p className="hint" style={{ marginBottom: "1rem" }}>
+              How emotional charge, controversy, fringe score, and threat level evolve
+              as the story propagates further from the ground truth.
+            </p>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={d.driftData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
+                <XAxis dataKey="gen" tick={{ fontSize: 12 }} />
+                <YAxis domain={[0, 1]} tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Legend />
+                <Line dataKey="Emotional charge" stroke="#BA7517" dot strokeWidth={2} />
+                <Line dataKey="Controversy"      stroke="#7F77DD" dot strokeWidth={2} />
+                <Line dataKey="Fringe score"     stroke="#D85A30" dot strokeWidth={2} />
+                <Line dataKey="Threat level"     stroke="#E24B4A" dot strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </>
+        )}
+      </section>
+    </>
   );
 }
 
@@ -787,112 +1355,381 @@ function OverviewDashboard({ simResult }) {
 
 // ── Saved Runs ────────────────────────────────────────────────────────────────
 
+function getAllTextPosts(run_log) {
+  return run_log.steps.flatMap((s) =>
+    s.events
+      .filter((e) => e.new_post_text)
+      .map((e) => ({
+        id: e.new_post_id,
+        step: s.step,
+        author: e.agent_name,
+        action: e.action,
+        text: e.new_post_text,
+        generation: e.new_signals?.generation ?? 0,
+        emotional: e.new_signals?.emotional_charge ?? 0,
+        controversy: e.new_signals?.controversy ?? 0,
+        fringe: e.new_signals?.fringe_score ?? 0,
+        threat: e.new_signals?.threat_level ?? 0,
+      }))
+  );
+}
+
+function getMaxGenerationFromRun(run_log) {
+  return Math.max(
+    0,
+    ...run_log.steps.flatMap((s) =>
+      s.events
+        .filter((e) => e.new_signals)
+        .map((e) => e.new_signals.generation ?? 0)
+    )
+  );
+}
+
+function getAllFuseEvaluations(result) {
+  if (result?.runs?.length) {
+    return result.runs.flatMap((run) => run.fuse_evaluations || []);
+  }
+  return result?.fuse_evaluations || [];
+}
+
+function getAvgTotalDeviation(result) {
+  const evals = getAllFuseEvaluations(result);
+  if (!evals.length) return null;
+
+  const total = evals.reduce(
+    (sum, item) =>
+      sum + ((item.fuse_scores_vs_ground_truth || {}).Total_Deviation ?? 0),
+    0
+  );
+
+  return +(total / evals.length).toFixed(2);
+}
+
+function getTopDriftDimension(result) {
+  const evals = getAllFuseEvaluations(result);
+  if (!evals.length) return "N/A";
+
+  const averages = FUSE_DIMS.map((dim) => {
+    const total = evals.reduce(
+      (sum, item) =>
+        sum + ((item.fuse_scores_vs_ground_truth || {})[dim] ?? 0),
+      0
+    );
+    return {
+      dim,
+      score: total / evals.length,
+    };
+  });
+
+  const top = averages.sort((a, b) => b.score - a.score)[0];
+  return FUSE_LABELS[top.dim];
+}
+
+function formatRunTimestamp(runId) {
+  const match = runId?.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/);
+  if (!match) return runId;
+
+  const [, year, month, day, hour, minute, second] = match;
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
+
 function SavedRuns({ savedRuns, selectedRun, onSelectRun, onDeleteRun }) {
+  const [expandedRunId, setExpandedRunId] = useState(null);
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+
+  const clamp2 = {
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+  };
+
+  const visibleRuns = [...savedRuns]
+    .filter((result) => {
+      const q = query.trim().toLowerCase();
+      if (!q) return true;
+
+      const runId = result.run_log?.run_id?.toLowerCase() || "";
+      const gt = (result.ground_truth_content || "").toLowerCase();
+      return runId.includes(q) || gt.includes(q);
+    })
+    .sort((a, b) => {
+      if (sortBy === "highest-drift") {
+        return (getAvgTotalDeviation(b) ?? -1) - (getAvgTotalDeviation(a) ?? -1);
+      }
+
+      if (sortBy === "most-posts") {
+        return getAllTextPosts(b.run_log).length - getAllTextPosts(a.run_log).length;
+      }
+
+      // newest first
+      return (b.run_log?.run_id || "").localeCompare(a.run_log?.run_id || "");
+    });
+
   return (
     <section className="card">
-      <h2 className="card__title">Saved Runs</h2>
+      <div className="card__header">
+        <div>
+          <h2 className="card__title">Saved Runs</h2>
+          <div className="hint">
+            Browse past runs quickly, then open one to inspect full results.
+          </div>
+        </div>
+      </div>
+
       {savedRuns.length === 0 ? (
         <NoResultsYet />
       ) : (
-        savedRuns.map((result, idx) => {
-          const { run_log } = result;
-          const isSelected = selectedRun?.run_log?.run_id === run_log.run_id;
-          const textPosts = run_log.steps.flatMap((s) =>
-            s.events.filter((e) => e.new_post_text)
-          );
-          return (
-            <div
-              key={run_log.run_id}
-              className="history-run-card"
-              style={{marginBottom: idx < savedRuns.length - 1 ? "1.5rem" : 0,}}
+        <>
+          <div className="row" style={{ gap: "0.75rem", marginBottom: "1rem", flexWrap: "wrap" }}>
+            <input
+              className="input"
+              type="text"
+              placeholder="Search by run ID or ground truth..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              style={{ flex: "1 1 320px" }}
+            />
+
+            <select
+              className="input"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{ width: "220px" }}
             >
-              <div
-                className="card__header"
-                style={{
-                  marginBottom: "1rem",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: "1rem",
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <h3 className="subhead" style={{ margin: 0 }}>
-                    Run {savedRuns.length - idx}: {run_log.run_id}
-                  </h3>
+              <option value="newest">Sort: Newest first</option>
+              <option value="highest-drift">Sort: Highest deviation</option>
+              <option value="most-posts">Sort: Most posts</option>
+            </select>
+          </div>
 
-                  <div className="hint" style={{ marginTop: "0.25rem" }}>
-                    {run_log.agents.length} agents · {run_log.steps.length} steps · seed {run_log.config.seed}
-                  </div>
+          {visibleRuns.length === 0 ? (
+            <div className="callout">No saved runs match this search.</div>
+          ) : (
+            visibleRuns.map((result, idx) => {
+              const { run_log } = result;
+              const isSelected = selectedRun?.run_log?.run_id === run_log.run_id;
+              const isExpanded = expandedRunId === run_log.run_id;
 
-                  {isSelected && (
-                    <div className="pill" style={{ marginTop: "0.5rem", display: "inline-block" }}>
-                      Currently viewing
-                    </div>
-                  )}
+              const allPosts = getAllTextPosts(run_log);
+              const previewPosts = isExpanded ? allPosts : allPosts.slice(0, 2);
 
-                  <div className="hint" style={{ marginTop: "0.75rem", marginBottom: "0.25rem" }}>
-                    <strong>Ground truth:</strong>
-                  </div>
+              const avgTD = getAvgTotalDeviation(result);
+              const topDim = getTopDriftDimension(result);
+              const maxGen = getMaxGenerationFromRun(run_log);
+              const createdAt = formatRunTimestamp(run_log.run_id);
 
-                  <div className="history-ground-truth">
-                    {result.ground_truth_content}
-                  </div>
-                </div>
-
-                <div className="row" style={{ gap: "0.5rem", flexShrink: 0 }}>
-                  <button
-                    className="btn btn--ghost"
-                    type="button"
-                    onClick={() => onSelectRun(result)}
+              return (
+                <div
+                  key={run_log.run_id}
+                  className="history-run-card"
+                  style={{
+                    marginBottom: idx < visibleRuns.length - 1 ? "1.25rem" : 0,
+                    padding: "1rem",
+                    border: "1px solid var(--border)",
+                    borderRadius: "12px",
+                    background: "var(--surface-2, #fafafa)",
+                  }}
+                >
+                  <div
+                    className="row"
+                    style={{
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: "1rem",
+                      flexWrap: "wrap",
+                    }}
                   >
-                    Open this run
-                  </button>
-
-                  <button
-                    className="btn btn--ghost btn--danger"
-                    type="button"
-                    onClick={() => onDeleteRun(result.history_run_id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid--2" style={{ marginBottom: "0.75rem" }}>
-                <div><span className="label">Posts generated</span><div>{textPosts.length}</div></div>
-                <div>
-                  <span className="label">Max generation</span>
-                  <div>{Math.max(...run_log.steps.flatMap(s => s.events.filter(e => e.new_signals).map(e => e.new_signals.generation)), 0)}</div>
-                </div>
-              </div>
-
-              <div style={{ maxHeight: "350px", overflowY: "auto" }}>
-                {run_log.steps.flatMap((s) =>
-                  s.events
-                    .filter((e) => e.new_post_text)
-                    .map((e) => (
-                      <div
-                        key={e.new_post_id}
-                        style={{ padding: "0.5rem 0", borderBottom: "1px solid var(--border)" }}
-                      >
-                        <div className="hint" style={{ marginBottom: "0.25rem" }}>
-                          Step {s.step} · {e.agent_name} · {e.action} · Gen {e.new_signals.generation}
-                          {" · "}EC {e.new_signals.emotional_charge.toFixed(2)}
-                          {" · "}CT {e.new_signals.controversy.toFixed(2)}
-                          {" · "}FR {e.new_signals.fringe_score.toFixed(2)}
-                          {" · "}TL {e.new_signals.threat_level.toFixed(2)}
-                        </div>
-                        <div>{e.new_post_text}</div>
+                    <div style={{ flex: 1, minWidth: "260px" }}>
+                      <div style={{ fontSize: "1rem", fontWeight: 700 }}>
+                        {createdAt}
                       </div>
-                    ))
-                )}
-              </div>
 
-              {idx < savedRuns.length - 1 && <div className="divider" style={{ marginTop: "1.5rem" }} />}
-            </div>
-          );
-        })
+                      <div className="hint" style={{ marginTop: "0.2rem" }}>
+                        {run_log.run_id}
+                      </div>
+
+                      <div className="hint" style={{ marginTop: "0.45rem" }}>
+                        {run_log.agents.length} agents · {run_log.steps.length} steps · seed{" "}
+                        {run_log.config?.seed ?? "—"}
+                        {result.runs?.length > 1 ? ` · ${result.runs.length} parallel runs` : ""}
+                      </div>
+
+                      {isSelected && (
+                        <div
+                          className="pill"
+                          style={{ marginTop: "0.55rem", display: "inline-block" }}
+                        >
+                          Currently viewing
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="row" style={{ gap: "0.5rem", flexWrap: "wrap" }}>
+                      <button
+                        className="btn btn--ghost"
+                        type="button"
+                        onClick={() => onSelectRun(result)}
+                      >
+                        Open this run
+                      </button>
+
+                      <button
+                        className="btn btn--ghost"
+                        type="button"
+                        onClick={() =>
+                          setExpandedRunId(isExpanded ? null : run_log.run_id)
+                        }
+                      >
+                        {isExpanded ? "Collapse details" : "Expand details"}
+                      </button>
+
+                      <button
+                        className="btn btn--ghost btn--danger"
+                        type="button"
+                        onClick={() => {
+                          const ok = window.confirm(
+                            "Delete this saved run? This action cannot be undone."
+                          );
+                          if (ok) {
+                            onDeleteRun(result.history_run_id);
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    className="row"
+                    style={{
+                      gap: "0.75rem",
+                      flexWrap: "wrap",
+                      marginTop: "1rem",
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        minWidth: "160px",
+                        padding: "0.75rem",
+                        borderRadius: "10px",
+                        background: "white",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
+                      <div className="hint">Posts generated</div>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 700 }}>
+                        {allPosts.length}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        minWidth: "160px",
+                        padding: "0.75rem",
+                        borderRadius: "10px",
+                        background: "white",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
+                      <div className="hint">Max generation</div>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 700 }}>
+                        {maxGen}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        minWidth: "180px",
+                        padding: "0.75rem",
+                        borderRadius: "10px",
+                        background: "white",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
+                      <div className="hint">Avg Total Deviation</div>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#D85A30" }}>
+                        {avgTD ?? "N/A"}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        minWidth: "220px",
+                        padding: "0.75rem",
+                        borderRadius: "10px",
+                        background: "white",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
+                      <div className="hint">Top drift dimension</div>
+                      <div style={{ fontSize: "1rem", fontWeight: 700 }}>
+                        {topDim}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: "1rem" }}>
+                    <div className="label" style={{ marginBottom: "0.35rem" }}>
+                      Ground truth
+                    </div>
+                    <div
+                      className="history-ground-truth"
+                      style={isExpanded ? {} : clamp2}
+                    >
+                      {result.ground_truth_content}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="label" style={{ marginBottom: "0.5rem" }}>
+                      {isExpanded ? "All generated posts" : "Post preview"}
+                    </div>
+
+                    {previewPosts.length === 0 ? (
+                      <div className="hint">No generated posts found in this run.</div>
+                    ) : (
+                      previewPosts.map((post) => (
+                        <div
+                          key={post.id}
+                          style={{
+                            padding: "0.75rem 0",
+                            borderTop: "1px solid var(--border)",
+                          }}
+                        >
+                          <div className="hint" style={{ marginBottom: "0.3rem" }}>
+                            Step {post.step} · {post.author} · {post.action} · Gen {post.generation}
+                            {isExpanded && (
+                              <>
+                                {" · "}Emotional {post.emotional.toFixed(2)}
+                                {" · "}Controversy {post.controversy.toFixed(2)}
+                                {" · "}Fringe {post.fringe.toFixed(2)}
+                                {" · "}Threat {post.threat.toFixed(2)}
+                              </>
+                            )}
+                          </div>
+
+                          <div style={isExpanded ? {} : clamp2}>
+                            {post.text}
+                          </div>
+                        </div>
+                      ))
+                    )}
+
+                    {!isExpanded && allPosts.length > 2 && (
+                      <div className="hint" style={{ marginTop: "0.5rem" }}>
+                        + {allPosts.length - 2} more posts hidden
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </>
       )}
     </section>
   );
@@ -985,7 +1822,6 @@ export default function App() {
   const [simError, setSimError] = useState(null);
   const [selectedRun, setSelectedRun] = useState(null);
 
-  //new
   const [activeRunIndex, setActiveRunIndex] = useState(0);
 
   const withinLimit = groundTruth.length > 0 && groundTruth.length <= 6000;
@@ -1026,6 +1862,7 @@ export default function App() {
       console.error("Failed to load history:", e);
     }
   }
+
   useEffect(() => {
     loadSavedRunsFromBackend();
   }, []);
@@ -1097,7 +1934,6 @@ export default function App() {
       setSimResult(data);
       setSelectedRun(data);
 
-      //new
       setActiveRunIndex(0);
 
       await loadSavedRunsFromBackend();
@@ -1108,8 +1944,8 @@ export default function App() {
     }
   }
 
-  const currentRun = selectedRun?.runs && selectedRun.runs.length > 0 
-    ? selectedRun.runs[activeRunIndex] 
+  const currentRun = selectedRun?.runs && selectedRun.runs.length > 0
+    ? selectedRun.runs[activeRunIndex]
     : selectedRun;
 
   return (
