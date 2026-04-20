@@ -941,20 +941,12 @@ const FUSE_LABELS = {
 
 // Export for testing
 
-const HEXACO_LABELS = {
-  honesty_humility: "Honesty-Humility",
-  emotionality: "Emotionality",
-  extraversion: "Extraversion",
-  agreeableness: "Agreeableness",
-  conscientiousness: "Conscientiousness",
-  openness: "Openness",
-};
 const HEXACO_KEYS = Object.keys(HEXACO_LABELS);
 
-function HexacoBar({ profile }) {
+function HexacoProfileChart({ profile }) {
   if (!profile) return null;
   const data = HEXACO_KEYS.map((k) => ({
-    trait: HEXACO_LABELS[k].replace("-", "-\n"),
+    trait: HEXACO_LABELS[k],
     value: +((profile[k] ?? 0) * 10).toFixed(1),
   }));
   return (
@@ -1071,7 +1063,7 @@ function FuseAgentReport({ simResult }) {
           </div>
         </div>
 
-        {activeProfile && <HexacoBar profile={activeProfile} />}
+        {activeProfile && <HexacoProfileChart profile={activeProfile} />}
 
         <h3 className="subhead" style={{ marginTop: "1rem" }}>Average FUSE Dimensions</h3>
         <ResponsiveContainer width="100%" height={200}>
