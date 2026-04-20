@@ -1,6 +1,6 @@
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-export default function SimulationResults({ runLog, signalDrift }) {
+export default function SimulationResults({ runLog }) {
   if (!runLog) return null;
 
   const allEvents = runLog.steps.flatMap(s => s.events);

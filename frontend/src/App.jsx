@@ -5,6 +5,7 @@ import {
   LabelList, ErrorBar,
 } from "recharts";
 import "./App.css";
+import { computeParallelFuseStats } from "./fuseStats";
 
 function LogoMark({ size = 28 }) {
   return (
@@ -57,7 +58,18 @@ function Sidebar({ active, onNavigate, simResult }) {
   );
 }
 
-function Header({ title }) {
+function Header({ title, selectedRun }) {
+  function handleExport() {
+    if (!selectedRun) return;
+    const blob = new Blob([JSON.stringify(selectedRun, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `run_log_${selectedRun?.run_log?.run_id ?? "export"}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <header className="header">
       <div className="header__left">
@@ -69,8 +81,9 @@ function Header({ title }) {
         </div>
       </div>
       <div className="header__right">
-        <button className="btn btn--ghost" type="button">Import Dataset</button>
-        <button className="btn" type="button">Export Report</button>
+        <button className="btn" type="button" disabled={!selectedRun} onClick={handleExport}>
+          Export Report
+        </button>
       </div>
     </header>
   );
@@ -359,41 +372,6 @@ const FUSE_LABELS = {
 };
 
 // Export for testing
-export function computeParallelFuseStats(runs) {
-  const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-
-  const perRun = runs.map((run) => {
-    const evals = run.fuse_evaluations || [];
-    const dimAvgs = {};
-    FUSE_DIMS.forEach((dim) => {
-      dimAvgs[dim] = avg(evals.map((e) => (e.fuse_scores_vs_ground_truth || {})[dim] ?? 0));
-    });
-    dimAvgs.Total_Deviation = avg(
-      evals.map((e) => (e.fuse_scores_vs_ground_truth || {}).Total_Deviation ?? 0)
-    );
-    return { runId: run.run_log?.run_id ?? "unknown", ...dimAvgs };
-  });
-
-  const globalDims = FUSE_DIMS.map((dim) => {
-    const vals = perRun.map((r) => r[dim]);
-    if (vals.length === 0) return { dim, score: 0, error: [0, 0] };
-    const mean = avg(vals);
-    const min = Math.min(...vals);
-    const max = Math.max(...vals);
-    return {
-      dim,
-      score: +mean.toFixed(2),
-      error: [+(mean - min).toFixed(2), +(max - mean).toFixed(2)],
-    };
-  });
-
-  const runChart = perRun.map((r) => ({
-    run: r.runId.replace(/^\d{8}_\d{6}_/, ""),
-    td: +r.Total_Deviation.toFixed(2),
-  }));
-
-  return { runChart, globalDims };
-}
 
 const HEXACO_LABELS = {
   honesty_humility: "Honesty-Humility",
@@ -990,9 +968,9 @@ function ParallelFusePage({ simResult }) {
 export default function App() {
   const [page, setPage] = useState("new");
   const [groundTruth, setGroundTruth] = useState("");
-  const [newsId, setNewsId] = useState(null);
+  const [_newsId, setNewsId] = useState(null);
   const [config, setConfig] = useState({
-    agentCount: 6,
+    agentCount: 3,
     steps: 3,
     seed: 42,
     intraClusterP: 0.55,
@@ -1138,7 +1116,7 @@ export default function App() {
     <div className="app">
       <Sidebar active={page} onNavigate={setPage} simResult={selectedRun} />
       <main className="main">
-        <Header title="SoFake — Fake News Evolution Simulator" />
+        <Header title="SoFake — Fake News Evolution Simulator" selectedRun={selectedRun} />
         <div className="content">
 
           {selectedRun?.runs && selectedRun.runs.length > 1 && ["graph", "dashboard"].includes(page) && (

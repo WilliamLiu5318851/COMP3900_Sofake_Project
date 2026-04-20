@@ -1,6 +1,7 @@
 import os
 import sys
 import concurrent.futures
+import multiprocessing
 from typing import List
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -75,7 +76,9 @@ def simulate(req: SimulateRequest):
         req_dict = req.dict()
 
         # 2. start the parallel simulation
-        with concurrent.futures.ProcessPoolExecutor(max_workers=req.simulations) as executor:
+        # Use spawn context to avoid fork-safety issues with uvicorn's thread pool
+        mp_context = multiprocessing.get_context("spawn")
+        with concurrent.futures.ProcessPoolExecutor(max_workers=req.simulations, mp_context=mp_context) as executor:
             futures = [executor.submit(run_single, i, req_dict, api_keys) for i in range(req.simulations)]
             for future in concurrent.futures.as_completed(futures):
                 all_results.append(future.result())
