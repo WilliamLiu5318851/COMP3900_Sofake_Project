@@ -1,7 +1,5 @@
 import os
 import sys
-import concurrent.futures
-import multiprocessing
 from typing import List
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -75,13 +73,9 @@ def simulate(req: SimulateRequest):
 
         req_dict = req.dict()
 
-        # 2. start the parallel simulation
-        # Use spawn context to avoid fork-safety issues with uvicorn's thread pool
-        mp_context = multiprocessing.get_context("spawn")
-        with concurrent.futures.ProcessPoolExecutor(max_workers=req.simulations, mp_context=mp_context) as executor:
-            futures = [executor.submit(run_single, i, req_dict, api_keys) for i in range(req.simulations)]
-            for future in concurrent.futures.as_completed(futures):
-                all_results.append(future.result())
+        # 2. run simulations sequentially to avoid multiprocessing issues in Docker
+        for i in range(req.simulations):
+            all_results.append(run_single(i, req_dict, api_keys))
 
         # 3. return all runs; expose first run at top level for backward compat
         runs = [{"run_log": log, "signal_drift": drift} for log, drift in all_results]
