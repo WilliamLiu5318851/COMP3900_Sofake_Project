@@ -34,6 +34,7 @@ import argparse
 import uuid
 import time #new
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from dataclasses import asdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -212,7 +213,7 @@ def run_simulation(
         ground_truth = GROUND_TRUTH   # falls back to the hardcoded one
 
     #Modified
-    base_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    base_id = datetime.now(ZoneInfo("Australia/Sydney")).strftime("%Y%m%d_%H%M%S")
     run_id = f"{base_id}_{run_identifier}" if run_identifier else base_id
 
     out_path = os.path.join(out_dir, run_id)

@@ -11,7 +11,7 @@ services:
   backend:
     build: ./backend
     environment:
-      - DATABASE_URL=sqlite:///./news.db
+      - DATABASE_PATH=/app/data/news.db
       - AGENT_URL=http://agent:8001
       - FUSE_URL=http://fuse:8002
     ports:
