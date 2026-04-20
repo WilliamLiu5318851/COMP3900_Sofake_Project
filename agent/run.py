@@ -277,6 +277,12 @@ def run_simulation(
             ),
             "hubs": {str(cid): h.name for cid, h in network.hubs.items()},
         },
+        # ── NEW: serialise every directed edge for the frontend graph view ────
+        "network_edges": [
+            {"source": u, "target": v}
+            for u, v in network.graph.edges()
+        ],
+        # ─────────────────────────────────────────────────────────────────────
         "ground_truth": {
             "text":    ground_truth,
             "signals": signals_dict(seed_post.signals),
