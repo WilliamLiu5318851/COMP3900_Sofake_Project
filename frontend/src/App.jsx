@@ -101,7 +101,7 @@ function GroundTruthUploader({ value, onChange }) {
         </div>
       </div>
       <label className="label" htmlFor="groundTruth">
-        Paste the original, truthful newsreel (text-only)
+        Paste the original newsreel (text-only)
       </label>
       <textarea
         id="groundTruth"
@@ -113,7 +113,7 @@ function GroundTruthUploader({ value, onChange }) {
       />
       <div className="row row--between">
         <div className="hint">
-          Tip: Keep it factual and complete (who/what/when/where). No URLs (out of scope).
+          Tip: Keep it factual and complete (who/what/when/where). No URLs.
         </div>
         <div className="row">
           <button className="btn btn--ghost" type="button" onClick={() => onChange("")}>Clear</button>
