@@ -148,8 +148,9 @@ function SimulationConfig({ config, setConfig }) {
             type="number"
             min={5}
             max={200}
-            value={config.agentCount}
+            value={config.agentCount || ""}
             onChange={(e) => setConfig((c) => ({ ...c, agentCount: Number(e.target.value) }))}
+            style={config.agentCount === "" || config.agentCount === 0 ? { border: "1px solid red" } : {}}
           />
         </div>
         <div>
@@ -159,8 +160,9 @@ function SimulationConfig({ config, setConfig }) {
             type="number"
             min={1}
             max={500}
-            value={config.steps}
+            value={config.steps || ""}
             onChange={(e) => setConfig((c) => ({ ...c, steps: Number(e.target.value) }))}
+            style={config.steps === "" || config.steps === 0 ? { border: "1px solid red" } : {}}
           />
         </div>
         <div>
@@ -168,8 +170,9 @@ function SimulationConfig({ config, setConfig }) {
           <input
             className="input"
             type="number"
-            value={config.seed}
+            value={config.seed || ""}
             onChange={(e) => setConfig((c) => ({ ...c, seed: Number(e.target.value) }))}
+            style={config.seed === "" || config.seed === null ? { border: "1px solid red" } : {}}
           />
         </div>
         <div>
@@ -179,8 +182,9 @@ function SimulationConfig({ config, setConfig }) {
             type="number"
             min={1}
             max={30}
-            value={config.simulations}
+            value={config.simulations || ""}
             onChange={(e) => setConfig((c) => ({ ...c, simulations: Number(e.target.value) }))}
+            style={config.simulations === "" || config.simulations === 0 ? { border: "1px solid red" } : {}}
           />
         </div>
       </div>
@@ -198,8 +202,9 @@ function SimulationConfig({ config, setConfig }) {
             min={0}
             max={1}
             step={0.05}
-            value={config.intraClusterP}
+            value={config.intraClusterP || ""}
             onChange={(e) => setConfig((c) => ({ ...c, intraClusterP: Number(e.target.value) }))}
+            style={config.intraClusterP === "" || config.intraClusterP === 0 ? { border: "1px solid red" } : {}}
           />
           <div className="hint" style={{ marginTop: 4 }}>
             Erdős–Rényi edge probability within each cluster (0–1). Higher = denser clusters.
@@ -213,8 +218,9 @@ function SimulationConfig({ config, setConfig }) {
             min={1}
             max={10}
             step={1}
-            value={config.interClusterM}
+            value={config.interClusterM || ""}
             onChange={(e) => setConfig((c) => ({ ...c, interClusterM: Number(e.target.value) }))}
+            style={config.interClusterM === "" || config.interClusterM === 0 ? { border: "1px solid red" } : {}}
           />
           <div className="hint" style={{ marginTop: 4 }}>
             Edges each hub forms to existing hubs (Barabási–Albert style). Controls cross-cluster connectivity.
@@ -228,8 +234,10 @@ function SimulationConfig({ config, setConfig }) {
             min={2}
             max={50}
             step={1}
-            value={config.agentsPerCluster}
+            value={config.agentsPerCluster || ""}
             onChange={(e) => setConfig((c) => ({ ...c, agentsPerCluster: Number(e.target.value) }))}
+            style={config.agentsPerCluster === "" || config.agentsPerCluster === 0 ? { border: "1px solid red" } : {}}
+
           />
           <div className="hint" style={{ marginTop: 4 }}>
             Target cluster size — determines the number of clusters (≈ agents ÷ this value).
@@ -243,8 +251,9 @@ function SimulationConfig({ config, setConfig }) {
             min={0}
             max={1}
             step={0.05}
-            value={config.weakTieP}
+            value={config.weakTieP || ""}
             onChange={(e) => setConfig((c) => ({ ...c, weakTieP: Number(e.target.value) }))}
+            style={config.weakTieP === "" || config.weakTieP === 0 ? { border: "1px solid red" } : {}}
           />
           <div className="hint" style={{ marginTop: 4 }}>
             Probability of forming weak ties between agents in different clusters (0–1).
@@ -1809,6 +1818,16 @@ export default function App() {
 
   const withinLimit = groundTruth.length > 0 && groundTruth.length <= 6000;
 
+  const configValid = 
+  config.agentCount !== "" && config.agentCount > 0 &&
+  config.steps !== "" && config.steps > 0 &&
+  config.seed !== "" && config.seed !== null &&
+  config.simulations !== "" && config.simulations > 0 &&
+  config.intraClusterP !== "" &&
+  config.interClusterM !== "" && config.interClusterM > 0 &&
+  config.agentsPerCluster !== "" && config.agentsPerCluster > 0 &&
+  config.weakTieP !== "";
+
   async function loadSavedRunsFromBackend() {
     try {
       const listRes = await fetch("/api/history");
@@ -1960,7 +1979,7 @@ export default function App() {
             <>
               <GroundTruthUploader value={groundTruth} onChange={setGroundTruth} />
               <SimulationConfig config={config} setConfig={setConfig} />
-              <RunActions canRun={withinLimit} loading={loading} onRun={handleRun} />
+              <RunActions canRun={withinLimit && configValid} loading={loading} onRun={handleRun} />
               {simError && <div className="callout callout--warn">Error: {simError}</div>}
               {simResult && (
                 <div className="callout">
