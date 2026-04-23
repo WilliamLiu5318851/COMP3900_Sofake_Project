@@ -1729,17 +1729,6 @@ function SavedRuns({ savedRuns, selectedRun, onSelectRun, onDeleteRun }) {
   );
 }
 
-// ── Placeholder ───────────────────────────────────────────────────────────────
-
-function PlaceholderPage({ title, children }) {
-  return (
-    <section className="card">
-      <h2 className="card__title">{title}</h2>
-      <div className="hint">{children}</div>
-    </section>
-  );
-}
-
 // ── Parallel FUSE Page ────────────────────────────────────────────────────────
 
 function ParallelFusePage({ simResult }) {
@@ -1799,7 +1788,6 @@ function ParallelFusePage({ simResult }) {
 export default function App() {
   const [page, setPage] = useState("new");
   const [groundTruth, setGroundTruth] = useState("");
-  const [_newsId, setNewsId] = useState(null);
   const [config, setConfig] = useState({
     agentCount: 3,
     steps: 3,
