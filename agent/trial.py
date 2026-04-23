@@ -1,4 +1,5 @@
-from prompts import *
+from prompts import classify_post_signals, agent_process_post, get_post_signals
+from structs import Post, Agent, HEXACOProfile
 
 # ── Trial Script ──────────────────────────────────────────────────────────────
 
@@ -15,9 +16,7 @@ have not yet issued any official guidance in response to the study.
 
     # Seed the ground truth as the first post
     seed_signals = classify_post_signals(
-        post_text=ground_truth,
-        generation=0,
-        source_post_id="ground_truth"
+        post_text=ground_truth, generation=0, source_post_id="ground_truth"
     )
 
     seed_post = Post(
@@ -47,7 +46,7 @@ have not yet issued any official guidance in response to the study.
     # Print seed post signals
     print("\nGround Truth Post:")
     print(f"  {seed_post.text}")
-    print(f"\nPost Signals:")
+    print("\nPost Signals:")
     print(f"  emotional_charge: {seed_signals.emotional_charge:.2f}")
     print(f"  controversy:      {seed_signals.controversy:.2f}")
     print(f"  fringe_score:     {seed_signals.fringe_score:.2f}")
@@ -61,12 +60,22 @@ have not yet issued any official guidance in response to the study.
         print(f"\nAgent's post:\n  {action_result.text}")
 
         # Classify the new post's signals
-        new_signals = get_post_signals(action_result.action, action_result.text, seed_post)
+        new_signals = get_post_signals(
+            action_result.action, action_result.text, seed_post
+        )
         print(f"\nNew Post Signals (generation {new_signals.generation}):")
-        print(f"  emotional_charge: {new_signals.emotional_charge:.2f}  (was {seed_signals.emotional_charge:.2f})")
-        print(f"  controversy:      {new_signals.controversy:.2f}  (was {seed_signals.controversy:.2f})")
-        print(f"  fringe_score:     {new_signals.fringe_score:.2f}  (was {seed_signals.fringe_score:.2f})")
-        print(f"  threat_level:     {new_signals.threat_level:.2f}  (was {seed_signals.threat_level:.2f})")
+        print(
+            f"  emotional_charge: {new_signals.emotional_charge:.2f}  (was {seed_signals.emotional_charge:.2f})"
+        )
+        print(
+            f"  controversy:      {new_signals.controversy:.2f}  (was {seed_signals.controversy:.2f})"
+        )
+        print(
+            f"  fringe_score:     {new_signals.fringe_score:.2f}  (was {seed_signals.fringe_score:.2f})"
+        )
+        print(
+            f"  threat_level:     {new_signals.threat_level:.2f}  (was {seed_signals.threat_level:.2f})"
+        )
     else:
         print("  (no text generated for this action)")
 

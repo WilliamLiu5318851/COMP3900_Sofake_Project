@@ -6,9 +6,9 @@ from pydantic import BaseModel
 
 from database.db import init_db, get_news_by_id, insert_simulation_run
 from services.news_service import (
-    create_news, 
-    list_news, 
-    list_history_runs, 
+    create_news,
+    list_news,
+    list_history_runs,
     get_history_run_detail,
     delete_history_run,
 )
@@ -81,6 +81,7 @@ def get_news():
 
 MAX_FUSE_EVALS = 20
 
+
 def _score_run(run_log: dict, ground_truth: str) -> list:
     post_texts: dict = {"ground_truth": ground_truth}
     evolved_posts = []
@@ -90,14 +91,16 @@ def _score_run(run_log: dict, ground_truth: str) -> list:
             if text:
                 pid = event.get("new_post_id")
                 post_texts[pid] = text
-                evolved_posts.append({
-                    "post_id": pid,
-                    "author": event.get("agent_name"),
-                    "action": event.get("action"),
-                    "step": step.get("step"),
-                    "text": text,
-                    "source_post_id": event.get("source_post_id"),
-                })
+                evolved_posts.append(
+                    {
+                        "post_id": pid,
+                        "author": event.get("agent_name"),
+                        "action": event.get("action"),
+                        "step": step.get("step"),
+                        "text": text,
+                        "source_post_id": event.get("source_post_id"),
+                    }
+                )
 
     if len(evolved_posts) > MAX_FUSE_EVALS:
         step_size = len(evolved_posts) // MAX_FUSE_EVALS
@@ -139,7 +142,7 @@ def simulate(req: SimulateRequest):
         news_content = get_news_by_id(req.news_id)
         if not news_content:
             raise HTTPException(status_code=404, detail="News Content not found")
-        
+
         saved_ground_truth = news_content[1]
 
         payload = {
@@ -156,19 +159,26 @@ def simulate(req: SimulateRequest):
         }
 
         with httpx.Client(timeout=600.0) as client:
-            response = client.post(
-                f"{AGENT_URL}/api/simulate",
-                json=payload
-            )
+            response = client.post(f"{AGENT_URL}/api/simulate", json=payload)
             response.raise_for_status()
             sim_result = response.json()
 
         scored_runs = []
-        for run in sim_result.get("runs", [{"run_log": sim_result.get("run_log", {}), "signal_drift": sim_result.get("signal_drift", {})}]):
-            scored_runs.append({
-                **run,
-                "fuse_evaluations": _score_run(run["run_log"], saved_ground_truth),
-            })
+        for run in sim_result.get(
+            "runs",
+            [
+                {
+                    "run_log": sim_result.get("run_log", {}),
+                    "signal_drift": sim_result.get("signal_drift", {}),
+                }
+            ],
+        ):
+            scored_runs.append(
+                {
+                    **run,
+                    "fuse_evaluations": _score_run(run["run_log"], saved_ground_truth),
+                }
+            )
 
         result = {
             **sim_result,
@@ -197,7 +207,7 @@ def simulate(req: SimulateRequest):
         raise HTTPException(status_code=502, detail=f"Agent error: {e.response.text}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 
 @app.get("/api/history/{run_id}")
 def get_history_run_detail_api(run_id: int):
@@ -205,10 +215,12 @@ def get_history_run_detail_api(run_id: int):
         return get_history_run_detail(run_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    
+
+
 @app.get("/api/history")
 def get_history():
     return list_history_runs()
+
 
 @app.delete("/api/history/{run_id}")
 def delete_history_run_api(run_id: int):

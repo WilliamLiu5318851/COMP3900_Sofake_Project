@@ -1,4 +1,5 @@
-from network import *
+from network import build_network
+from prompts import agent_process_post
 
 net = build_network(agents)
 print(net.summary())

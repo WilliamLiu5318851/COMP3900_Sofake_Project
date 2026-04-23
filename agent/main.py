@@ -33,26 +33,27 @@ def root():
 def healthcheck():
     return {"status": "healthy"}
 
+
 def run_single(index: int, req_dict: dict, api_keys: List[str]):
     # assign API Key
     current_key = api_keys[index % len(api_keys)]
     os.environ["GROQ_API_KEY"] = current_key
-    
-    #child_seed = (req_dict['seed'] + index) if req_dict['seed'] is not None else None
-    child_seed = req_dict['seed']
+
+    # child_seed = (req_dict['seed'] + index) if req_dict['seed'] is not None else None
+    child_seed = req_dict["seed"]
 
     # Call run_simulation
     run_log, signal_drift = run_simulation(
-        n_agents=req_dict['agent_count'],
-        n_steps=req_dict['steps'],
+        n_agents=req_dict["agent_count"],
+        n_steps=req_dict["steps"],
         seed=child_seed,
         out_dir="runs",
-        ground_truth=req_dict['ground_truth'],
-        run_identifier=f"run{index:02d}", # generate run00, run01 files
-        intra_cluster_p=req_dict['intra_cluster_p'],
-        inter_cluster_m=req_dict['inter_cluster_m'],
-        agents_per_cluster=req_dict['agents_per_cluster'],
-        weak_tie_p=req_dict['weak_tie_p']
+        ground_truth=req_dict["ground_truth"],
+        run_identifier=f"run{index:02d}",  # generate run00, run01 files
+        intra_cluster_p=req_dict["intra_cluster_p"],
+        inter_cluster_m=req_dict["inter_cluster_m"],
+        agents_per_cluster=req_dict["agents_per_cluster"],
+        weak_tie_p=req_dict["weak_tie_p"],
     )
     return run_log, signal_drift
 
@@ -89,6 +90,6 @@ def simulate(req: SimulateRequest):
 
     except Exception as e:
         import traceback
-        traceback.print_exc() # debug in the terminal
+
+        traceback.print_exc()  # debug in the terminal
         raise HTTPException(status_code=500, detail=str(e))
-    

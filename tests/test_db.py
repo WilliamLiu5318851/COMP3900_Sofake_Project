@@ -1,7 +1,11 @@
 import pytest
-import os
-import tempfile
-from backend.database.db import init_db, insert_news, get_all_news, insert_simulation_run, get_simulation_by_run_id
+from backend.database.db import (
+    init_db,
+    insert_news,
+    get_all_news,
+    insert_simulation_run,
+    get_simulation_by_run_id,
+)
 import json
 
 
@@ -12,6 +16,7 @@ def isolated_db(tmp_path, monkeypatch):
     so tests never touch the real news.db.
     """
     import backend.database.db as db_module
+
     db_file = str(tmp_path / "test_news.db")
     monkeypatch.setattr(db_module, "DB_NAME", db_file)
     yield
@@ -60,7 +65,7 @@ def test_parallel_runs_persistence():
     """Verify the persistence of parallel simulation runs handling massive payload."""
     init_db()
     news_id = insert_news("Test ground truth for parallel runs")
-    
+
     # Create a massive dummy result_json object matching new structure
     dummy_result_json = {
         "run_log": {"run_id": "first_run_id"},
@@ -70,19 +75,19 @@ def test_parallel_runs_persistence():
             {
                 "run_log": {"run_id": "run_0"},
                 "signal_drift": {"post_1": []},
-                "fuse_evaluations": [{"Total_Deviation": 3.1, "post_id": "post_1"}]
+                "fuse_evaluations": [{"Total_Deviation": 3.1, "post_id": "post_1"}],
             },
             {
                 "run_log": {"run_id": "run_1"},
                 "signal_drift": {"post_2": []},
                 "fuse_evaluations": [
                     {"Total_Deviation": 4.5, "post_id": "post_2"},
-                    {"Total_Deviation": 2.2, "post_id": "post_3"}
-                ]
-            }
-        ]
+                    {"Total_Deviation": 2.2, "post_id": "post_3"},
+                ],
+            },
+        ],
     }
-    
+
     # 精准匹配 db.py 中的 10 个参数，并且 result_json 传入 dict (底层会自动 dumps)
     run_id = insert_simulation_run(
         news_id=news_id,
@@ -94,16 +99,16 @@ def test_parallel_runs_persistence():
         agents_per_cluster=10,
         weak_tie_p=0.05,
         simulations=2,
-        result_json=dummy_result_json
+        result_json=dummy_result_json,
     )
-    
+
     assert run_id is not None
     assert run_id > 0
-    
+
     # 直接从数据库底层读取，验证数据序列化与反序列化的完整性
     row = get_simulation_by_run_id(run_id)
     retrieved_json = json.loads(row[11])  # 索引 11 是 result_json 字段
-    
-    assert len(retrieved_json['runs']) == 2
+
+    assert len(retrieved_json["runs"]) == 2
     assert retrieved_json["runs"][1]["fuse_evaluations"][1]["post_id"] == "post_3"
     assert retrieved_json == dummy_result_json

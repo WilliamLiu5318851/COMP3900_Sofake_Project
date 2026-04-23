@@ -1,6 +1,4 @@
 import pytest
-import os
-import tempfile
 from backend.database.db import init_db, insert_news, get_all_news
 
 
@@ -11,6 +9,7 @@ def isolated_db(tmp_path, monkeypatch):
     so tests never touch the real news.db.
     """
     import backend.database.db as db_module
+
     db_file = str(tmp_path / "test_news.db")
     monkeypatch.setattr(db_module, "DB_NAME", db_file)
     yield

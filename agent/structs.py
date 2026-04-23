@@ -1,13 +1,12 @@
 import os
 import random
-import json
 import time
-from dataclasses import asdict, dataclass, field
-from urllib import response
+from dataclasses import dataclass, field
 from groq import Groq, RateLimitError
 
 
 # [MODIFIED] removed the global client initialisation
+
 
 def llm_call(prompt: str) -> str:
     # [NEW] Initialise client inside the function，make sure it can capture api keys inserted by os.fork()
@@ -21,15 +20,19 @@ def llm_call(prompt: str) -> str:
         try:
             response = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
             )
-            return response.choices[0].message.content # type: ignore
+            return response.choices[0].message.content  # type: ignore
         except RateLimitError as e:
             if attempt < max_retries - 1:
-                print(f"⚠️ [PID: {os.getpid()}] Reached API limit, try again after 3 seconds (Number of {attempt + 1})...")
+                print(
+                    f"⚠️ [PID: {os.getpid()}] Reached API limit, try again after 3 seconds (Number of {attempt + 1})..."
+                )
                 time.sleep(3)
             else:
                 raise e
+
+
 # ── Data Models ───────────────────────────────────────────────────────────────
 @dataclass
 class HEXACOProfile:
