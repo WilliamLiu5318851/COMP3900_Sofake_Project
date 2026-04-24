@@ -363,6 +363,12 @@ html, body, #root {
   border-color: transparent;
 }
 
+.btn--ghost.is-active {
+  background-color: var(--accent, #1D9E75);
+  color: white;
+  border-color: var(--accent, #1D9E75);
+}
+
 .btn--danger {
  color: #d32f2f;
   border-color: #d32f2f;
