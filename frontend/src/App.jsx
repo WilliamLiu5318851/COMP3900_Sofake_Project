@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -403,7 +403,7 @@ function AgentTooltip({ agent, screenX, screenY, containerRef }) {
     if (top  + tt.height > ct.height) top  = screenY - tt.height;
     if (top < 0) top = 4;
     setPos({ left, top }); // eslint-disable-line react-hooks/set-state-in-effect
-  }, [screenX, screenY]);
+  }, [screenX, screenY, containerRef]);
 
   const p = agent.profile;
 
@@ -551,47 +551,10 @@ function NetworkGraph({ runLog }) {
     return () => cancelAnimationFrame(frameRef.current);
   }, [runLog]);
 
-  // ── Coordinate helpers ────────────────────────────────────────────────────
-  // eslint-disable-next-line no-unused-vars
-  function clientToSvg(cx, cy) {
-    const rect = svgRef.current.getBoundingClientRect();
-    const t    = transformRef.current;
-    return {
-      x: (cx - rect.left - t.x) / t.k,
-      y: (cy - rect.top  - t.y) / t.k,
-    };
-  }
-
   function clientToContainer(cx, cy) {
     const rect = containerRef.current.getBoundingClientRect();
     return { x: cx - rect.left, y: cy - rect.top };
   }
-
-  // ── Wheel zoom ────────────────────────────────────────────────────────────
-  // eslint-disable-next-line no-unused-vars
-  function handleWheel(e) {
-    e.preventDefault();
-  
-    // Two-finger pinch on trackpad: ctrlKey is true and deltaY represents zoom delta
-    // Two-finger scroll on trackpad: ctrlKey is false, deltaY is scroll
-    // We only zoom on pinch (ctrlKey), ignore regular scroll
-    if (!e.ctrlKey) return;
-  
-    const factor = e.deltaY < 0 ? 1.12 : 0.89;
-    const rect   = svgRef.current.getBoundingClientRect();
-    const t      = transformRef.current;
-    const mx     = e.clientX - rect.left;
-    const my     = e.clientY - rect.top;
-    const newK   = Math.min(8, Math.max(0.2, t.k * factor));
-    const next   = {
-      x: mx - (mx - t.x) * (newK / t.k),
-      y: my - (my - t.y) * (newK / t.k),
-      k: newK,
-    };
-    transformRef.current = next;
-    setTransform(next);
-  }
-
 
   // ── Hover ─────────────────────────────────────────────────────────────────
   function handleNodeMouseEnter(e, agent) {

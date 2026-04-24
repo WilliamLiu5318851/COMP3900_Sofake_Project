@@ -30,7 +30,10 @@ export default defineConfig([
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
       "react/no-unescaped-entities": "off",
-      "no-unused-vars": "off",
+      "no-unused-vars": ["warn", { 
+        "varsIgnorePattern": "^[A-Z]|^_",
+        "args": "none"
+      }],
     },
   },
 ])
