@@ -6,16 +6,19 @@ from prompts import describe_trait
 
 # ── Prompt Construction ───────────────────────────────────────────────────────
 
+
 def build_initial_memory_prompt(agent: Agent, visible_context: str) -> str:
     p = agent.profile
-    personality_block = "\n".join([
-        f"- Honesty/Integrity: {describe_trait('honesty_humility', p.honesty_humility)}",
-        f"- Emotional Reactivity: {describe_trait('emotionality', p.emotionality)}",
-        f"- Social Reach/Activity: {describe_trait('extraversion', p.extraversion)}",
-        f"- Agreeableness: {describe_trait('agreeableness', p.agreeableness)}",
-        f"- Diligence/Fact-checking: {describe_trait('conscientiousness', p.conscientiousness)}",
-        f"- Openness to Fringe Ideas: {describe_trait('openness', p.openness)}",
-    ])
+    personality_block = "\n".join(
+        [
+            f"- Honesty/Integrity: {describe_trait('honesty_humility', p.honesty_humility)}",
+            f"- Emotional Reactivity: {describe_trait('emotionality', p.emotionality)}",
+            f"- Social Reach/Activity: {describe_trait('extraversion', p.extraversion)}",
+            f"- Agreeableness: {describe_trait('agreeableness', p.agreeableness)}",
+            f"- Diligence/Fact-checking: {describe_trait('conscientiousness', p.conscientiousness)}",
+            f"- Openness to Fringe Ideas: {describe_trait('openness', p.openness)}",
+        ]
+    )
     return f"""
 You are simulating the initial memory of a social media user.
 
@@ -54,6 +57,7 @@ Correct format:
 
 # ── Robust JSON Parser ────────────────────────────────────────────────────────
 
+
 def _parse_memory_response(raw: str) -> list[str]:
     """
     Robustly parse the LLM memory response even when it is malformed JSON.
@@ -70,7 +74,7 @@ def _parse_memory_response(raw: str) -> list[str]:
     start = cleaned.find("[")
     end = cleaned.rfind("]")
     if start != -1 and end != -1 and end > start:
-        cleaned = cleaned[start:end + 1]
+        cleaned = cleaned[start : end + 1]
 
     # 3. Fix missing commas between consecutive string elements  "...\n"..."
     cleaned = re.sub(r'"\s*\n\s*"', '",\n"', cleaned)
@@ -95,15 +99,15 @@ def _parse_memory_response(raw: str) -> list[str]:
     # 6. Fallback: extract anything inside double quotes
     lines = re.findall(r'"([^"]+)"', cleaned)
     if lines:
-        return [l.strip() for l in lines if l.strip()]
+        return [line.strip() for line in lines if line.strip()]
 
     # 7. Last resort: split on newlines, strip punctuation/brackets
     lines = [
-        l.strip().strip('"').strip("'").strip(",").strip()
-        for l in raw.splitlines()
-        if l.strip() and l.strip() not in ("[", "]", '"""', "'''", "```", "```json")
+        line.strip().strip('"').strip("'").strip(",").strip()
+        for line in raw.splitlines()
+        if line.strip() and line.strip() not in ("[", "]", '"""', "'''", "```", "```json")
     ]
-    lines = [l for l in lines if l]
+    lines = [line for line in lines if line]
     if lines:
         return lines
 
@@ -111,6 +115,7 @@ def _parse_memory_response(raw: str) -> list[str]:
 
 
 # ── Core Functions ────────────────────────────────────────────────────────────
+
 
 def generate_initial_memory(agent: Agent, visible_context: str) -> list[str]:
     prompt = build_initial_memory_prompt(agent, visible_context)

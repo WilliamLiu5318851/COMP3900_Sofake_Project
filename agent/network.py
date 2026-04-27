@@ -26,23 +26,24 @@ SocialNetwork fields:
 import math
 import random
 import networkx as nx
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from structs import Agent
-from prompts import *
 
 
 # ── Network Config ─────────────────────────────────────────────────────────────
 
+
 @dataclass
 class NetworkConfig:
-    agents_per_cluster: int = 10   # Controls how many hubs are elected
-    inter_cluster_m: int   = 2     # BA-style edges per hub to other hubs
-    p_weak: float          = 0.02  # Base probability of weak tie edges
-    followback_p: float    = 0.1   # Probability of hub following back its followers (in build_agent_hub_edges)
-    intra_cluster_p: float = 0.5   # Probability of edges between agents in the same cluster (in build_intra_cluster_edges)
+    agents_per_cluster: int = 10  # Controls how many hubs are elected
+    inter_cluster_m: int = 2  # BA-style edges per hub to other hubs
+    p_weak: float = 0.02  # Base probability of weak tie edges
+    followback_p: float = 0.1  # Probability of hub following back its followers (in build_agent_hub_edges)
+    intra_cluster_p: float = 0.5  # Probability of edges between agents in the same cluster (in build_intra_cluster_edges)
 
 
 # ── HEXACO Cosine Similarity ───────────────────────────────────────────────────
+
 
 def _profile_vec(agent: Agent) -> list[float]:
     p = agent.profile
@@ -64,7 +65,7 @@ def cosine_similarity(a: Agent, b: Agent) -> float:
     """
     va = _profile_vec(a)
     vb = _profile_vec(b)
-    dot  = sum(x * y for x, y in zip(va, vb))
+    dot = sum(x * y for x, y in zip(va, vb))
     norm_a = math.sqrt(sum(x * x for x in va))
     norm_b = math.sqrt(sum(x * x for x in vb))
     if norm_a == 0 or norm_b == 0:
@@ -73,6 +74,7 @@ def cosine_similarity(a: Agent, b: Agent) -> float:
 
 
 # ── Hub Election ───────────────────────────────────────────────────────────────
+
 
 def elect_hubs(agents: list[Agent], agents_per_cluster: int) -> list[Agent]:
     """
@@ -88,6 +90,7 @@ def elect_hubs(agents: list[Agent], agents_per_cluster: int) -> list[Agent]:
 
 
 # ── Agent → Hub Following ──────────────────────────────────────────────────────
+
 
 def build_agent_hub_edges(
     G: nx.DiGraph,
@@ -117,13 +120,13 @@ def build_agent_hub_edges(
 
         sims = [cosine_similarity(agent, hub) for hub in hubs]
         total_sim = sum(sims)
-        
+
         # Agent always follows the most similar hub
         best_hub_idx = max(range(len(hubs)), key=lambda i: sims[i])
         best_hub = hubs[best_hub_idx]
         G.add_edge(agent.id, best_hub.id)
         hub_followers[best_hub.id].append(agent)
-        
+
         # Agent has a chance to follow other hubs with probability proportional to similarity
         for i, hub in enumerate(hubs):
             if i == best_hub_idx:
@@ -133,6 +136,7 @@ def build_agent_hub_edges(
                 G.add_edge(agent.id, hub.id)
                 hub_followers[hub.id].append(agent)
     return hub_followers
+
 
 def build_intra_cluster_edges(
     G: nx.DiGraph,
@@ -154,13 +158,15 @@ def build_intra_cluster_edges(
     """
     for followers in hub_followers.values():
         for i, agent_a in enumerate(followers):
-            for agent_b in followers[i + 1:]:
+            for agent_b in followers[i + 1 :]:
                 if random.random() < intra_cluster_p:
                     G.add_edge(agent_a.id, agent_b.id)
                 if random.random() < intra_cluster_p:
                     G.add_edge(agent_b.id, agent_a.id)
 
+
 # ── Hub → Agent Follow-back ────────────────────────────────────────────────────
+
 
 def build_hub_followback_edges(
     G: nx.DiGraph,
@@ -192,10 +198,11 @@ def build_hub_followback_edges(
     k = max(1, math.ceil(0.1 * top_decile_count))
 
     for followee in ranked[:k]:
-        G.add_edge(hub.id, followee.id)   # hub follows back
+        G.add_edge(hub.id, followee.id)  # hub follows back
 
 
 # ── Hub ↔ Hub Edges (mutual BA-style) ─────────────────────────────────────────
+
 
 def build_inter_hub_edges(
     G: nx.DiGraph,
@@ -233,6 +240,7 @@ def build_inter_hub_edges(
 
 # ── Weak Tie Edges (directed, extraversion-weighted) ──────────────────────────
 
+
 def build_weak_tie_edges(
     G: nx.DiGraph,
     hub_followers: dict[int, list[Agent]],
@@ -257,14 +265,22 @@ def build_weak_tie_edges(
     community_ids = list(hub_followers.keys())
 
     for i, hub_a in enumerate(community_ids):
-        for hub_b in community_ids[i + 1:]:
+        for hub_b in community_ids[i + 1 :]:
             for agent_a in hub_followers[hub_a]:
                 for agent_b in hub_followers[hub_b]:
                     if agent_a.id in hub_ids and agent_b.id in hub_ids:
                         continue
 
-                    p_ab = p_weak * agent_a.profile.extraversion * agent_b.profile.extraversion
-                    p_ba = p_weak * agent_b.profile.extraversion * agent_a.profile.extraversion
+                    p_ab = (
+                        p_weak
+                        * agent_a.profile.extraversion
+                        * agent_b.profile.extraversion
+                    )
+                    p_ba = (
+                        p_weak
+                        * agent_b.profile.extraversion
+                        * agent_a.profile.extraversion
+                    )
 
                     if random.random() < p_ab:
                         G.add_edge(agent_a.id, agent_b.id)
@@ -274,12 +290,13 @@ def build_weak_tie_edges(
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
+
 @dataclass
 class SocialNetwork:
     graph: nx.DiGraph
-    clusters: dict[int, list[Agent]]   # hub_id -> agents who follow that hub
-    hubs: dict[int, Agent]             # hub_id -> Agent (hub_id == agent.id)
-    agent_cluster: dict[int, int]      # agent_id -> primary hub_id (most similar)
+    clusters: dict[int, list[Agent]]  # hub_id -> agents who follow that hub
+    hubs: dict[int, Agent]  # hub_id -> Agent (hub_id == agent.id)
+    agent_cluster: dict[int, int]  # agent_id -> primary hub_id (most similar)
 
     def successors(self, agent_id: int) -> list[int]:
         """Agents that agent_id follows (successor nodes in DiGraph)."""
@@ -293,10 +310,10 @@ class SocialNetwork:
         return self.agent_cluster[agent_id]
 
     def summary(self) -> str:
-        n_nodes   = self.graph.number_of_nodes()
-        n_edges   = self.graph.number_of_edges()
-        n_hubs    = len(self.hubs)
-        avg_out   = (n_edges / n_nodes) if n_nodes else 0
+        n_nodes = self.graph.number_of_nodes()
+        n_edges = self.graph.number_of_edges()
+        n_hubs = len(self.hubs)
+        avg_out = (n_edges / n_nodes) if n_nodes else 0
         hub_names = {hid: h.name for hid, h in self.hubs.items()}
         lines = [
             f"Nodes:        {n_nodes}",
@@ -308,7 +325,9 @@ class SocialNetwork:
         return "\n".join(lines)
 
 
-def build_network(agents: list[Agent], config: NetworkConfig | None = None) -> SocialNetwork:
+def build_network(
+    agents: list[Agent], config: NetworkConfig | None = None
+) -> SocialNetwork:
     """
     Build the directed hybrid social network from a list of agents.
 

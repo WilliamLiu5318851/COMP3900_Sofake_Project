@@ -22,8 +22,8 @@ Output:
 
 Usage:
     python run.py                            # defaults: 20 agents, 7 steps
-    python run.py --agents 30 --steps 10    
-    python run.py --seed 42 --out my_run    
+    python run.py --agents 30 --steps 10
+    python run.py --seed 42 --out my_run
 """
 
 import os
@@ -31,11 +31,9 @@ import sys
 import json
 import random
 import argparse
-import uuid
-import time #new
+import time  # new
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from dataclasses import asdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -62,21 +60,48 @@ have not yet issued any official guidance in response to the study.
 # ── Agent Names ────────────────────────────────────────────────────────────────
 
 NAMES = [
-    "Alex","Blake","Casey","Dana","Eden","Finn","Gray","Harper",
-    "Indigo","Jordan","Kai","Lane","Morgan","Nova","Oakley","Parker",
-    "Quinn","Reese","Sage","Taylor","Uma","Vale","Wren","Xen",
-    "Yael","Zion","Arlo","Bree","Cleo","Drew",
+    "Alex",
+    "Blake",
+    "Casey",
+    "Dana",
+    "Eden",
+    "Finn",
+    "Gray",
+    "Harper",
+    "Indigo",
+    "Jordan",
+    "Kai",
+    "Lane",
+    "Morgan",
+    "Nova",
+    "Oakley",
+    "Parker",
+    "Quinn",
+    "Reese",
+    "Sage",
+    "Taylor",
+    "Uma",
+    "Vale",
+    "Wren",
+    "Xen",
+    "Yael",
+    "Zion",
+    "Arlo",
+    "Bree",
+    "Cleo",
+    "Drew",
 ]
 
 
 # ── Setup ──────────────────────────────────────────────────────────────────────
 
+
 def make_agents(n: int) -> list[Agent]:
     import math
+
     names = (NAMES * math.ceil(n / len(NAMES)))[:n]
     return [
-        Agent(id=i, name=names[i], profile=HEXACOProfile.random())
-        for i in range(n)
+        Agent(id=i, name=names[i], profile=HEXACOProfile.random()) for i in range(n)
     ]
 
 
@@ -105,80 +130,90 @@ def seed_ground_truth(network, registry: PostRegistry, ground_truth: str) -> Pos
         registry.add(seed_post, hub.id)
 
     print(f"  Ground truth seeded into {len(network.hubs)} cluster hubs")
-    print(f"  Signals → emotional_charge={signals.emotional_charge:.2f}  "
-          f"controversy={signals.controversy:.2f}  "
-          f"fringe_score={signals.fringe_score:.2f}  "
-          f"threat_level={signals.threat_level:.2f}")
+    print(
+        f"  Signals → emotional_charge={signals.emotional_charge:.2f}  "
+        f"controversy={signals.controversy:.2f}  "
+        f"fringe_score={signals.fringe_score:.2f}  "
+        f"threat_level={signals.threat_level:.2f}"
+    )
     return seed_post
 
 
 # ── Logging Helpers ────────────────────────────────────────────────────────────
 
+
 def signals_dict(s: PostSignals) -> dict:
     return {
         "emotional_charge": round(s.emotional_charge, 4),
-        "controversy":      round(s.controversy, 4),
-        "fringe_score":     round(s.fringe_score, 4),
-        "threat_level":     round(s.threat_level, 4),
-        "generation":       s.generation,
-        "source_post_id":   s.source_post_id,
+        "controversy": round(s.controversy, 4),
+        "fringe_score": round(s.fringe_score, 4),
+        "threat_level": round(s.threat_level, 4),
+        "generation": s.generation,
+        "source_post_id": s.source_post_id,
     }
 
 
 def agent_dict(agent: Agent, cluster_id: int, is_hub: bool) -> dict:
     p = agent.profile
     return {
-        "id":        agent.id,
-        "name":      agent.name,
-        "cluster":   cluster_id,
-        "is_hub":    is_hub,
+        "id": agent.id,
+        "name": agent.name,
+        "cluster": cluster_id,
+        "is_hub": is_hub,
         "profile": {
-            "honesty_humility":  round(p.honesty_humility, 4),
-            "emotionality":      round(p.emotionality, 4),
-            "extraversion":      round(p.extraversion, 4),
-            "agreeableness":     round(p.agreeableness, 4),
+            "honesty_humility": round(p.honesty_humility, 4),
+            "emotionality": round(p.emotionality, 4),
+            "extraversion": round(p.extraversion, 4),
+            "agreeableness": round(p.agreeableness, 4),
             "conscientiousness": round(p.conscientiousness, 4),
-            "openness":          round(p.openness, 4),
+            "openness": round(p.openness, 4),
         },
     }
+
 
 def summarise_visible_posts(feed: list[Post], max_posts: int = 3) -> str:
     if not feed:
         return "This agent does not see any posts now"
-    
+
     lines = []
     for i, post in enumerate(feed[:max_posts], start=1):
         lines.append(f"{i}. {post.text}")
     return "\n".join(lines)
 
+
 # ── Console Formatting ─────────────────────────────────────────────────────────
 
 ACTION_ICONS = {
-    "like":        "♥",
-    "retweet":     "↺",
+    "like": "♥",
+    "retweet": "↺",
     "quote_tweet": "❝",
-    "comment":     "💬",
-    "new_post":    "✍",
-    "report":      "⚑",
-    "ignore":      "·",
+    "comment": "💬",
+    "new_post": "✍",
+    "report": "⚑",
+    "ignore": "·",
 }
+
 
 def print_step_header(step: int, n_steps: int):
     print(f"\n{'═' * 60}")
     print(f"  STEP {step} / {n_steps}")
     print(f"{'═' * 60}")
 
+
 def print_agent_action(agent: Agent, action: str, post: Post, new_post: Post | None):
     icon = ACTION_ICONS.get(action, "?")
-    print(f"  {icon}  {agent.name:<10} {action:<12} ← \"{post.text[:50]}…\"")
+    print(f'  {icon}  {agent.name:<10} {action:<12} ← "{post.text[:50]}…"')
     if new_post:
-        print(f"      └─ posted: \"{new_post.text[:80]}…\"")
+        print(f'      └─ posted: "{new_post.text[:80]}…"')
         s = new_post.signals
-        print(f"         signals: ec={s.emotional_charge:.2f} "
-              f"ct={s.controversy:.2f} "
-              f"fr={s.fringe_score:.2f} "
-              f"tl={s.threat_level:.2f} "
-              f"(gen {s.generation})")
+        print(
+            f"         signals: ec={s.emotional_charge:.2f} "
+            f"ct={s.controversy:.2f} "
+            f"fr={s.fringe_score:.2f} "
+            f"tl={s.threat_level:.2f} "
+            f"(gen {s.generation})"
+        )
+
 
 def print_step_summary(step_log: dict):
     actions = [e["action"] for e in step_log["events"]]
@@ -188,10 +223,11 @@ def print_step_summary(step_log: dict):
     total_posts = step_log["new_posts_this_step"]
     print(f"\n  ── Step summary: {len(actions)} actions, {total_posts} new posts")
     for action, n in sorted(counts.items(), key=lambda x: -x[1]):
-        print(f"     {ACTION_ICONS.get(action,'?')} {action}: {n}")
+        print(f"     {ACTION_ICONS.get(action, '?')} {action}: {n}")
 
 
 # ── Core Simulation Loop ───────────────────────────────────────────────────────
+
 
 def run_simulation(
     n_agents: int,
@@ -199,20 +235,20 @@ def run_simulation(
     seed: int | None,
     out_dir: str,
     ground_truth: str = None,
-    run_identifier: str = "", #new
+    run_identifier: str = "",  # new
     intra_cluster_p: float = 0.5,
     inter_cluster_m: int = 2,
     agents_per_cluster: int = 10,
     weak_tie_p: float = 0.05,
-    #n_simulations: int = 1,
+    # n_simulations: int = 1,
 ) -> tuple[dict, dict]:
     if seed is not None:
         random.seed(seed)
 
     if ground_truth is None:
-        ground_truth = GROUND_TRUTH   # falls back to the hardcoded one
+        ground_truth = GROUND_TRUTH  # falls back to the hardcoded one
 
-    #Modified
+    # Modified
     base_id = datetime.now(ZoneInfo("Australia/Sydney")).strftime("%Y%m%d_%H%M%S")
     run_id = f"{base_id}_{run_identifier}" if run_identifier else base_id
 
@@ -228,11 +264,10 @@ def run_simulation(
     # ── Build world ────────────────────────────────────────────────────────────
     print("Building agents…")
     agents = make_agents(n_agents)
-    agent_map = {a.id: a for a in agents}
 
     print("Building network…")
-    config  = NetworkConfig(
-        followback_p= intra_cluster_p,
+    config = NetworkConfig(
+        followback_p=intra_cluster_p,
         inter_cluster_m=inter_cluster_m,
         agents_per_cluster=agents_per_cluster,
         p_weak=weak_tie_p,
@@ -255,37 +290,35 @@ def run_simulation(
 
     # ── Run log structure ──────────────────────────────────────────────────────
     run_log = {
-        "run_id":    run_id,
+        "run_id": run_id,
         "timestamp": datetime.now().isoformat(),
         "config": {
-            "n_agents":           n_agents,
-            "n_steps":            n_steps,
-            "seed":               seed,
-            "followback_p":    config.followback_p,
-            "inter_cluster_m":    config.inter_cluster_m,
+            "n_agents": n_agents,
+            "n_steps": n_steps,
+            "seed": seed,
+            "followback_p": config.followback_p,
+            "inter_cluster_m": config.inter_cluster_m,
             "agents_per_cluster": config.agents_per_cluster,
         },
-        "agents":  [
-            agent_dict(a, network.agent_cluster[a.id], a.id in hub_ids)
-            for a in agents
+        "agents": [
+            agent_dict(a, network.agent_cluster[a.id], a.id in hub_ids) for a in agents
         ],
         "network": {
-            "n_nodes":    network.graph.number_of_nodes(),
-            "n_edges":    network.graph.number_of_edges(),
+            "n_nodes": network.graph.number_of_nodes(),
+            "n_edges": network.graph.number_of_edges(),
             "n_clusters": len(network.clusters),
             "avg_degree": round(
-                network.graph.number_of_edges() / max(network.graph.number_of_nodes(), 1), 2
+                network.graph.number_of_edges()
+                / max(network.graph.number_of_nodes(), 1),
+                2,
             ),
             "hubs": {str(cid): h.name for cid, h in network.hubs.items()},
         },
         # ── NEW: serialise every directed edge for the frontend graph view ────
-        "network_edges": [
-            {"source": u, "target": v}
-            for u, v in network.graph.edges()
-        ],
+        "network_edges": [{"source": u, "target": v} for u, v in network.graph.edges()],
         # ─────────────────────────────────────────────────────────────────────
         "ground_truth": {
-            "text":    ground_truth,
+            "text": ground_truth,
             "signals": signals_dict(seed_post.signals),
         },
         "steps": [],
@@ -304,9 +337,9 @@ def run_simulation(
         print_step_header(step, n_steps)
 
         step_log = {
-            "step":               step,
-            "agent_order":        [],
-            "events":             [],
+            "step": step,
+            "agent_order": [],
+            "events": [],
             "new_posts_this_step": 0,
         }
 
@@ -347,24 +380,26 @@ def run_simulation(
                     lineage_key = new_signals.source_post_id
                     if lineage_key not in signal_drift:
                         signal_drift[lineage_key] = []
-                    signal_drift[lineage_key].append({
-                        "post_id":    new_post.id,
-                        "author":     agent.name,
-                        "step":       step,
-                        **signals_dict(new_signals),
-                    })
+                    signal_drift[lineage_key].append(
+                        {
+                            "post_id": new_post.id,
+                            "author": agent.name,
+                            "step": step,
+                            **signals_dict(new_signals),
+                        }
+                    )
 
                 print_agent_action(agent, action, post, new_post)
 
                 # Log the event
                 event = {
-                    "agent_id":      agent.id,
-                    "agent_name":    agent.name,
-                    "action":        action,
+                    "agent_id": agent.id,
+                    "agent_name": agent.name,
+                    "action": action,
                     "source_post_id": post.id,
-                    "new_post_id":   new_post.id if new_post else None,
+                    "new_post_id": new_post.id if new_post else None,
                     "new_post_text": new_post.text if new_post else None,
-                    "new_signals":   signals_dict(new_post.signals) if new_post else None,
+                    "new_signals": signals_dict(new_post.signals) if new_post else None,
                 }
                 step_log["events"].append(event)
 
@@ -378,8 +413,10 @@ def run_simulation(
     run_log_path = os.path.join(out_path, "run_log.json")
     with open(run_log_path, "w") as f:
         json.dump(run_log, f, indent=2)
-    print(f"  ✓  run_log.json       ({len(run_log['steps'])} steps, "
-          f"{sum(s['new_posts_this_step'] for s in run_log['steps'])} new posts)")
+    print(
+        f"  ✓  run_log.json       ({len(run_log['steps'])} steps, "
+        f"{sum(s['new_posts_this_step'] for s in run_log['steps'])} new posts)"
+    )
 
     drift_path = os.path.join(out_path, "signal_drift.json")
     with open(drift_path, "w") as f:
@@ -393,17 +430,23 @@ def run_simulation(
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
 
+
 def main():
     parser = argparse.ArgumentParser(description="Run the newsreel simulation.")
-    parser.add_argument("--agents", type=int, default=20,   help="Number of agents (default 20)")
-    parser.add_argument("--steps",  type=int, default=7,    help="Number of steps (default 7)")
-    parser.add_argument("--seed",   type=int, default=None, help="Random seed")
-    parser.add_argument("--out",    type=str, default="runs", help="Output directory (default: runs/)")
+    parser.add_argument(
+        "--agents", type=int, default=20, help="Number of agents (default 20)"
+    )
+    parser.add_argument(
+        "--steps", type=int, default=7, help="Number of steps (default 7)"
+    )
+    parser.add_argument("--seed", type=int, default=None, help="Random seed")
+    parser.add_argument(
+        "--out", type=str, default="runs", help="Output directory (default: runs/)"
+    )
 
     # [NEW]
     parser.add_argument("--sim-count", type=int, default=1, help="Parallel Simulation")
     args = parser.parse_args()
-
 
     keys_str = os.getenv("GROQ_API_KEY", "")
 
@@ -438,14 +481,16 @@ def main():
                     n_steps=args.steps,
                     seed=child_seed,
                     out_dir=args.out,
-                    run_identifier=f"run{i:02d}"
+                    run_identifier=f"run{i:02d}",
                 )
 
                 sys.exit(0)
 
-            else: # parent
+            else:  # parent
                 pids.append(pid)
-                print(f"  - Instance {i} started (PID: {pid}), Using Key: {current_key[:10]}...")
+                print(
+                    f"  - Instance {i} started (PID: {pid}), Using Key: {current_key[:10]}..."
+                )
                 time.sleep(0.5)
 
         for pid in pids:
@@ -456,11 +501,9 @@ def main():
         # single simulation
         os.environ["GROQ_API_KEY"] = API_KEYS[0]
         run_simulation(
-            n_agents=args.agents,
-            n_steps=args.steps,
-            seed=args.seed,
-            out_dir=args.out
+            n_agents=args.agents, n_steps=args.steps, seed=args.seed, out_dir=args.out
         )
+
 
 if __name__ == "__main__":
     main()

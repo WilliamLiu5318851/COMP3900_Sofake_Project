@@ -12,17 +12,18 @@ Design:
 """
 
 from dataclasses import dataclass, field
-from structs import Agent, Post, PostSignals
+from structs import Agent, Post
 from network import SocialNetwork
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 
-DEFAULT_FEED_SIZE = 3          # Posts surfaced to each agent per step
-RECENCY_WEIGHT   = 0.5         # Weight given to recency in mixed score
-SIGNAL_WEIGHT    = 0.5         # Weight given to signal strength in mixed score
-ENGAGEMENT_BOOST  = 0.2         # Additional weight for post engagement (likes/comments)
+DEFAULT_FEED_SIZE = 3  # Posts surfaced to each agent per step
+RECENCY_WEIGHT = 0.5  # Weight given to recency in mixed score
+SIGNAL_WEIGHT = 0.5  # Weight given to signal strength in mixed score
+ENGAGEMENT_BOOST = 0.2  # Additional weight for post engagement (likes/comments)
 
 # ── Post Registry ──────────────────────────────────────────────────────────────
+
 
 @dataclass
 class PostRegistry:
@@ -31,6 +32,7 @@ class PostRegistry:
 
     Posts are stored in insertion order so we can derive recency rank cheaply.
     """
+
     _posts: list[Post] = field(default_factory=list)
     _by_author: dict[int, list[Post]] = field(default_factory=dict)  # agent_id -> posts
 
@@ -56,6 +58,7 @@ class PostRegistry:
 
 
 # ── Visibility ─────────────────────────────────────────────────────────────────
+
 
 def get_visible_posts(
     agent: Agent,
@@ -87,6 +90,7 @@ def get_visible_posts(
 
 # ── Scoring ────────────────────────────────────────────────────────────────────
 
+
 def signal_score(post: Post) -> float:
     """
     Raw signal strength of a post — equal blend of all four signal dimensions.
@@ -107,9 +111,9 @@ def personalise_score(base_score: float, post: Post, agent: Agent) -> float:
     s = post.signals
     p = agent.profile
 
-    fringe_boost    = p.openness      * s.fringe_score      * 0.3
-    emotional_boost = p.emotionality  * s.emotional_charge  * 0.2
-    threat_boost    = p.emotionality  * s.threat_level      * 0.1
+    fringe_boost = p.openness * s.fringe_score * 0.3
+    emotional_boost = p.emotionality * s.emotional_charge * 0.2
+    threat_boost = p.emotionality * s.threat_level * 0.1
 
     return min(base_score + fringe_boost + emotional_boost + threat_boost, 1.0)
 
@@ -127,12 +131,19 @@ def mixed_score(
     signal_score  = personalised signal strength in [0, 1]
     mixed         = 0.5 * signal + 0.5 * recency
     """
-    recency_score = (recency_index / max_recency_index) if max_recency_index > 0 else 0.0
+    recency_score = (
+        (recency_index / max_recency_index) if max_recency_index > 0 else 0.0
+    )
     sig = personalise_score(signal_score(post), post, agent)
-    return SIGNAL_WEIGHT * sig + RECENCY_WEIGHT * recency_score + ENGAGEMENT_BOOST * post.engagement / 10.0  # small boost for engagement
+    return (
+        SIGNAL_WEIGHT * sig
+        + RECENCY_WEIGHT * recency_score
+        + ENGAGEMENT_BOOST * post.engagement / 10.0
+    )  # small boost for engagement
 
 
 # ── Feed Builder ───────────────────────────────────────────────────────────────
+
 
 def build_feed(
     agent: Agent,
@@ -169,6 +180,7 @@ def build_feed(
 
 # ── Convenience ───────────────────────────────────────────────────────────────
 
+
 def build_feeds_for_all(
     agents: list[Agent],
     network: SocialNetwork,
@@ -180,6 +192,5 @@ def build_feeds_for_all(
     Returns a dict mapping agent_id -> ranked feed (list of Posts).
     """
     return {
-        agent.id: build_feed(agent, network, registry, feed_size)
-        for agent in agents
+        agent.id: build_feed(agent, network, registry, feed_size) for agent in agents
     }

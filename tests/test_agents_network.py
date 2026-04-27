@@ -1,7 +1,7 @@
-import pytest
-from structs import Agent, HEXACOProfile, PostSignals, Post
+from structs import Agent, HEXACOProfile, PostSignals
 from network import build_network, NetworkConfig, elect_hubs, cosine_similarity
 from prompts import compute_action_probabilities, describe_trait
+
 
 def test_hexaco_bad_actor_profile():
     """Verify the bad_actor factory generates expected trait ranges."""
@@ -15,6 +15,7 @@ def test_hexaco_bad_actor_profile():
 
 
 # --- 1. HEXACO Distribution Tests ---
+
 
 def test_hexaco_distribution_range():
     """Verify that HEXACO random values are within the [0.0, 1.0] range."""
@@ -35,14 +36,27 @@ def test_hexaco_random_produces_variety():
     """Two random profiles should not be identical (with overwhelming probability)."""
     p1 = HEXACOProfile.random()
     p2 = HEXACOProfile.random()
-    traits1 = (p1.honesty_humility, p1.emotionality, p1.extraversion,
-               p1.agreeableness, p1.conscientiousness, p1.openness)
-    traits2 = (p2.honesty_humility, p2.emotionality, p2.extraversion,
-               p2.agreeableness, p2.conscientiousness, p2.openness)
+    traits1 = (
+        p1.honesty_humility,
+        p1.emotionality,
+        p1.extraversion,
+        p1.agreeableness,
+        p1.conscientiousness,
+        p1.openness,
+    )
+    traits2 = (
+        p2.honesty_humility,
+        p2.emotionality,
+        p2.extraversion,
+        p2.agreeableness,
+        p2.conscientiousness,
+        p2.openness,
+    )
     assert traits1 != traits2
 
 
 # --- 2. Interaction Logic Tests ---
+
 
 def test_action_probability_normalization():
     """Verify the calculation logic for action probabilities."""
@@ -72,10 +86,13 @@ def test_trait_description_mapping():
 
 # --- 3. Network Topology & Node Generation Tests ---
 
+
 def test_network_node_creation():
     """Verify that the network generates the correct number of nodes and clusters."""
-    agents = [Agent(id=i, name=f"Agent_{i}", profile=HEXACOProfile.random())
-              for i in range(20)]
+    agents = [
+        Agent(id=i, name=f"Agent_{i}", profile=HEXACOProfile.random())
+        for i in range(20)
+    ]
     config = NetworkConfig(agents_per_cluster=10)
 
     social_net = build_network(agents, config)
@@ -98,19 +115,22 @@ def test_elect_hubs_logic():
     assert hubs[0].id == 2  # 0.9 extraversion
     assert hubs[1].id == 3  # 0.5 extraversion
 
+
 def test_cosine_similarity():
     """Verify cosine similarity calculation between agents."""
     a1 = Agent(1, "A1", HEXACOProfile(1.0, 0.0, 0.0, 0.0, 0.0, 0.0))
     a2 = Agent(2, "A2", HEXACOProfile(1.0, 0.0, 0.0, 0.0, 0.0, 0.0))
     a3 = Agent(3, "A3", HEXACOProfile(0.0, 1.0, 0.0, 0.0, 0.0, 0.0))
-    
+
     assert cosine_similarity(a1, a2) == 1.0
     assert cosine_similarity(a1, a3) == 0.0
 
 
 def test_network_has_edges():
     """A network with enough agents should have at least some edges."""
-    agents = [Agent(id=i, name=f"Agent_{i}", profile=HEXACOProfile.random())
-              for i in range(10)]
+    agents = [
+        Agent(id=i, name=f"Agent_{i}", profile=HEXACOProfile.random())
+        for i in range(10)
+    ]
     social_net = build_network(agents, NetworkConfig())
     assert social_net.graph.number_of_edges() > 0

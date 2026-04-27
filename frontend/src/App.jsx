@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -101,7 +101,7 @@ function GroundTruthUploader({ value, onChange }) {
         </div>
       </div>
       <label className="label" htmlFor="groundTruth">
-        Paste the original, truthful newsreel (text-only)
+        Paste the original newsreel (text-only)
       </label>
       <textarea
         id="groundTruth"
@@ -113,7 +113,7 @@ function GroundTruthUploader({ value, onChange }) {
       />
       <div className="row row--between">
         <div className="hint">
-          Tip: Keep it factual and complete (who/what/when/where). No URLs (out of scope).
+          Tip: Keep it factual and complete (who/what/when/where). No URLs.
         </div>
         <div className="row">
           <button className="btn btn--ghost" type="button" onClick={() => onChange("")}>Clear</button>
@@ -148,8 +148,9 @@ function SimulationConfig({ config, setConfig }) {
             type="number"
             min={5}
             max={200}
-            value={config.agentCount}
+            value={config.agentCount || ""}
             onChange={(e) => setConfig((c) => ({ ...c, agentCount: Number(e.target.value) }))}
+            style={config.agentCount === "" || config.agentCount === 0 ? { border: "1px solid red" } : {}}
           />
         </div>
         <div>
@@ -159,8 +160,9 @@ function SimulationConfig({ config, setConfig }) {
             type="number"
             min={1}
             max={500}
-            value={config.steps}
+            value={config.steps || ""}
             onChange={(e) => setConfig((c) => ({ ...c, steps: Number(e.target.value) }))}
+            style={config.steps === "" || config.steps === 0 ? { border: "1px solid red" } : {}}
           />
         </div>
         <div>
@@ -168,8 +170,9 @@ function SimulationConfig({ config, setConfig }) {
           <input
             className="input"
             type="number"
-            value={config.seed}
+            value={config.seed || ""}
             onChange={(e) => setConfig((c) => ({ ...c, seed: Number(e.target.value) }))}
+            style={config.seed === "" || config.seed === null ? { border: "1px solid red" } : {}}
           />
         </div>
         <div>
@@ -179,8 +182,9 @@ function SimulationConfig({ config, setConfig }) {
             type="number"
             min={1}
             max={30}
-            value={config.simulations}
+            value={config.simulations || ""}
             onChange={(e) => setConfig((c) => ({ ...c, simulations: Number(e.target.value) }))}
+            style={config.simulations === "" || config.simulations === 0 ? { border: "1px solid red" } : {}}
           />
         </div>
       </div>
@@ -198,8 +202,9 @@ function SimulationConfig({ config, setConfig }) {
             min={0}
             max={1}
             step={0.05}
-            value={config.intraClusterP}
+            value={config.intraClusterP || ""}
             onChange={(e) => setConfig((c) => ({ ...c, intraClusterP: Number(e.target.value) }))}
+            style={config.intraClusterP === "" || config.intraClusterP === 0 ? { border: "1px solid red" } : {}}
           />
           <div className="hint" style={{ marginTop: 4 }}>
             Erdős–Rényi edge probability within each cluster (0–1). Higher = denser clusters.
@@ -213,8 +218,9 @@ function SimulationConfig({ config, setConfig }) {
             min={1}
             max={10}
             step={1}
-            value={config.interClusterM}
+            value={config.interClusterM || ""}
             onChange={(e) => setConfig((c) => ({ ...c, interClusterM: Number(e.target.value) }))}
+            style={config.interClusterM === "" || config.interClusterM === 0 ? { border: "1px solid red" } : {}}
           />
           <div className="hint" style={{ marginTop: 4 }}>
             Edges each hub forms to existing hubs (Barabási–Albert style). Controls cross-cluster connectivity.
@@ -228,8 +234,10 @@ function SimulationConfig({ config, setConfig }) {
             min={2}
             max={50}
             step={1}
-            value={config.agentsPerCluster}
+            value={config.agentsPerCluster || ""}
             onChange={(e) => setConfig((c) => ({ ...c, agentsPerCluster: Number(e.target.value) }))}
+            style={config.agentsPerCluster === "" || config.agentsPerCluster === 0 ? { border: "1px solid red" } : {}}
+
           />
           <div className="hint" style={{ marginTop: 4 }}>
             Target cluster size — determines the number of clusters (≈ agents ÷ this value).
@@ -243,8 +251,9 @@ function SimulationConfig({ config, setConfig }) {
             min={0}
             max={1}
             step={0.05}
-            value={config.weakTieP}
+            value={config.weakTieP || ""}
             onChange={(e) => setConfig((c) => ({ ...c, weakTieP: Number(e.target.value) }))}
+            style={config.weakTieP === "" || config.weakTieP === 0 ? { border: "1px solid red" } : {}}
           />
           <div className="hint" style={{ marginTop: 4 }}>
             Probability of forming weak ties between agents in different clusters (0–1).
@@ -394,7 +403,7 @@ function AgentTooltip({ agent, screenX, screenY, containerRef }) {
     if (top  + tt.height > ct.height) top  = screenY - tt.height;
     if (top < 0) top = 4;
     setPos({ left, top }); // eslint-disable-line react-hooks/set-state-in-effect
-  }, [screenX, screenY]);
+  }, [screenX, screenY, containerRef]);
 
   const p = agent.profile;
 
@@ -542,47 +551,10 @@ function NetworkGraph({ runLog }) {
     return () => cancelAnimationFrame(frameRef.current);
   }, [runLog]);
 
-  // ── Coordinate helpers ────────────────────────────────────────────────────
-  // eslint-disable-next-line no-unused-vars
-  function clientToSvg(cx, cy) {
-    const rect = svgRef.current.getBoundingClientRect();
-    const t    = transformRef.current;
-    return {
-      x: (cx - rect.left - t.x) / t.k,
-      y: (cy - rect.top  - t.y) / t.k,
-    };
-  }
-
   function clientToContainer(cx, cy) {
     const rect = containerRef.current.getBoundingClientRect();
     return { x: cx - rect.left, y: cy - rect.top };
   }
-
-  // ── Wheel zoom ────────────────────────────────────────────────────────────
-  // eslint-disable-next-line no-unused-vars
-  function handleWheel(e) {
-    e.preventDefault();
-  
-    // Two-finger pinch on trackpad: ctrlKey is true and deltaY represents zoom delta
-    // Two-finger scroll on trackpad: ctrlKey is false, deltaY is scroll
-    // We only zoom on pinch (ctrlKey), ignore regular scroll
-    if (!e.ctrlKey) return;
-  
-    const factor = e.deltaY < 0 ? 1.12 : 0.89;
-    const rect   = svgRef.current.getBoundingClientRect();
-    const t      = transformRef.current;
-    const mx     = e.clientX - rect.left;
-    const my     = e.clientY - rect.top;
-    const newK   = Math.min(8, Math.max(0.2, t.k * factor));
-    const next   = {
-      x: mx - (mx - t.x) * (newK / t.k),
-      y: my - (my - t.y) * (newK / t.k),
-      k: newK,
-    };
-    transformRef.current = next;
-    setTransform(next);
-  }
-
 
   // ── Hover ─────────────────────────────────────────────────────────────────
   function handleNodeMouseEnter(e, agent) {
@@ -1729,17 +1701,6 @@ function SavedRuns({ savedRuns, selectedRun, onSelectRun, onDeleteRun }) {
   );
 }
 
-// ── Placeholder ───────────────────────────────────────────────────────────────
-
-function PlaceholderPage({ title, children }) {
-  return (
-    <section className="card">
-      <h2 className="card__title">{title}</h2>
-      <div className="hint">{children}</div>
-    </section>
-  );
-}
-
 // ── Parallel FUSE Page ────────────────────────────────────────────────────────
 
 function ParallelFusePage({ simResult }) {
@@ -1819,6 +1780,16 @@ export default function App() {
   const [activeRunIndex, setActiveRunIndex] = useState(0);
 
   const withinLimit = groundTruth.length > 0 && groundTruth.length <= 6000;
+
+  const configValid = 
+  config.agentCount !== "" && config.agentCount > 0 &&
+  config.steps !== "" && config.steps > 0 &&
+  config.seed !== "" && config.seed !== null &&
+  config.simulations !== "" && config.simulations > 0 &&
+  config.intraClusterP !== "" &&
+  config.interClusterM !== "" && config.interClusterM > 0 &&
+  config.agentsPerCluster !== "" && config.agentsPerCluster > 0 &&
+  config.weakTieP !== "";
 
   async function loadSavedRunsFromBackend() {
     try {
@@ -1971,7 +1942,7 @@ export default function App() {
             <>
               <GroundTruthUploader value={groundTruth} onChange={setGroundTruth} />
               <SimulationConfig config={config} setConfig={setConfig} />
-              <RunActions canRun={withinLimit} loading={loading} onRun={handleRun} />
+              <RunActions canRun={withinLimit && configValid} loading={loading} onRun={handleRun} />
               {simError && <div className="callout callout--warn">Error: {simError}</div>}
               {simResult && (
                 <div className="callout">

@@ -2,7 +2,8 @@ import json
 import os
 import time
 import anthropic
-from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv
+
 
 class FUSEScoringSystem:
     def __init__(self, api_key: str, model_name: str = "claude-haiku-4-5-20251001"):
@@ -93,9 +94,7 @@ No explanation, no markdown fences, no extra text."""
                     "across specific linguistic and semantic dimensions. "
                     "You always respond with only a valid JSON object — no markdown, no explanation, no extra text."
                 ),
-                messages=[
-                    {"role": "user", "content": prompt}
-                ],
+                messages=[{"role": "user", "content": prompt}],
             )
 
             raw_content = response.content[0].text.strip()
@@ -123,15 +122,36 @@ No explanation, no markdown fences, no extra text."""
                 # Core 6 dimensions per FUSE paper formula: TD = (1/6) * Σ D_i,d
                 core_dims = ["SS", "NII", "CS", "STS", "TS", "PD"]
                 core_scores = [scores[k] for k in core_dims if k in scores]
-                scores['Total_Deviation'] = round(sum(core_scores) / len(core_scores), 2)
+                scores["Total_Deviation"] = round(
+                    sum(core_scores) / len(core_scores), 2
+                )
                 # Extended average (all 9 dimensions)
-                scores['Extended_Deviation'] = round(sum(scores[k] for k in ["SS","NII","CS","STS","TS","PD","SI","SAA","PIB"] if k in scores) / 9, 2)
+                scores["Extended_Deviation"] = round(
+                    sum(
+                        scores[k]
+                        for k in [
+                            "SS",
+                            "NII",
+                            "CS",
+                            "STS",
+                            "TS",
+                            "PD",
+                            "SI",
+                            "SAA",
+                            "PIB",
+                        ]
+                        if k in scores
+                    )
+                    / 9,
+                    2,
+                )
 
             return scores
 
         except Exception as e:
             print(f"Error during evaluation: {e}")
             return {}
+
 
 # === Demonstration Module ===
 if __name__ == "__main__":
@@ -169,9 +189,9 @@ if __name__ == "__main__":
         print(f"Evolved News:  {data['evolved']}\n")
 
         print("Evaluating deviation metrics using LLM...")
-        results = evaluator.evaluate_news(data['original'], data['evolved'])
+        results = evaluator.evaluate_news(data["original"], data["evolved"])
 
         print("Evaluation Results:")
         print(json.dumps(results, indent=4))
-        print("\n" + "="*50 + "\n")
+        print("\n" + "=" * 50 + "\n")
         time.sleep(1)

@@ -1,5 +1,14 @@
 {
   "dependencies": {
     "recharts": "^3.8.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^17.5.0"
+  },
+  "scripts": {
+    "lint:fix": "cd frontend && npx eslint --fix src/"
   }
 }
